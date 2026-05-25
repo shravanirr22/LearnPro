@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Community — LearnPro</title>
+<link rel="stylesheet" href="../css/global.css">
+<style>
+.community-layout { display:grid; grid-template-columns:1fr 320px; gap:0; min-height:calc(100vh - var(--nav-h)); }
+.community-main { padding:32px; border-right:1px solid var(--white-10); }
+.community-right { padding:24px; }
+
+.post-card { background:var(--black-3); border:1px solid var(--white-10); border-radius:var(--radius-lg); padding:20px; margin-bottom:14px; transition:all var(--transition); }
+.post-card:hover { border-color:rgba(180,18,27,0.3); }
+.post-header { display:flex; align-items:flex-start; gap:12px; margin-bottom:12px; }
+.post-body { font-size:0.9rem; color:var(--gray-5); line-height:1.7; margin-bottom:14px; }
+.post-title { font-size:1rem; font-weight:700; color:var(--white); margin-bottom:6px; cursor:pointer; }
+.post-title:hover { color:var(--red-light); }
+.post-actions { display:flex; align-items:center; gap:16px; }
+.post-action { display:flex; align-items:center; gap:5px; font-size:0.8rem; color:var(--gray-4); cursor:pointer; transition:color var(--transition); background:none; border:none; font-family:var(--font-body); }
+.post-action:hover { color:var(--red-light); }
+.post-action.liked { color:var(--red-light); }
+.tag-pill { display:inline-flex; align-items:center; padding:3px 10px; border-radius:var(--radius-full); font-size:0.72rem; font-family:var(--font-cond); font-weight:700; letter-spacing:0.06em; cursor:pointer; border:1px solid; margin-right:5px; transition:all var(--transition); }
+.tag-pill:hover { background:var(--red-subtle); border-color:var(--red); color:var(--red-light); }
+.tag-web { color:#60a5fa; border-color:rgba(96,165,250,0.3); background:rgba(96,165,250,0.05); }
+.tag-question { color:#f59e0b; border-color:rgba(245,158,11,0.3); background:rgba(245,158,11,0.05); }
+.tag-showcase { color:#10b981; border-color:rgba(16,185,129,0.3); background:rgba(16,185,129,0.05); }
+.tag-career { color:var(--red-light); border-color:rgba(180,18,27,0.3); background:var(--red-subtle); }
+.tag-general { color:var(--gray-4); border-color:var(--gray-2); background:var(--black-5); }
+
+/* Write post box */
+.write-box { background:var(--black-3); border:1px solid var(--white-10); border-radius:var(--radius-lg); padding:16px; margin-bottom:20px; }
+.write-input { width:100%; padding:12px 16px; background:var(--black-4); border:1.5px solid var(--gray-1); border-radius:var(--radius); color:var(--white); font-size:0.9rem; outline:none; transition:all var(--transition); font-family:var(--font-body); cursor:pointer; }
+.write-input:focus { border-color:var(--red); }
+
+/* Channel list */
+.channel-item { display:flex; align-items:center; gap:10px; padding:9px 12px; border-radius:var(--radius); cursor:pointer; transition:all var(--transition); margin-bottom:2px; }
+.channel-item:hover, .channel-item.active { background:var(--white-5); }
+.channel-item.active { background:var(--red-subtle); }
+.channel-icon { font-size:1rem; width:24px; text-align:center; }
+.channel-name { font-family:var(--font-cond); font-size:0.92rem; font-weight:700; color:var(--gray-5); }
+.channel-item.active .channel-name { color:var(--red-light); }
+.channel-count { margin-left:auto; font-size:0.7rem; background:var(--black-5); color:var(--gray-4); padding:1px 7px; border-radius:99px; font-family:var(--font-cond); font-weight:700; }
+
+/* Study buddy card */
+.buddy-card { background:var(--black-3); border:1px solid var(--white-10); border-radius:var(--radius-lg); padding:14px; display:flex; align-items:center; gap:12px; margin-bottom:10px; transition:all var(--transition); }
+.buddy-card:hover { border-color:var(--red); }
+.online-dot { width:9px; height:9px; background:#10b981; border-radius:50%; box-shadow:0 0 5px rgba(16,185,129,0.6); flex-shrink:0; }
+
+/* Event card */
+.event-card { background:var(--black-3); border:1px solid var(--white-10); border-radius:var(--radius-lg); padding:14px; margin-bottom:10px; transition:all var(--transition); }
+.event-card:hover { border-color:var(--red); }
+.event-date { font-family:var(--font-display); font-size:1.4rem; color:var(--red-light); line-height:1; }
+.event-month { font-size:0.68rem; color:var(--gray-4); text-transform:uppercase; letter-spacing:0.1em; }
+
+/* New post modal */
+.format-btn { background:var(--black-4); border:1px solid var(--gray-1); border-radius:4px; color:var(--gray-4); padding:4px 8px; cursor:pointer; font-size:0.85rem; transition:all var(--transition); }
+.format-btn:hover { color:var(--white); border-color:var(--gray-2); }
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="../index.html" class="nav-logo">LEARN<span>PRO</span></a>
+  <div class="nav-links">
+    <a href="dashboard.html" class="nav-link">Dashboard</a>
+    <a href="resources.html" class="nav-link">Resources</a>
+    <a href="jobs.html" class="nav-link">Jobs</a>
+    <a href="mentors.html" class="nav-link">Mentors</a>
+    <a href="courses.html" class="nav-link">Courses</a>
+    <a href="community.html" class="nav-link active">Community</a>
+  </div>
+  <div class="nav-actions">
+    <button onclick="openModal('newPostModal')" class="btn btn-primary btn-sm">+ New Post</button>
+    <div class="avatar" id="navAvatar">LP</div>
+  </div>
+</nav>
+
+<div style="padding-top:var(--nav-h)">
+<div class="community-layout">
+
+  <!-- LEFT: CHANNELS SIDEBAR (hidden on mobile, shown as overlay) -->
+  <div style="width:220px;border-right:1px solid var(--white-10);padding:20px 12px;flex-shrink:0" class="hidden" id="channelSidebar">
+    <div style="font-family:var(--font-cond);font-size:0.72rem;font-weight:700;letter-spacing:0.15em;color:var(--gray-3);text-transform:uppercase;margin-bottom:10px;padding:0 12px">Channels</div>
+    <div class="channel-item active" onclick="setChannel(this,'all')"><span class="channel-icon">🌐</span><span class="channel-name">All Posts</span><span class="channel-count">128</span></div>
+    <div class="channel-item" onclick="setChannel(this,'webdev')"><span class="channel-icon">💻</span><span class="channel-name">Web Dev</span><span class="channel-count">42</span></div>
+    <div class="channel-item" onclick="setChannel(this,'datascience')"><span class="channel-icon">📊</span><span class="channel-name">Data Science</span><span class="channel-count">28</span></div>
+    <div class="channel-item" onclick="setChannel(this,'design')"><span class="channel-icon">🎨</span><span class="channel-name">UI/UX Design</span><span class="channel-count">19</span></div>
+    <div class="channel-item" onclick="setChannel(this,'career')"><span class="channel-icon">💼</span><span class="channel-name">Career</span><span class="channel-count">35</span></div>
+    <div class="channel-item" onclick="setChannel(this,'showcase')"><span class="channel-icon">🚀</span><span class="channel-name">Project Showcase</span><span class="channel-count">22</span></div>
+    <div class="channel-item" onclick="setChannel(this,'offftopic')"><span class="channel-icon">☕</span><span class="channel-name">Off-Topic</span><span class="channel-count">17</span></div>
+  </div>
+
+  <!-- MAIN FEED -->
+  <div class="community-main">
+    <!-- Header -->
+    <div class="flex-between" style="margin-bottom:20px">
+      <div>
+        <h1 style="font-size:1.8rem;color:var(--white)">Community <span style="color:var(--red)">Hub</span></h1>
+        <p style="color:var(--gray-4);font-size:0.88rem">Ask questions, share projects, celebrate wins, grow together.</p>
+      </div>
+      <div style="display:flex;gap:8px">
+        <select id="sortSelect" onchange="sortPosts(this.value)" style="padding:8px 12px;background:var(--black-4);border:1px solid var(--gray-1);border-radius:var(--radius-full);color:var(--white);font-size:0.82rem;outline:none;cursor:pointer;font-family:var(--font-body)">
+          <option value="hot">🔥 Hot</option>
+          <option value="new">✨ Newest</option>
+          <option value="top">⭐ Top</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Channel chips -->
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px">
+      <div class="tag-pill tag-general active-channel" onclick="setChannelChip(this,'all')" style="border-color:var(--red);color:var(--red-light);background:var(--red-subtle)">🌐 All</div>
+      <div class="tag-pill tag-web" onclick="setChannelChip(this,'webdev')">💻 Web Dev</div>
+      <div class="tag-pill tag-general" onclick="setChannelChip(this,'datascience')">📊 Data</div>
+      <div class="tag-pill tag-showcase" onclick="setChannelChip(this,'showcase')">🚀 Showcase</div>
+      <div class="tag-pill tag-career" onclick="setChannelChip(this,'career')">💼 Career</div>
+      <div class="tag-pill tag-question" onclick="setChannelChip(this,'question')">❓ Q&A</div>
+    </div>
+
+    <!-- Write Post -->
+    <div class="write-box">
+      <div style="display:flex;gap:12px;align-items:center">
+        <div class="avatar avatar-sm" id="writeAvatar">LP</div>
+        <div class="write-input" onclick="openModal('newPostModal')" tabindex="0">What's on your mind? Share a win, ask a question, show your project…</div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--white-5)">
+        <button onclick="openModal('newPostModal')" class="btn btn-ghost btn-sm">📸 Photo</button>
+        <button onclick="openModal('newPostModal')" class="btn btn-ghost btn-sm">💻 Code</button>
+        <button onclick="openModal('newPostModal')" class="btn btn-ghost btn-sm">🔗 Link</button>
+        <button onclick="openModal('newPostModal')" class="btn btn-ghost btn-sm">❓ Question</button>
+      </div>
+    </div>
+
+    <!-- POSTS FEED -->
+    <div id="postsFeed"></div>
+
+    <!-- Load More -->
+    <div style="text-align:center;margin-top:20px">
+      <button onclick="loadMorePosts()" class="btn btn-outline">Load More</button>
+    </div>
+  </div>
+
+  <!-- RIGHT SIDEBAR -->
+  <div class="community-right">
+
+    <!-- Stats -->
+    <div style="background:var(--black-3);border:1px solid var(--white-10);border-radius:var(--radius-lg);padding:16px;margin-bottom:20px">
+      <div style="font-family:var(--font-cond);font-size:0.75rem;font-weight:700;letter-spacing:0.12em;color:var(--gray-3);text-transform:uppercase;margin-bottom:12px">Community Stats</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div style="text-align:center"><div style="font-family:var(--font-display);font-size:1.5rem;color:var(--white)">52K</div><div style="font-size:0.72rem;color:var(--gray-4)">Members</div></div>
+        <div style="text-align:center"><div style="font-family:var(--font-display);font-size:1.5rem;color:var(--red-light)">1.2K</div><div style="font-size:0.72rem;color:var(--gray-4)">Online Now</div></div>
+        <div style="text-align:center"><div style="font-family:var(--font-display);font-size:1.5rem;color:var(--white)">8.4K</div><div style="font-size:0.72rem;color:var(--gray-4)">Posts/Week</div></div>
+        <div style="text-align:center"><div style="font-family:var(--font-display);font-size:1.5rem;color:#10b981)">94%</div><div style="font-size:0.72rem;color:var(--gray-4)">Answered</div></div>
+      </div>
+    </div>
+
+    <!-- Online Study Buddies -->
+    <div style="background:var(--black-3);border:1px solid var(--white-10);border-radius:var(--radius-lg);padding:16px;margin-bottom:20px">
+      <div style="font-family:var(--font-cond);font-size:0.75rem;font-weight:700;letter-spacing:0.12em;color:var(--gray-3);text-transform:uppercase;margin-bottom:12px">Online Now 🟢</div>
+      <div class="buddy-card">
+        <div class="avatar avatar-sm">AK</div>
+        <div style="flex:1"><div style="font-size:0.85rem;font-weight:700;color:var(--white)">Aditya K.</div><div style="font-size:0.72rem;color:var(--gray-4)">Learning React · Same goal as you</div></div>
+        <div class="online-dot"></div>
+      </div>
+      <div class="buddy-card">
+        <div class="avatar avatar-sm">PT</div>
+        <div style="flex:1"><div style="font-size:0.85rem;font-weight:700;color:var(--white)">Preethi T.</div><div style="font-size:0.72rem;color:var(--gray-4)">JavaScript · Intermediate</div></div>
+        <div class="online-dot"></div>
+      </div>
+      <div class="buddy-card">
+        <div class="avatar avatar-sm">RK</div>
+        <div style="flex:1"><div style="font-size:0.85rem;font-weight:700;color:var(--white)">Rohan K.</div><div style="font-size:0.72rem;color:var(--gray-4)">Node.js · Building portfolio</div></div>
+        <div class="online-dot"></div>
+      </div>
+      <button onclick="showToast('Study Buddy feature coming soon!','info')" class="btn btn-ghost btn-sm w-full" style="justify-content:center;margin-top:10px">Find My Study Buddy →</button>
+    </div>
+
+    <!-- Upcoming Events -->
+    <div style="background:var(--black-3);border:1px solid var(--white-10);border-radius:var(--radius-lg);padding:16px;margin-bottom:20px">
+      <div style="font-family:var(--font-cond);font-size:0.75rem;font-weight:700;letter-spacing:0.12em;color:var(--gray-3);text-transform:uppercase;margin-bottom:12px">Upcoming Events 📅</div>
+      <div class="event-card">
+        <div style="display:flex;gap:14px;align-items:center">
+          <div style="text-align:center;flex-shrink:0"><div class="event-date">14</div><div class="event-month">May</div></div>
+          <div><div style="font-size:0.88rem;font-weight:700;color:var(--white);margin-bottom:2px">React Hackathon 2026</div><div style="font-size:0.75rem;color:var(--gray-4)">Online · 48 hrs · ₹50K prize</div></div>
+        </div>
+        <button onclick="showToast('Registered for hackathon!','success')" class="btn btn-primary btn-sm w-full" style="justify-content:center;margin-top:10px">Register →</button>
+      </div>
+      <div class="event-card">
+        <div style="display:flex;gap:14px;align-items:center">
+          <div style="text-align:center;flex-shrink:0"><div class="event-date">18</div><div class="event-month">May</div></div>
+          <div><div style="font-size:0.88rem;font-weight:700;color:var(--white);margin-bottom:2px">AMA: Getting into Google</div><div style="font-size:0.75rem;color:var(--gray-4)">Live · Priya Rao (Google SDE-3)</div></div>
+        </div>
+        <button onclick="showToast('Reminder set!','success')" class="btn btn-ghost btn-sm w-full" style="justify-content:center;margin-top:10px">Set Reminder</button>
+      </div>
+      <div class="event-card">
+        <div style="display:flex;gap:14px;align-items:center">
+          <div style="text-align:center;flex-shrink:0"><div class="event-date">22</div><div class="event-month">May</div></div>
+          <div><div style="font-size:0.88rem;font-weight:700;color:var(--white);margin-bottom:2px">CSS Art Workshop</div><div style="font-size:0.75rem;color:var(--gray-4)">1 hr · Free · Beginner friendly</div></div>
+        </div>
+        <button onclick="showToast('Reminder set!','success')" class="btn btn-ghost btn-sm w-full" style="justify-content:center;margin-top:10px">Set Reminder</button>
+      </div>
+    </div>
+
+    <!-- Trending Tags -->
+    <div style="background:var(--black-3);border:1px solid var(--white-10);border-radius:var(--radius-lg);padding:16px">
+      <div style="font-family:var(--font-cond);font-size:0.75rem;font-weight:700;letter-spacing:0.12em;color:var(--gray-3);text-transform:uppercase;margin-bottom:12px">Trending Topics 🔥</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px">
+        <span class="tag-pill tag-web">#react</span>
+        <span class="tag-pill tag-general">#firstjob</span>
+        <span class="tag-pill tag-showcase">#portfolio</span>
+        <span class="tag-pill tag-question">#javascript</span>
+        <span class="tag-pill tag-career">#resumetips</span>
+        <span class="tag-pill tag-general">#100daysofcode</span>
+        <span class="tag-pill tag-web">#nodejs</span>
+        <span class="tag-pill tag-general">#leetcode</span>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- NEW POST MODAL -->
+<div class="modal-overlay" id="newPostModal">
+  <div class="modal" style="max-width:600px">
+    <div class="modal-header">
+      <h3 class="modal-title">Create a Post</h3>
+      <button class="modal-close" onclick="closeModal('newPostModal')">✕</button>
+    </div>
+    <div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:16px">
+      <div class="avatar" id="modalAvatar">LP</div>
+      <div style="flex:1">
+        <div style="font-weight:700;color:var(--white);margin-bottom:2px" id="modalName">Your Name</div>
+        <select style="background:var(--black-4);border:1px solid var(--gray-1);border-radius:var(--radius-full);color:var(--gray-4);padding:3px 10px;font-size:0.78rem;outline:none;cursor:pointer">
+          <option>🌐 Public</option><option>👥 Community Only</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <input class="form-input" id="postTitle" placeholder="Give your post a title (optional)…">
+    </div>
+    <div class="form-group">
+      <textarea class="form-textarea" id="postContent" placeholder="Share your question, project, win, or thought…" style="min-height:140px"></textarea>
+    </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px">
+      <span style="font-size:0.78rem;color:var(--gray-4);margin-right:4px">Tag:</span>
+      <div class="tag-pill tag-question" onclick="selectTag(this,'question')" style="cursor:pointer">❓ Question</div>
+      <div class="tag-pill tag-showcase" onclick="selectTag(this,'showcase')" style="cursor:pointer">🚀 Showcase</div>
+      <div class="tag-pill tag-career" onclick="selectTag(this,'career')" style="cursor:pointer">💼 Career</div>
+      <div class="tag-pill tag-web" onclick="selectTag(this,'webdev')" style="cursor:pointer">💻 Web Dev</div>
+      <div class="tag-pill tag-general" onclick="selectTag(this,'general')" style="cursor:pointer">💬 General</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <div style="display:flex;gap:6px;flex:1">
+        <button class="format-btn" title="Add image">🖼️</button>
+        <button class="format-btn" title="Add code block">💻</button>
+        <button class="format-btn" title="Add link">🔗</button>
+        <button class="format-btn" title="Bold">B</button>
+        <button class="format-btn" title="Italic" style="font-style:italic">I</button>
+      </div>
+      <button onclick="publishPost()" class="btn btn-primary">Publish Post →</button>
+    </div>
+  </div>
+</div>
+
+<!-- POST DETAIL MODAL -->
+<div class="modal-overlay" id="postDetailModal">
+  <div class="modal" style="max-width:640px;max-height:80vh;overflow-y:auto">
+    <div class="modal-header">
+      <h3 class="modal-title" id="detailTitle">Post</h3>
+      <button class="modal-close" onclick="closeModal('postDetailModal')">✕</button>
+    </div>
+    <div id="detailContent"></div>
+    <div style="margin-top:20px;border-top:1px solid var(--white-10);padding-top:16px">
+      <div style="font-family:var(--font-cond);font-size:0.8rem;font-weight:700;color:var(--gray-3);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:12px">Comments</div>
+      <div id="detailComments" style="margin-bottom:14px"></div>
+      <div style="display:flex;gap:10px">
+        <div class="avatar avatar-sm" id="detailCommentAvatar">LP</div>
+        <div style="flex:1;display:flex;gap:8px">
+          <input class="form-input" id="commentInput" placeholder="Write a comment…" style="border-radius:var(--radius-full);padding:10px 16px">
+          <button onclick="addComment()" class="btn btn-primary btn-sm">Post</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CHATBOT -->
+<button class="chatbot-fab">🤖</button>
+<div class="chatbot-panel">
+  <div class="chatbot-header">
+    <div style="display:flex;align-items:center;gap:10px"><span style="font-size:1.3rem">🤖</span><div><div style="font-weight:700;font-size:0.95rem">LearnBot</div></div></div>
+    <button onclick="document.querySelector('.chatbot-panel').classList.remove('open')" style="background:none;border:none;color:white;font-size:1.2rem;cursor:pointer">✕</button>
+  </div>
+  <div class="chatbot-messages"><div class="msg msg-bot">I can help you write a great community post, find relevant discussions, or answer your coding questions! 💬</div></div>
+  <div class="chatbot-input-area"><input class="chatbot-input" placeholder="Ask me anything…" type="text"><button class="chatbot-send">→</button></div>
+</div>
+
+<script src="../js/global.js"></script>
+<script>
+const user = LP.user();
+if (user) {
+  document.getElementById('navAvatar').textContent = user.avatar || 'LP';
+  document.getElementById('writeAvatar').textContent = user.avatar || 'LP';
+  document.getElementById('modalAvatar').textContent = user.avatar || 'LP';
+  document.getElementById('detailCommentAvatar').textContent = user.avatar || 'LP';
+  document.getElementById('modalName').textContent = user.name || 'Your Name';
+}
+
+let selectedTag = '';
+let currentPosts = [];
+
+const postsData = [
+  { id:1, author:'Arjun K.', initials:'AK', role:'Learning React', time:'2 hrs ago', tag:'question', tagLabel:'❓ Question', title:'How do I prevent useEffect from running on first render?', body:'I want useEffect to skip the initial render and only fire when my state changes. I tried using a ref as a flag but it feels hacky. Is there a cleaner way?', likes:18, comments:7, views:142, liked:false, channel:'webdev', codeBlock:'const isFirstRender = useRef(true);\nuseEffect(() => {\n  if (isFirstRender.current) {\n    isFirstRender.current = false; return;\n  }\n  // your logic here\n}, [dependency]);' },
+  { id:2, author:'Sneha M.', initials:'SM', role:'UI/UX Designer', time:'4 hrs ago', tag:'showcase', tagLabel:'🚀 Showcase', title:'Built my first portfolio website using HTML, CSS & vanilla JS — feedback welcome!', body:'After 2 months on LearnPro I finally shipped my portfolio! It has dark mode, smooth scroll, and a working contact form. Link in comments. Super nervous to share but here we go 🎉', likes:64, comments:23, views:480, liked:true, channel:'showcase' },
+  { id:3, author:'Rahul V.', initials:'RV', role:'Data Science Track', time:'6 hrs ago', tag:'career', tagLabel:'💼 Career', title:'Got my first data analyst internship! Here\'s what actually helped me land it', body:"After 5 months and 47 rejections, I finally got an offer from a fintech startup. I want to share the 3 things that made the difference: my GitHub, the mentor session with Arjun Kapoor, and the mock interview on this platform. Ask me anything.", likes:128, comments:42, views:1240, liked:false, channel:'career' },
+  { id:4, author:'Kavya N.', initials:'KN', role:'Full-Stack Track', time:'Yesterday', tag:'question', tagLabel:'❓ Question', title:'MongoDB vs PostgreSQL for a social media app — which one should I choose?', body:"I'm building a side project — a small Instagram-like app. I'm torn between MongoDB (flexible schema, already learning it) and PostgreSQL (more structured, better for relationships). What would you pick and why?", likes:31, comments:19, views:287, liked:false, channel:'webdev' },
+  { id:5, author:'Dev S.', initials:'DS', role:'Android Developer', time:'2 days ago', tag:'general', tagLabel:'💬 General', title:'My honest 6-month review of learning to code as a non-CS background person', body:"I was a hotel manager. Zero coding experience. Everyone told me it was impossible without a CS degree. 6 months later I have 12 GitHub repos, a working MERN stack app, and 2 job interviews scheduled. The roadmap on this platform was the game changer.", likes:203, comments:67, views:2100, liked:true, channel:'general' },
+  { id:6, author:'Pooja J.', initials:'PJ', role:'ML Engineer Track', time:'3 days ago', tag:'showcase', tagLabel:'🚀 Showcase', title:'Built an AI image classifier using Python + TensorFlow — 94% accuracy on custom dataset', body:"Trained a CNN on 5000 images of Indian street food to classify 20 categories. Used transfer learning from MobileNetV2. Deployed on Hugging Face Spaces. Full code on GitHub!", likes:87, comments:34, views:760, liked:false, channel:'showcase' },
+];
+
+let savedPosts = LP.get('savedPosts') || [];
+
+function renderPosts(posts) {
+  const feed = document.getElementById('postsFeed');
+  feed.innerHTML = posts.map(p => `
+    <div class="post-card" id="post${p.id}">
+      <div class="post-header">
+        <div class="avatar avatar-sm">${p.initials}</div>
+        <div style="flex:1">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <strong style="font-size:0.88rem;color:var(--white)">${p.author}</strong>
+            <span style="font-size:0.75rem;color:var(--gray-4)">${p.role}</span>
+            <span style="font-size:0.75rem;color:var(--gray-3)">· ${p.time}</span>
+          </div>
+          <div style="margin-top:4px"><span class="tag-pill tag-${p.tag}" style="font-size:0.68rem">${p.tagLabel}</span></div>
+        </div>
+      </div>
+      <div class="post-title" onclick="openPost(${p.id})">${p.title}</div>
+      <div class="post-body">${p.body.length > 180 ? p.body.slice(0,180) + '… <span style="color:var(--red-light);cursor:pointer" onclick="openPost('+p.id+')">Read more</span>' : p.body}</div>
+      <div class="post-actions">
+        <button class="post-action ${p.liked?'liked':''}" onclick="toggleLike(${p.id},this)">
+          ${p.liked?'❤️':'🤍'} <span class="like-count">${p.likes}</span>
+        </button>
+        <button class="post-action" onclick="openPost(${p.id})">💬 ${p.comments}</button>
+        <button class="post-action">👁 ${p.views}</button>
+        <button class="post-action" onclick="sharePost(${p.id})">🔗 Share</button>
+        <button class="post-action ${savedPosts.includes(p.id)?'liked':''}" onclick="savePost(${p.id},this)">${savedPosts.includes(p.id)?'⭐':'☆'} Save</button>
+      </div>
+    </div>`).join('');
+}
+
+function toggleLike(id, btn) {
+  const post = postsData.find(p => p.id === id);
+  if (!post) return;
+  post.liked = !post.liked;
+  post.likes += post.liked ? 1 : -1;
+  btn.innerHTML = `${post.liked?'❤️':'🤍'} <span class="like-count">${post.likes}</span>`;
+  btn.classList.toggle('liked', post.liked);
+}
+
+function savePost(id, btn) {
+  if (savedPosts.includes(id)) {
+    savedPosts = savedPosts.filter(i => i !== id);
+    btn.textContent = '☆ Save'; btn.classList.remove('liked');
+  } else {
+    savedPosts.push(id);
+    btn.textContent = '⭐ Save'; btn.classList.add('liked');
+    showToast('Post saved!', 'success');
+  }
+  LP.set('savedPosts', savedPosts);
+}
+
+function sharePost(id) {
+  navigator.clipboard?.writeText(window.location.href + '#post' + id);
+  showToast('Link copied to clipboard!', 'success');
+}
+
+function openPost(id) {
+  const post = postsData.find(p => p.id === id);
+  if (!post) return;
+  document.getElementById('detailTitle').textContent = post.title;
+  document.getElementById('detailContent').innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+      <div class="avatar avatar-sm">${post.initials}</div>
+      <div><strong style="color:var(--white)">${post.author}</strong> <span style="font-size:0.78rem;color:var(--gray-4)">· ${post.time}</span></div>
+    </div>
+    <p style="font-size:0.9rem;color:var(--gray-5);line-height:1.8;margin-bottom:14px">${post.body}</p>
+    ${post.codeBlock ? `<pre style="background:var(--black-4);border:1px solid var(--white-10);border-radius:var(--radius);padding:14px;font-size:0.82rem;color:#10b981;overflow-x:auto;margin-bottom:14px">${post.codeBlock}</pre>` : ''}`;
+  document.getElementById('detailComments').innerHTML = [
+    { initials:'MK', name:'Meena K.', text:'You can also use a custom hook for this — wraps up really cleanly.', time:'1 hr ago' },
+    { initials:'RV', name:'Rahul V.', text:'The ref approach is actually the recommended pattern. Not hacky at all!', time:'45 min ago' },
+  ].map(c => `<div style="display:flex;gap:10px;margin-bottom:12px"><div class="avatar avatar-sm">${c.initials}</div><div style="background:var(--black-4);border-radius:var(--radius);padding:10px 14px;flex:1"><div style="font-size:0.8rem;font-weight:700;color:var(--white);margin-bottom:4px">${c.name} <span style="color:var(--gray-4);font-weight:400">· ${c.time}</span></div><div style="font-size:0.85rem;color:var(--gray-5)">${c.text}</div></div></div>`).join('');
+  openModal('postDetailModal');
+}
+
+function addComment() {
+  const val = document.getElementById('commentInput').value.trim();
+  if (!val) return;
+  const div = document.createElement('div');
+  div.innerHTML = `<div style="display:flex;gap:10px;margin-bottom:12px"><div class="avatar avatar-sm">${user?.avatar||'LP'}</div><div style="background:var(--black-4);border-radius:var(--radius);padding:10px 14px;flex:1"><div style="font-size:0.8rem;font-weight:700;color:var(--white);margin-bottom:4px">${user?.name||'You'} <span style="color:var(--gray-4);font-weight:400">· Just now</span></div><div style="font-size:0.85rem;color:var(--gray-5)">${val}</div></div></div>`;
+  document.getElementById('detailComments').appendChild(div);
+  document.getElementById('commentInput').value = '';
+  showToast('Comment posted!', 'success');
+}
+
+let selectedTagVal = '';
+function selectTag(el, tag) {
+  document.querySelectorAll('#newPostModal .tag-pill').forEach(t => t.style.boxShadow = '');
+  el.style.boxShadow = '0 0 0 2px var(--red)';
+  selectedTagVal = tag;
+}
+
+function publishPost() {
+  const title = document.getElementById('postTitle').value;
+  const body = document.getElementById('postContent').value;
+  if (!body.trim()) { showToast('Write something before posting!', 'error'); return; }
+  const newPost = {
+    id: postsData.length + 1,
+    author: user?.name || 'You',
+    initials: user?.avatar || 'LP',
+    role: user?.targetRole || 'Learner',
+    time: 'Just now',
+    tag: selectedTagVal || 'general',
+    tagLabel: selectedTagVal === 'question' ? '❓ Question' : selectedTagVal === 'showcase' ? '🚀 Showcase' : selectedTagVal === 'career' ? '💼 Career' : '💬 General',
+    title: title || body.slice(0,60),
+    body,
+    likes: 0, comments: 0, views: 1, liked: false, channel: 'general'
+  };
+  postsData.unshift(newPost);
+  closeModal('newPostModal');
+  document.getElementById('postTitle').value = '';
+  document.getElementById('postContent').value = '';
+  renderPosts(postsData);
+  showToast('Post published! 🎉', 'success');
+}
+
+function setChannelChip(el, channel) {
+  document.querySelectorAll('.tag-pill').forEach(t => { t.style.background=''; t.style.borderColor=''; t.style.color=''; });
+  el.style.background = 'var(--red-subtle)'; el.style.borderColor = 'var(--red)'; el.style.color = 'var(--red-light)';
+  const filtered = channel === 'all' ? postsData : postsData.filter(p => p.channel === channel || p.tag === channel);
+  renderPosts(filtered);
+}
+
+function setChannel(el, ch) {
+  document.querySelectorAll('.channel-item').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function sortPosts(val) {
+  const sorted = [...postsData].sort((a,b) => val === 'top' ? b.likes-a.likes : val === 'new' ? b.id-a.id : (b.likes+b.comments)-( a.likes+a.comments));
+  renderPosts(sorted);
+}
+
+function loadMorePosts() { showToast('Loading more posts…', 'info'); }
+
+currentPosts = postsData;
+renderPosts(currentPosts);
+</script>
+</body>
+</html>

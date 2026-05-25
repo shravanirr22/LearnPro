@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Resources Hub — LearnPro</title>
+<link rel="stylesheet" href="../css/global.css">
+<style>
+.resources-layout { display:flex; gap:0; }
+.filters-panel { width:260px; flex-shrink:0; padding:24px 16px; border-right:1px solid var(--white-10); min-height:calc(100vh - var(--nav-h)); position:sticky; top:var(--nav-h); height:calc(100vh - var(--nav-h)); overflow-y:auto; }
+.resources-main { flex:1; padding:32px; }
+
+.filter-section { margin-bottom:24px; }
+.filter-title { font-family:var(--font-cond); font-size:0.75rem; font-weight:700; letter-spacing:0.15em; text-transform:uppercase; color:var(--gray-3); margin-bottom:10px; }
+.filter-chip { display:inline-flex; align-items:center; gap:6px; padding:6px 12px; border-radius:var(--radius-full); border:1px solid var(--gray-1); background:var(--black-4); color:var(--gray-5); font-size:0.8rem; cursor:pointer; margin:3px; transition:all var(--transition); font-family:var(--font-cond); font-weight:600; }
+.filter-chip:hover, .filter-chip.active { border-color:var(--red); background:var(--red-subtle); color:var(--red-light); }
+
+.resource-card { background:var(--black-3); border:1px solid var(--white-10); border-radius:var(--radius-lg); overflow:hidden; transition:all var(--transition); }
+.resource-card:hover { border-color:var(--red); box-shadow:0 0 20px var(--red-glow); transform:translateY(-3px); }
+.resource-thumb { width:100%; height:160px; background:var(--black-5); position:relative; overflow:hidden; }
+.resource-thumb img { width:100%; height:100%; object-fit:cover; }
+.resource-thumb-placeholder { width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:3rem; background:linear-gradient(135deg,var(--black-4),var(--black-5)); }
+.resource-source-badge { position:absolute; top:10px; left:10px; padding:3px 10px; border-radius:var(--radius-full); font-family:var(--font-cond); font-size:0.72rem; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; }
+.src-youtube { background:rgba(255,0,0,0.8); color:white; }
+.src-blog { background:rgba(16,185,129,0.8); color:white; }
+.src-reddit { background:rgba(255,69,0,0.8); color:white; }
+.src-github { background:rgba(100,100,100,0.8); color:white; }
+.src-linkedin { background:rgba(10,102,194,0.8); color:white; }
+.resource-body { padding:16px; }
+.resource-title { font-size:0.95rem; font-weight:700; color:var(--white); margin-bottom:6px; line-height:1.4; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.resource-meta { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+.resource-tag { font-size:0.72rem; color:var(--gray-4); background:var(--black-5); padding:2px 8px; border-radius:var(--radius-full); }
+.resource-time { font-size:0.75rem; color:var(--gray-4); }
+
+.search-bar { display:flex; gap:10px; margin-bottom:28px; }
+.search-input { flex:1; padding:13px 18px; background:var(--black-3); border:1.5px solid var(--gray-1); border-radius:var(--radius-full); color:var(--white); font-size:0.95rem; outline:none; transition:all var(--transition); font-family:var(--font-body); }
+.search-input:focus { border-color:var(--red); box-shadow:0 0 0 3px var(--red-glow); }
+.search-btn { padding:13px 24px; background:var(--red); border:none; border-radius:var(--radius-full); color:var(--white); font-family:var(--font-cond); font-size:0.95rem; font-weight:700; letter-spacing:0.06em; cursor:pointer; transition:all var(--transition); }
+.search-btn:hover { background:var(--red-light); }
+
+.section-source-tabs { display:flex; gap:8px; margin-bottom:24px; flex-wrap:wrap; }
+.source-tab { display:flex; align-items:center; gap:6px; padding:8px 16px; border-radius:var(--radius-full); border:1.5px solid var(--gray-1); background:var(--black-4); color:var(--gray-5); font-family:var(--font-cond); font-size:0.85rem; font-weight:700; cursor:pointer; transition:all var(--transition); letter-spacing:0.04em; }
+.source-tab.active, .source-tab:hover { border-color:var(--red); background:var(--red-subtle); color:var(--red-light); }
+.source-tab .dot { width:8px; height:8px; border-radius:50%; }
+
+.resources-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; }
+.bookmark-btn { background:none; border:none; font-size:1.1rem; cursor:pointer; transition:transform var(--transition); padding:4px; }
+.bookmark-btn:hover { transform:scale(1.2); }
+.bookmark-btn.saved { color:#f59e0b; }
+
+/* YouTube embed preview */
+.yt-play { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:44px; height:44px; background:rgba(255,0,0,0.85); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.1rem; pointer-events:none; }
+
+@media(max-width:1100px) { .resources-grid { grid-template-columns:repeat(2,1fr); } }
+@media(max-width:768px) { .filters-panel { display:none; } .resources-grid { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="../index.html" class="nav-logo">LEARN<span>PRO</span></a>
+  <div class="nav-links">
+    <a href="dashboard.html" class="nav-link">Dashboard</a>
+    <a href="resources.html" class="nav-link active">Resources</a>
+    <a href="jobs.html" class="nav-link">Jobs</a>
+    <a href="mentors.html" class="nav-link">Mentors</a>
+    <a href="courses.html" class="nav-link">Courses</a>
+    <a href="community.html" class="nav-link">Community</a>
+  </div>
+  <div class="nav-actions">
+    <a href="dashboard.html" class="btn btn-ghost btn-sm">Dashboard</a>
+    <div class="avatar" id="navAvatar">LP</div>
+  </div>
+</nav>
+
+<div style="padding-top:var(--nav-h); display:flex">
+
+  <!-- FILTERS PANEL -->
+  <aside class="filters-panel">
+    <div style="font-family:var(--font-cond);font-weight:700;font-size:1.05rem;color:var(--white);margin-bottom:20px;letter-spacing:0.04em">FILTERS</div>
+
+    <div class="filter-section">
+      <div class="filter-title">Source</div>
+      <div class="filter-chip active" onclick="toggleFilter(this,'source','all')">All Sources</div>
+      <div class="filter-chip" onclick="toggleFilter(this,'source','youtube')">▶ YouTube</div>
+      <div class="filter-chip" onclick="toggleFilter(this,'source','blog')">✍ Blogs</div>
+      <div class="filter-chip" onclick="toggleFilter(this,'source','reddit')">💬 Reddit</div>
+      <div class="filter-chip" onclick="toggleFilter(this,'source','github')">⌥ GitHub</div>
+      <div class="filter-chip" onclick="toggleFilter(this,'source','linkedin')">in LinkedIn</div>
+    </div>
+
+    <div class="filter-section">
+      <div class="filter-title">Difficulty</div>
+      <div class="filter-chip active" onclick="toggleFilter(this,'diff','all')">All Levels</div>
+      <div class="filter-chip" onclick="toggleFilter(this,'diff','beginner')">🟢 Beginner</div>
+      <div class="filter-chip" onclick="toggleFilter(this,'diff','intermediate')">🟡 Intermediate</div>
+      <div class="filter-chip" onclick="toggleFilter(this,'diff','advanced')">🔴 Advanced</div>
+    </div>
+
+    <div class="filter-section">
+      <div class="filter-title">Topic</div>
+      <div class="filter-chip active" onclick="toggleFilter(this,'topic','all')">All Topics</div>
+      <div class="filter-chip" onclick="toggleFilter(this,'topic','html-css')">HTML/CSS</div>
+      <div class="filter-chip" onclick="toggleFilter(this,'topic','javascript')">JavaScript</div>
+      <div class="filter-chip" onclick="toggleFilter(this,'topic','react')">React</div>
+      <div class="filter-chip" onclick="toggleFilter(this,'topic','node')">Node.js</div>
+      <div class="filter-chip" onclick="toggleFilter(this,'topic','python')">Python</div>
+      <div class="filter-chip" onclick="toggleFilter(this,'topic','sql')">SQL</div>
+      <div class="filter-chip" onclick="toggleFilter(this,'topic','git')">Git</div>
+      <div class="filter-chip" onclick="toggleFilter(this,'topic','career')">Career</div>
+    </div>
+
+    <div class="filter-section">
+      <div class="filter-title">Duration</div>
+      <div class="filter-chip active" onclick="toggleFilter(this,'dur','all')">Any Length</div>
+      <div class="filter-chip" onclick="toggleFilter(this,'dur','short')">Under 10 min</div>
+      <div class="filter-chip" onclick="toggleFilter(this,'dur','medium')">10–30 min</div>
+      <div class="filter-chip" onclick="toggleFilter(this,'dur','long')">30+ min</div>
+    </div>
+
+    <div class="filter-section">
+      <div class="filter-title">Cost</div>
+      <div class="filter-chip active" onclick="toggleFilter(this,'cost','all')">All</div>
+      <div class="filter-chip" onclick="toggleFilter(this,'cost','free')">🆓 Free</div>
+      <div class="filter-chip" onclick="toggleFilter(this,'cost','paid')">💳 Paid</div>
+    </div>
+
+    <button onclick="clearFilters()" class="btn btn-ghost btn-sm w-full" style="justify-content:center;margin-top:8px">Clear All Filters</button>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <div class="resources-main">
+    <!-- Search -->
+    <div class="search-bar">
+      <input class="search-input" id="searchInput" placeholder="Search resources, topics, skills…" oninput="filterResources()">
+      <button class="search-btn" onclick="fetchYouTube()">🔍 Search YouTube</button>
+    </div>
+
+    <!-- Source Tabs -->
+    <div class="section-source-tabs">
+      <div class="source-tab active" onclick="setSourceTab(this,'all')"><span class="dot" style="background:var(--red)"></span> All</div>
+      <div class="source-tab" onclick="setSourceTab(this,'youtube')"><span class="dot" style="background:#ff0000"></span> YouTube</div>
+      <div class="source-tab" onclick="setSourceTab(this,'blog')"><span class="dot" style="background:#10b981"></span> Blogs</div>
+      <div class="source-tab" onclick="setSourceTab(this,'reddit')"><span class="dot" style="background:#ff4500"></span> Reddit</div>
+      <div class="source-tab" onclick="setSourceTab(this,'github')"><span class="dot" style="background:#888"></span> GitHub</div>
+      <div class="source-tab" onclick="setSourceTab(this,'saved')"><span class="dot" style="background:#f59e0b"></span> Saved ⭐</div>
+    </div>
+
+    <!-- Stats row -->
+    <div style="display:flex;gap:16px;margin-bottom:24px;flex-wrap:wrap">
+      <div style="font-size:0.85rem;color:var(--gray-4)">Showing <strong id="resultCount" style="color:var(--white)">24</strong> resources</div>
+      <div style="font-size:0.85rem;color:var(--gray-4)">Matched to your roadmap: <strong style="color:var(--red-light)">React.js → Node.js</strong></div>
+      <div style="margin-left:auto">
+        <select onchange="sortResources(this.value)" style="background:var(--black-4);border:1px solid var(--gray-1);color:var(--white);padding:6px 12px;border-radius:var(--radius);font-size:0.82rem;outline:none;cursor:pointer">
+          <option value="relevant">Most Relevant</option>
+          <option value="newest">Newest First</option>
+          <option value="popular">Most Popular</option>
+          <option value="shortest">Shortest First</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Resources Grid -->
+    <div class="resources-grid" id="resourcesGrid"></div>
+
+    <!-- Load More -->
+    <div style="text-align:center;margin-top:36px">
+      <button onclick="loadMore()" class="btn btn-outline">Load More Resources</button>
+    </div>
+  </div>
+</div>
+
+<!-- CHATBOT -->
+<button class="chatbot-fab">🤖</button>
+<div class="chatbot-panel">
+  <div class="chatbot-header">
+    <div style="display:flex;align-items:center;gap:10px"><span style="font-size:1.3rem">🤖</span><div><div style="font-weight:700;font-size:0.95rem">LearnBot</div><div style="font-size:0.75rem;opacity:0.8">AI Resource Finder</div></div></div>
+    <button onclick="document.querySelector('.chatbot-panel').classList.remove('open')" style="background:none;border:none;color:white;font-size:1.2rem;cursor:pointer">✕</button>
+  </div>
+  <div class="chatbot-messages">
+    <div class="msg msg-bot">Looking for a specific resource? Describe what you want to learn and I'll find the best options for you! 📚</div>
+  </div>
+  <div class="chatbot-input-area">
+    <input class="chatbot-input" placeholder="e.g. React hooks tutorial for beginners" type="text">
+    <button class="chatbot-send">→</button>
+  </div>
+</div>
+
+<script src="../js/global.js"></script>
+<script>
+const user = LP.user();
+if (user) document.getElementById('navAvatar').textContent = user.avatar || 'LP';
+
+// ── RESOURCE DATA ── (In production: fetch from YouTube API, Reddit API, Dev.to API etc.)
+const resourcesData = [
+  { id:1, title:'React Hooks Explained – useState, useEffect, useContext', source:'youtube', topic:'react', diff:'beginner', duration:'18 min', cost:'free', thumb:'▶️', ytId:'TNhaISOUy6Q', url:'https://youtube.com/watch?v=TNhaISOUy6Q', author:'Traversy Media', views:'2.1M views', saved:false },
+  { id:2, title:'JavaScript Async/Await Full Guide with Real Examples', source:'youtube', topic:'javascript', diff:'intermediate', duration:'24 min', cost:'free', thumb:'▶️', ytId:'V_Kr9OSfDeU', url:'https://youtube.com/watch?v=V_Kr9OSfDeU', author:'Fireship', views:'890K views', saved:false },
+  { id:3, title:'Complete CSS Grid Tutorial – Build Real Layouts', source:'youtube', topic:'html-css', diff:'beginner', duration:'34 min', cost:'free', thumb:'▶️', ytId:'0xMQfnTU6oo', url:'https://youtube.com/watch?v=0xMQfnTU6oo', author:'Kevin Powell', views:'1.3M views', saved:false },
+  { id:4, title:'Node.js & Express Crash Course for Beginners', source:'youtube', topic:'node', diff:'beginner', duration:'45 min', cost:'free', thumb:'▶️', ytId:'fBNz5xF-Kx4', url:'https://youtube.com/watch?v=fBNz5xF-Kx4', author:'Traversy Media', views:'3.4M views', saved:false },
+  { id:5, title:'The Complete Guide to Flexbox – Every Property Explained', source:'blog', topic:'html-css', diff:'beginner', duration:'12 min read', cost:'free', thumb:'📝', url:'https://css-tricks.com/snippets/css/a-guide-to-flexbox/', author:'CSS-Tricks', views:'42M views', saved:false },
+  { id:6, title:'I Studied Full-Stack Development for 6 Months: Here\'s My Honest Take', source:'reddit', topic:'career', diff:'beginner', duration:'8 min read', cost:'free', thumb:'💬', url:'https://reddit.com/r/learnprogramming', author:'r/learnprogramming · 4.2k upvotes', views:'', saved:false },
+  { id:7, title:'Python for Data Science — Complete Beginner to Pro Roadmap', source:'blog', topic:'python', diff:'beginner', duration:'20 min read', cost:'free', thumb:'🐍', url:'https://towardsdatascience.com', author:'Towards Data Science', views:'', saved:false },
+  { id:8, title:'SQL for Beginners: Complete Database Tutorial', source:'youtube', topic:'sql', diff:'beginner', duration:'4 hr', cost:'free', thumb:'▶️', ytId:'HXV3zeQKqGY', url:'https://youtube.com/watch?v=HXV3zeQKqGY', author:'freeCodeCamp', views:'4.1M views', saved:false },
+  { id:9, title:'Git & GitHub Full Course – Branches, PRs, Merge Conflicts', source:'youtube', topic:'git', diff:'beginner', duration:'1 hr 20 min', cost:'free', thumb:'▶️', ytId:'RGOj5yH7evk', url:'https://youtube.com/watch?v=RGOj5yH7evk', author:'freeCodeCamp', views:'2.8M views', saved:false },
+  { id:10, title:'How to Get Your First Dev Job in India (2026 Guide)', source:'blog', topic:'career', diff:'beginner', duration:'15 min read', cost:'free', thumb:'💼', url:'https://dev.to', author:'Dev.to · Rahul Mehta', views:'', saved:false },
+  { id:11, title:'Top 50 React Interview Questions (2026)', source:'github', topic:'react', diff:'intermediate', duration:'30 min read', cost:'free', thumb:'⌥', url:'https://github.com/sudheerj/reactjs-interview-questions', author:'sudheerj/reactjs-interview-questions · ★ 38k', views:'', saved:false },
+  { id:12, title:'Build a Full-Stack App with React + Node + MongoDB', source:'youtube', topic:'react', diff:'intermediate', duration:'3 hr 10 min', cost:'free', thumb:'▶️', ytId:'ktjafK4SgWM', url:'https://youtube.com/watch?v=ktjafK4SgWM', author:'JavaScript Mastery', views:'1.6M views', saved:false },
+];
+
+let activeSource = 'all';
+let savedIds = LP.get('savedResources') || [];
+
+function renderResources(data) {
+  const grid = document.getElementById('resourcesGrid');
+  document.getElementById('resultCount').textContent = data.length;
+  grid.innerHTML = '';
+  if (!data.length) {
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--gray-4)"><div style="font-size:3rem;margin-bottom:12px">🔍</div><p>No resources found. Try different filters.</p></div>';
+    return;
+  }
+  data.forEach(r => {
+    const isSaved = savedIds.includes(r.id);
+    const srcColors = { youtube:'src-youtube', blog:'src-blog', reddit:'src-reddit', github:'src-github', linkedin:'src-linkedin' };
+    const srcLabels = { youtube:'▶ YouTube', blog:'✍ Blog', reddit:'💬 Reddit', github:'⌥ GitHub', linkedin:'in LinkedIn' };
+    grid.innerHTML += `
+    <div class="resource-card" data-source="${r.source}" data-topic="${r.topic}" data-diff="${r.diff}" data-cost="${r.cost}">
+      <div class="resource-thumb">
+        ${r.source === 'youtube' && r.ytId
+          ? `<img src="https://img.youtube.com/vi/${r.ytId}/mqdefault.jpg" alt="${r.title}" onerror="this.parentElement.innerHTML='<div class=resource-thumb-placeholder>${r.thumb}</div>'">`
+          : `<div class="resource-thumb-placeholder">${r.thumb}</div>`}
+        <span class="resource-source-badge ${srcColors[r.source]}">${srcLabels[r.source]}</span>
+        ${r.source === 'youtube' ? '<div class="yt-play">▶</div>' : ''}
+      </div>
+      <div class="resource-body">
+        <div class="resource-title">${r.title}</div>
+        <div style="font-size:0.78rem;color:var(--gray-4);margin-bottom:8px">${r.author}</div>
+        <div class="resource-meta">
+          <span class="resource-tag">${r.topic}</span>
+          <span class="resource-tag">${r.diff}</span>
+          <span class="resource-time">⏱ ${r.duration}</span>
+          <span class="resource-tag" style="${r.cost==='free'?'color:#10b981':'color:#f59e0b'}">${r.cost}</span>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:12px">
+          <a href="${r.url}" target="_blank" class="btn btn-ghost btn-sm">Open Resource ↗</a>
+          <button class="bookmark-btn ${isSaved?'saved':''}" onclick="toggleSave(${r.id},this)" title="${isSaved?'Remove bookmark':'Save'}">${isSaved?'⭐':'☆'}</button>
+        </div>
+      </div>
+    </div>`;
+  });
+}
+
+function filterResources() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  let data = resourcesData.filter(r => {
+    const matchSrc = activeSource === 'all' || (activeSource === 'saved' ? savedIds.includes(r.id) : r.source === activeSource);
+    const matchQ = !q || r.title.toLowerCase().includes(q) || r.topic.includes(q) || r.author.toLowerCase().includes(q);
+    return matchSrc && matchQ;
+  });
+  renderResources(data);
+}
+
+function setSourceTab(el, src) {
+  document.querySelectorAll('.source-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  activeSource = src;
+  filterResources();
+}
+
+function toggleSave(id, btn) {
+  if (savedIds.includes(id)) {
+    savedIds = savedIds.filter(i => i !== id);
+    btn.textContent = '☆'; btn.classList.remove('saved');
+    showToast('Removed from saved', 'info');
+  } else {
+    savedIds.push(id);
+    btn.textContent = '⭐'; btn.classList.add('saved');
+    showToast('Resource saved! ⭐', 'success');
+  }
+  LP.set('savedResources', savedIds);
+}
+
+function toggleFilter(el, group, val) {
+  document.querySelectorAll(`.filter-chip[onclick*="'${group}'"]`).forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  filterResources();
+}
+
+function clearFilters() {
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  document.querySelectorAll('.filter-chip[onclick*="'all'"]').forEach(c => c.classList.add('active'));
+  filterResources();
+}
+
+function sortResources(val) { filterResources(); }
+
+function loadMore() { showToast('Loading more resources…', 'info'); }
+
+// ── YOUTUBE API SEARCH ──
+// Replace YOUR_YOUTUBE_API_KEY with your actual YouTube Data API v3 key
+async function fetchYouTube() {
+  const q = document.getElementById('searchInput').value || 'web development tutorial';
+  showToast('Searching YouTube…', 'info');
+  try {
+    const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(q)}&type=video&maxResults=6&key=YOUR_YOUTUBE_API_KEY`);
+    const data = await res.json();
+    if (data.items) {
+      const ytResults = data.items.map((item, i) => ({
+        id: 100 + i,
+        title: item.snippet.title,
+        source: 'youtube',
+        topic: 'search',
+        diff: 'all',
+        duration: 'YouTube',
+        cost: 'free',
+        thumb: '▶️',
+        ytId: item.id.videoId,
+        url: `https://youtube.com/watch?v=${item.id.videoId}`,
+        author: item.snippet.channelTitle,
+        views: '',
+        saved: false
+      }));
+      renderResources(ytResults);
+      showToast(`Found ${ytResults.length} YouTube videos`, 'success');
+    } else {
+      showToast('Add your YouTube API key to enable live search', 'error');
+      filterResources();
+    }
+  } catch {
+    showToast('Add YOUR_YOUTUBE_API_KEY to enable live YouTube search', 'error');
+    filterResources();
+  }
+}
+
+// Init
+renderResources(resourcesData);
+</script>
+</body>
+</html>

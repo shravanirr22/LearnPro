@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>404 — LearnPro</title>
+<link rel="stylesheet" href="../css/global.css">
+<style>
+.page-404 { min-height:100vh; display:flex; align-items:center; justify-content:center; flex-direction:column; text-align:center; padding:40px; background:radial-gradient(ellipse 60% 50% at 50% 50%,rgba(180,18,27,0.1),transparent); }
+.err-code { font-family:var(--font-display); font-size:clamp(8rem,20vw,14rem); color:rgba(255,255,255,0.04); line-height:1; position:absolute; pointer-events:none; user-select:none; }
+.err-content { position:relative; z-index:1; }
+.err-icon { font-size:4rem; margin-bottom:16px; animation:float2 4s ease-in-out infinite; }
+@keyframes float2 { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-14px)} }
+</style>
+</head>
+<body>
+<div class="page-404">
+  <div class="err-code">404</div>
+  <div class="err-content">
+    <div class="err-icon">🗺️</div>
+    <h1 style="font-family:var(--font-display);font-size:3rem;color:var(--white);margin-bottom:8px">PAGE NOT FOUND</h1>
+    <p style="color:var(--gray-4);max-width:400px;margin:0 auto 28px">This page went on a learning journey and got lost. Let's get you back on track.</p>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+      <a href="../index.html" class="btn btn-primary">← Back to Home</a>
+      <a href="dashboard.html" class="btn btn-outline">Go to Dashboard</a>
+    </div>
+  </div>
+</div>
+<script src="../js/global.js"></script>
+</body>
+</html>

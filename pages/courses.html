@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Courses — LearnPro</title>
+<link rel="stylesheet" href="../css/global.css">
+<style>
+.course-card { background:var(--black-3); border:1px solid var(--white-10); border-radius:var(--radius-xl); overflow:hidden; transition:all var(--transition); }
+.course-card:hover { border-color:var(--red); box-shadow:0 0 20px var(--red-glow); transform:translateY(-4px); }
+.course-thumb { width:100%; height:180px; background:linear-gradient(135deg,var(--black-4),var(--black-5)); position:relative; display:flex; align-items:center; justify-content:center; font-size:3.5rem; }
+.course-thumb .level-badge { position:absolute; top:12px; left:12px; }
+.course-thumb .duration-badge { position:absolute; bottom:12px; right:12px; background:rgba(0,0,0,0.8); padding:4px 10px; border-radius:var(--radius-full); font-size:0.75rem; color:var(--white); font-family:var(--font-cond); font-weight:700; }
+.course-body { padding:18px; }
+.course-title { font-size:1rem; font-weight:700; color:var(--white); margin-bottom:6px; line-height:1.3; }
+.course-instructor { font-size:0.8rem; color:var(--gray-4); margin-bottom:10px; }
+.course-meta { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:12px; }
+.course-rating { font-size:0.8rem; color:#f59e0b; }
+.course-enrolled { font-size:0.78rem; color:var(--gray-4); }
+.enroll-btn { width:100%; justify-content:center; }
+
+/* Course Player */
+.player-layout { display:grid; grid-template-columns:1fr 340px; gap:0; min-height:calc(100vh - var(--nav-h)); }
+.player-main { padding:24px; }
+.video-container { background:var(--black); border-radius:var(--radius-lg); overflow:hidden; aspect-ratio:16/9; position:relative; margin-bottom:20px; }
+.video-container iframe { width:100%; height:100%; border:none; }
+.video-placeholder { width:100%; height:100%; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:12px; background:var(--black-3); cursor:pointer; }
+.play-btn-big { width:70px; height:70px; background:var(--red); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.8rem; box-shadow:var(--shadow-red); transition:all var(--transition); }
+.play-btn-big:hover { transform:scale(1.1); }
+
+.lesson-sidebar { border-left:1px solid var(--white-10); overflow-y:auto; max-height:calc(100vh - var(--nav-h)); }
+.lesson-header { padding:18px 20px; border-bottom:1px solid var(--white-10); position:sticky; top:0; background:var(--black-2); z-index:10; }
+.lesson-list { }
+.module-header { padding:12px 20px; background:var(--black-4); border-bottom:1px solid var(--white-5); font-family:var(--font-cond); font-size:0.82rem; font-weight:700; letter-spacing:0.06em; color:var(--gray-4); text-transform:uppercase; display:flex; justify-content:space-between; cursor:pointer; }
+.lesson-item { padding:12px 20px; display:flex; align-items:center; gap:12px; cursor:pointer; transition:all var(--transition); border-bottom:1px solid var(--white-5); }
+.lesson-item:hover, .lesson-item.active { background:var(--red-subtle); }
+.lesson-item.active .lesson-title { color:var(--red-light); }
+.lesson-check { width:22px; height:22px; border-radius:50%; border:2px solid var(--gray-2); display:flex; align-items:center; justify-content:center; font-size:0.7rem; flex-shrink:0; transition:all var(--transition); }
+.lesson-check.done { background:var(--red-dark); border-color:var(--red-dark); color:var(--white); }
+.lesson-check.active-lesson { border-color:var(--red); color:var(--red); }
+.lesson-title { font-size:0.85rem; color:var(--white-70); flex:1; line-height:1.3; }
+.lesson-duration { font-size:0.72rem; color:var(--gray-4); flex-shrink:0; }
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="../index.html" class="nav-logo">LEARN<span>PRO</span></a>
+  <div class="nav-links">
+    <a href="dashboard.html" class="nav-link">Dashboard</a>
+    <a href="resources.html" class="nav-link">Resources</a>
+    <a href="jobs.html" class="nav-link">Jobs</a>
+    <a href="mentors.html" class="nav-link">Mentors</a>
+    <a href="courses.html" class="nav-link active">Courses</a>
+    <a href="community.html" class="nav-link">Community</a>
+  </div>
+  <div class="nav-actions"><div class="avatar" id="navAvatar">LP</div></div>
+</nav>
+
+<div style="padding-top:var(--nav-h)" id="coursesPage">
+  <div style="padding:32px;max-width:1300px;margin:0 auto">
+    <div class="section-header" style="margin-bottom:32px">
+      <span class="section-tag">Learning Engine</span>
+      <h1 style="font-size:2.2rem;color:var(--white)">Courses on your <span style="color:var(--red)">roadmap</span></h1>
+      <p style="color:var(--gray-4)">Structured learning paths built for your target role. Complete, earn XP, unlock certificates.</p>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs" id="courseTabs">
+      <button class="tab-btn active" data-tab="my-courses">My Courses</button>
+      <button class="tab-btn" data-tab="all-courses">All Courses</button>
+      <button class="tab-btn" data-tab="certificates">Certificates</button>
+    </div>
+
+    <!-- My Courses -->
+    <div class="tab-content active" id="my-courses">
+      <div class="grid-3" id="myCoursesGrid"></div>
+    </div>
+
+    <!-- All Courses -->
+    <div class="tab-content" id="all-courses">
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:24px">
+        <select onchange="filterAllCourses()" id="catFilter" style="padding:10px 14px;background:var(--black-4);border:1.5px solid var(--gray-1);border-radius:var(--radius-full);color:var(--white);font-size:0.85rem;outline:none;cursor:pointer;font-family:var(--font-body)">
+          <option value="">All Categories</option>
+          <option>Web Development</option>
+          <option>Data Science</option>
+          <option>UI/UX Design</option>
+          <option>DevOps</option>
+        </select>
+        <select style="padding:10px 14px;background:var(--black-4);border:1.5px solid var(--gray-1);border-radius:var(--radius-full);color:var(--white);font-size:0.85rem;outline:none;cursor:pointer;font-family:var(--font-body)">
+          <option>All Levels</option><option>Beginner</option><option>Intermediate</option><option>Advanced</option>
+        </select>
+      </div>
+      <div class="grid-3" id="allCoursesGrid"></div>
+    </div>
+
+    <!-- Certificates -->
+    <div class="tab-content" id="certificates">
+      <div id="certGrid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:20px"></div>
+      <div id="noCerts" style="text-align:center;padding:60px;color:var(--gray-4)">
+        <div style="font-size:3rem;margin-bottom:12px">🎓</div>
+        <p>Complete a course to earn your first certificate!</p>
+        <button onclick="document.querySelector('[data-tab=all-courses]').click()" class="btn btn-primary" style="margin-top:16px">Browse Courses</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PLAYER PAGE (hidden by default) -->
+<div id="playerPage" style="display:none;padding-top:var(--nav-h)">
+  <div class="player-layout">
+    <div class="player-main">
+      <div class="video-container">
+        <div class="video-placeholder" id="videoPlaceholder" onclick="loadVideo()">
+          <div class="play-btn-big">▶</div>
+          <p style="color:var(--gray-4);font-size:0.9rem" id="videoHint">Click to load video</p>
+        </div>
+        <iframe id="videoIframe" style="display:none" allowfullscreen allow="autoplay;encrypted-media"></iframe>
+      </div>
+      <div class="flex-between" style="margin-bottom:12px">
+        <div>
+          <h2 style="font-size:1.2rem;color:var(--white)" id="currentLessonTitle">Loading…</h2>
+          <p style="font-size:0.82rem;color:var(--gray-4)" id="currentLessonMeta"></p>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button onclick="prevLesson()" class="btn btn-ghost btn-sm">← Prev</button>
+          <button onclick="markDone()" class="btn btn-primary btn-sm" id="markDoneBtn">Mark Done ✓</button>
+          <button onclick="nextLesson()" class="btn btn-ghost btn-sm">Next →</button>
+        </div>
+      </div>
+      <div style="border-top:1px solid var(--white-5);padding-top:16px;margin-top:4px">
+        <div class="tabs" id="lessonTabs">
+          <button class="tab-btn active" data-tab="overview">Overview</button>
+          <button class="tab-btn" data-tab="notes">My Notes</button>
+          <button class="tab-btn" data-tab="quiz">Quick Quiz</button>
+        </div>
+        <div class="tab-content active" id="overview">
+          <p style="font-size:0.9rem;color:var(--gray-5);line-height:1.8" id="lessonDesc">Select a lesson to begin.</p>
+        </div>
+        <div class="tab-content" id="notes">
+          <textarea class="form-textarea" id="lessonNotes" placeholder="Take notes here… they're saved automatically." style="min-height:150px"></textarea>
+          <button onclick="saveNotes()" class="btn btn-ghost btn-sm" style="margin-top:8px">Save Notes</button>
+        </div>
+        <div class="tab-content" id="quiz">
+          <div id="quizArea"><p style="color:var(--gray-4)">Quiz loads after you watch the lesson.</p></div>
+        </div>
+      </div>
+    </div>
+    <div class="lesson-sidebar">
+      <div class="lesson-header">
+        <div style="font-family:var(--font-cond);font-weight:700;color:var(--white)" id="playerCourseTitle">Course</div>
+        <div style="margin-top:8px">
+          <div class="progress-bar"><div class="progress-fill" id="playerProgress" style="width:0%"></div></div>
+          <div style="font-size:0.75rem;color:var(--gray-4);margin-top:4px" id="playerProgressText">0% complete</div>
+        </div>
+        <button onclick="showCourses()" style="margin-top:10px;background:none;border:none;color:var(--red-light);font-family:var(--font-cond);font-size:0.82rem;font-weight:700;cursor:pointer;letter-spacing:0.06em">← Back to Courses</button>
+      </div>
+      <div class="lesson-list" id="lessonList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- CHATBOT -->
+<button class="chatbot-fab">🤖</button>
+<div class="chatbot-panel">
+  <div class="chatbot-header">
+    <div style="display:flex;align-items:center;gap:10px"><span style="font-size:1.3rem">🤖</span><div><div style="font-weight:700;font-size:0.95rem">LearnBot</div></div></div>
+    <button onclick="document.querySelector('.chatbot-panel').classList.remove('open')" style="background:none;border:none;color:white;font-size:1.2rem;cursor:pointer">✕</button>
+  </div>
+  <div class="chatbot-messages"><div class="msg msg-bot">Ask me anything about your current lesson — I can explain concepts, review code, and suggest extra resources! 📚</div></div>
+  <div class="chatbot-input-area"><input class="chatbot-input" placeholder="Explain this concept…" type="text"><button class="chatbot-send">→</button></div>
+</div>
+
+<script src="../js/global.js"></script>
+<script>
+const user = LP.user();
+if (user) document.getElementById('navAvatar').textContent = user.avatar || 'LP';
+
+const courses = [
+  { id:1, title:'React.js Complete Guide 2026', icon:'⚛️', instructor:'Sanket Mehta', level:'Intermediate', duration:'20 lessons · 8 hrs', rating:'4.9', enrolled:'12.4K', category:'Web Development', progress:45, enrolled_by_user:true, ytPlaylist:'PLblA84xge2_zwxh3XJqy6UVxS60YdusY8', lessons:[
+    { title:'Introduction to React', duration:'14:22', ytId:'TNhaISOUy6Q', done:true, desc:'Overview of React, its ecosystem, and why it is the most popular frontend library in 2026.' },
+    { title:'JSX & Components', duration:'18:05', ytId:'w7ejDZ8SWv8', done:true, desc:'Understanding JSX syntax and building your first reusable components.' },
+    { title:'Props & State', duration:'22:14', ytId:'IYvD9oBCuJI', done:true, desc:'Managing data flow with props and local state using useState.' },
+    { title:'useState Hook', duration:'20:10', ytId:'TNhaISOUy6Q', done:true, desc:'Deep dive into useState: arrays, objects, and functional updates.' },
+    { title:'useEffect Hook', duration:'24:30', ytId:'0ZJgIjIuY7U', done:false, desc:'Side effects, dependency arrays, cleanup functions, and API calls.' },
+    { title:'Event Handling', duration:'16:40', ytId:'8pDqJVdNa44', done:false, desc:'Forms, controlled inputs, and event delegation in React.' },
+    { title:'Lists & Keys', duration:'12:50', ytId:'T6CHi-FT1EI', done:false, desc:'Rendering lists efficiently and the importance of the key prop.' },
+    { title:'React Router', duration:'28:00', ytId:'Law7wfdg_ls', done:false, desc:'Client-side routing with React Router v6: routes, links, params.' },
+  ]},
+  { id:2, title:'JavaScript Advanced Patterns', icon:'🟨', instructor:'Akash Verma', level:'Intermediate', duration:'18 lessons · 6 hrs', rating:'4.8', enrolled:'8.9K', category:'Web Development', progress:78, enrolled_by_user:true, lessons:[
+    { title:'Closures Explained', duration:'19:00', ytId:'3a0I8ICR1Vg', done:true, desc:'Closures, lexical scope, and practical use cases.' },
+    { title:'Promises & Async/Await', duration:'22:00', ytId:'V_Kr9OSfDeU', done:true, desc:'Handling asynchronous code elegantly.' },
+    { title:'Prototype & Classes', duration:'17:30', ytId:'aAAS9cEuFYI', done:false, desc:'OOP in JavaScript — classes, inheritance, and prototypes.' },
+  ]},
+  { id:3, title:'Node.js & Express Crash Course', icon:'🟢', instructor:'Rahul Nair', level:'Beginner', duration:'15 lessons · 5 hrs', rating:'4.7', enrolled:'6.2K', category:'Web Development', progress:20, enrolled_by_user:true, lessons:[
+    { title:'Node.js Intro', duration:'12:00', ytId:'fBNz5xF-Kx4', done:true, desc:'What is Node.js, how it works, and your first server.' },
+    { title:'Express Basics', duration:'18:00', ytId:'SccSCuHhOw0', done:false, desc:'Setting up Express, routes, middleware, and response methods.' },
+    { title:'REST API Design', duration:'24:00', ytId:'pKd0Rpw7O48', done:false, desc:'Building a full CRUD REST API with Express and MongoDB.' },
+  ]},
+  { id:4, title:'SQL for Beginners', icon:'🗄️', instructor:'Divya Patel', level:'Beginner', duration:'12 lessons · 4 hrs', rating:'4.9', enrolled:'15K', category:'Web Development', progress:0, enrolled_by_user:false, lessons:[] },
+  { id:5, title:'CSS & Tailwind Mastery', icon:'🎨', instructor:'Kevin P. (India)', level:'Beginner', duration:'16 lessons · 5 hrs', rating:'4.8', enrolled:'9.1K', category:'Web Development', progress:0, enrolled_by_user:false, lessons:[] },
+  { id:6, title:'Python for Data Science', icon:'🐍', instructor:'Pooja Joshi', level:'Beginner', duration:'24 lessons · 10 hrs', rating:'4.9', enrolled:'20K', category:'Data Science', progress:0, enrolled_by_user:false, lessons:[] },
+];
+
+let currentCourse = null;
+let currentLessonIdx = 0;
+let completedLessons = LP.get('completedLessons') || {};
+
+function renderCourseCard(c, isEnrolled) {
+  return `<div class="course-card">
+    <div class="course-thumb">
+      <span style="font-size:3.5rem">${c.icon}</span>
+      <span class="course-thumb level-badge badge ${c.level==='Beginner'?'badge-green':c.level==='Intermediate'?'badge-yellow':'badge-red'}">${c.level}</span>
+      <span class="course-thumb duration-badge">${c.duration}</span>
+    </div>
+    <div class="course-body">
+      <div class="course-title">${c.title}</div>
+      <div class="course-instructor">by ${c.instructor}</div>
+      <div class="course-meta">
+        <span class="course-rating">★ ${c.rating}</span>
+        <span class="course-enrolled">${c.enrolled} enrolled</span>
+        <span class="badge badge-gray">${c.category}</span>
+      </div>
+      ${isEnrolled ? `
+        <div class="progress-bar" style="margin-bottom:6px"><div class="progress-fill" style="width:${c.progress}%"></div></div>
+        <div style="font-size:0.75rem;color:var(--gray-4);margin-bottom:12px">${c.progress}% complete</div>
+        <button onclick="startCourse(${c.id})" class="btn btn-primary enroll-btn">${c.progress>0?'Continue →':'Start Course →'}</button>
+      ` : `
+        <button onclick="enrollCourse(${c.id},this)" class="btn btn-outline enroll-btn">Enroll Free →</button>
+      `}
+    </div>
+  </div>`;
+}
+
+function renderAllGrids() {
+  const myCourses = courses.filter(c => c.enrolled_by_user);
+  const allCourses = courses;
+  document.getElementById('myCoursesGrid').innerHTML = myCourses.map(c => renderCourseCard(c, true)).join('') || '<p style="color:var(--gray-4)">Enroll in a course to start learning.</p>';
+  document.getElementById('allCoursesGrid').innerHTML = allCourses.map(c => renderCourseCard(c, c.enrolled_by_user)).join('');
+}
+
+function enrollCourse(id, btn) {
+  const c = courses.find(c => c.id === id);
+  if (c) { c.enrolled_by_user = true; }
+  showToast('Enrolled! Check My Courses.', 'success');
+  btn.textContent = 'Enrolled ✓'; btn.classList.remove('btn-outline'); btn.classList.add('btn-primary');
+  btn.onclick = () => startCourse(id);
+}
+
+function startCourse(id) {
+  currentCourse = courses.find(c => c.id === id);
+  if (!currentCourse || !currentCourse.lessons.length) { showToast('Course content coming soon!', 'info'); return; }
+  document.getElementById('coursesPage').style.display = 'none';
+  document.getElementById('playerPage').style.display = 'block';
+  document.getElementById('playerCourseTitle').textContent = currentCourse.title;
+  currentLessonIdx = currentCourse.lessons.findIndex(l => !l.done);
+  if (currentLessonIdx < 0) currentLessonIdx = 0;
+  renderLessonList();
+  loadLesson(currentLessonIdx);
+}
+
+function renderLessonList() {
+  if (!currentCourse) return;
+  let html = '';
+  const modules = [{ name:'Module 1 — Foundations', range:[0,3] },{ name:'Module 2 — Core Concepts', range:[4,7] }];
+  modules.forEach(mod => {
+    const lessons = currentCourse.lessons.slice(mod.range[0], mod.range[1]+1);
+    if (!lessons.length) return;
+    html += `<div class="module-header" onclick="this.nextElementSibling.classList.toggle('hidden')">${mod.name}<span>▾</span></div><div>`;
+    lessons.forEach((l, i) => {
+      const idx = mod.range[0] + i;
+      const isDone = completedLessons[`${currentCourse.id}-${idx}`];
+      html += `<div class="lesson-item ${idx===currentLessonIdx?'active':''}" onclick="loadLesson(${idx})" id="li${idx}">
+        <div class="lesson-check ${isDone?'done':idx===currentLessonIdx?'active-lesson':''}">${isDone?'✓':idx+1}</div>
+        <span class="lesson-title">${l.title}</span>
+        <span class="lesson-duration">${l.duration}</span>
+      </div>`;
+    });
+    html += '</div>';
+  });
+  document.getElementById('lessonList').innerHTML = html;
+}
+
+function loadLesson(idx) {
+  if (!currentCourse) return;
+  currentLessonIdx = idx;
+  const l = currentCourse.lessons[idx];
+  if (!l) return;
+  document.getElementById('currentLessonTitle').textContent = l.title;
+  document.getElementById('currentLessonMeta').textContent = `Lesson ${idx+1} of ${currentCourse.lessons.length} · ${l.duration}`;
+  document.getElementById('lessonDesc').textContent = l.desc;
+  // Load YouTube video
+  const iframe = document.getElementById('videoIframe');
+  const placeholder = document.getElementById('videoPlaceholder');
+  document.getElementById('videoHint').textContent = l.title;
+  placeholder.style.display = 'flex'; iframe.style.display = 'none';
+  iframe.src = '';
+  placeholder.onclick = () => {
+    placeholder.style.display = 'none'; iframe.style.display = 'block';
+    iframe.src = `https://www.youtube.com/embed/${l.ytId}?autoplay=1&rel=0`;
+  };
+  updateProgress();
+  renderLessonList();
+  initTabs('#lessonTabs');
+}
+
+function markDone() {
+  if (!currentCourse) return;
+  completedLessons[`${currentCourse.id}-${currentLessonIdx}`] = true;
+  LP.set('completedLessons', completedLessons);
+  showToast('+30 XP! Lesson marked complete 🎉', 'success');
+  updateProgress(); renderLessonList();
+  setTimeout(() => nextLesson(), 500);
+}
+
+function nextLesson() { if (currentLessonIdx < currentCourse.lessons.length - 1) loadLesson(currentLessonIdx + 1); else showToast('🎓 Course complete! Certificate unlocked.', 'success'); }
+function prevLesson() { if (currentLessonIdx > 0) loadLesson(currentLessonIdx - 1); }
+
+function updateProgress() {
+  if (!currentCourse) return;
+  const done = currentCourse.lessons.filter((_, i) => completedLessons[`${currentCourse.id}-${i}`]).length;
+  const pct = Math.round((done / currentCourse.lessons.length) * 100);
+  document.getElementById('playerProgress').style.width = pct + '%';
+  document.getElementById('playerProgressText').textContent = `${pct}% complete (${done}/${currentCourse.lessons.length})`;
+}
+
+function saveNotes() { LP.set(`notes-${currentCourse?.id}-${currentLessonIdx}`, document.getElementById('lessonNotes').value); showToast('Notes saved!', 'success'); }
+function showCourses() { document.getElementById('playerPage').style.display = 'none'; document.getElementById('coursesPage').style.display = 'block'; }
+function filterAllCourses() { renderAllGrids(); }
+
+initTabs('#courseTabs');
+renderAllGrids();
+</script>
+</body>
+</html>

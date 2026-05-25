@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mentors — LearnPro</title>
+<link rel="stylesheet" href="../css/global.css">
+<style>
+.mentors-layout { padding:32px; max-width:1300px; margin:0 auto; }
+.mentor-card { background:var(--black-3); border:1px solid var(--white-10); border-radius:var(--radius-xl); padding:24px; transition:all var(--transition); }
+.mentor-card:hover { border-color:var(--red); box-shadow:0 0 24px var(--red-glow); transform:translateY(-4px); }
+.mentor-avatar { width:72px; height:72px; border-radius:50%; background:var(--red-subtle); border:3px solid var(--red); display:flex; align-items:center; justify-content:center; font-family:var(--font-display); font-size:1.6rem; color:var(--red-light); flex-shrink:0; overflow:hidden; }
+.mentor-avatar img { width:100%;height:100%;object-fit:cover; }
+.mentor-name { font-size:1.1rem; font-weight:700; color:var(--white); margin-bottom:2px; }
+.mentor-role { font-size:0.82rem; color:var(--gray-4); margin-bottom:8px; }
+.mentor-skills { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px; }
+.mentor-skill { font-size:0.72rem; padding:3px 10px; background:var(--black-5); border-radius:var(--radius-full); color:var(--gray-4); border:1px solid var(--white-5); }
+.rating-stars { color:#f59e0b; font-size:0.88rem; }
+.mentor-stat { text-align:center; }
+.mentor-stat-val { font-family:var(--font-display); font-size:1.3rem; color:var(--white); }
+.mentor-stat-label { font-size:0.68rem; color:var(--gray-4); text-transform:uppercase; letter-spacing:0.08em; }
+.availability-dot { width:10px; height:10px; border-radius:50%; display:inline-block; margin-right:5px; }
+.avail-now { background:#10b981; box-shadow:0 0 6px rgba(16,185,129,0.6); }
+.avail-soon { background:#f59e0b; }
+.avail-busy { background:var(--gray-3); }
+.session-type { padding:6px 14px; border-radius:var(--radius-full); font-family:var(--font-cond); font-size:0.78rem; font-weight:700; border:1px solid; cursor:pointer; transition:all var(--transition); }
+.session-type:hover { background:var(--red-subtle)!important; border-color:var(--red)!important; color:var(--red-light)!important; }
+
+/* Booking Modal */
+.calendar-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; margin-bottom:16px; }
+.cal-header { font-family:var(--font-cond); font-size:0.72rem; font-weight:700; color:var(--gray-4); text-align:center; padding:6px 0; letter-spacing:0.08em; }
+.cal-day { aspect-ratio:1; display:flex; align-items:center; justify-content:center; border-radius:var(--radius); font-size:0.85rem; cursor:pointer; transition:all var(--transition); border:1.5px solid transparent; }
+.cal-day.available { color:var(--white); background:var(--black-4); }
+.cal-day.available:hover, .cal-day.selected { background:var(--red); color:var(--white); border-color:var(--red); }
+.cal-day.unavailable { color:var(--gray-2); cursor:not-allowed; }
+.cal-day.today { border-color:var(--gray-2); }
+.time-slots { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:20px; }
+.time-slot { padding:10px; text-align:center; background:var(--black-4); border:1.5px solid var(--gray-1); border-radius:var(--radius); font-family:var(--font-cond); font-size:0.85rem; font-weight:700; cursor:pointer; transition:all var(--transition); color:var(--white); }
+.time-slot:hover, .time-slot.selected { background:var(--red-subtle); border-color:var(--red); color:var(--red-light); }
+.time-slot.taken { opacity:0.4; cursor:not-allowed; text-decoration:line-through; }
+.duration-btns { display:flex; gap:8px; margin-bottom:20px; }
+.dur-btn { flex:1; padding:10px; text-align:center; background:var(--black-4); border:1.5px solid var(--gray-1); border-radius:var(--radius); font-family:var(--font-cond); font-size:0.9rem; font-weight:700; cursor:pointer; transition:all var(--transition); color:var(--white); }
+.dur-btn:hover, .dur-btn.selected { background:var(--red-subtle); border-color:var(--red); color:var(--red-light); }
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="../index.html" class="nav-logo">LEARN<span>PRO</span></a>
+  <div class="nav-links">
+    <a href="dashboard.html" class="nav-link">Dashboard</a>
+    <a href="resources.html" class="nav-link">Resources</a>
+    <a href="jobs.html" class="nav-link">Jobs</a>
+    <a href="mentors.html" class="nav-link active">Mentors</a>
+    <a href="courses.html" class="nav-link">Courses</a>
+    <a href="community.html" class="nav-link">Community</a>
+  </div>
+  <div class="nav-actions"><div class="avatar" id="navAvatar">LP</div></div>
+</nav>
+
+<div style="padding-top:var(--nav-h)">
+<div class="mentors-layout">
+
+  <div class="section-header scroll-reveal" style="margin-bottom:32px">
+    <span class="section-tag">Expert Network</span>
+    <h1 style="font-size:2.2rem;color:var(--white)">Learn from those who've <span style="color:var(--red)">been there</span></h1>
+    <p style="color:var(--gray-4);max-width:560px">Verified industry professionals ready to guide you. Book 1-on-1 sessions, get code reviews, career advice, and real referrals.</p>
+  </div>
+
+  <!-- FILTERS -->
+  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:28px;align-items:center">
+    <input type="text" id="mentorSearch" class="form-input" style="max-width:260px;border-radius:var(--radius-full);padding:10px 18px" placeholder="Search mentors…" oninput="filterMentors()">
+    <select class="filter-select" style="padding:10px 14px;background:var(--black-4);border:1.5px solid var(--gray-1);border-radius:var(--radius-full);color:var(--white);font-size:0.85rem;outline:none;cursor:pointer;font-family:var(--font-body)" onchange="filterMentors()" id="domainFilter">
+      <option value="">All Domains</option>
+      <option>Web Development</option>
+      <option>Data Science</option>
+      <option>UI/UX Design</option>
+      <option>Product Management</option>
+      <option>DevOps / Cloud</option>
+      <option>Mobile Development</option>
+    </select>
+    <select class="filter-select" style="padding:10px 14px;background:var(--black-4);border:1.5px solid var(--gray-1);border-radius:var(--radius-full);color:var(--white);font-size:0.85rem;outline:none;cursor:pointer;font-family:var(--font-body)" onchange="filterMentors()" id="availFilter">
+      <option value="">Any Availability</option>
+      <option>Available Now</option>
+      <option>Available This Week</option>
+    </select>
+    <select class="filter-select" style="padding:10px 14px;background:var(--black-4);border:1.5px solid var(--gray-1);border-radius:var(--radius-full);color:var(--white);font-size:0.85rem;outline:none;cursor:pointer;font-family:var(--font-body)" onchange="filterMentors()" id="priceFilter">
+      <option value="">Any Price</option>
+      <option>Free</option>
+      <option>Under ₹500/hr</option>
+      <option>Under ₹1000/hr</option>
+    </select>
+    <div style="margin-left:auto;font-size:0.85rem;color:var(--gray-4)">Showing <strong id="mentorCount" style="color:var(--white)">8</strong> mentors</div>
+  </div>
+
+  <!-- MENTORS GRID -->
+  <div class="grid-3" id="mentorsGrid" style="gap:20px;margin-bottom:40px"></div>
+
+  <!-- BECOME A MENTOR CTA -->
+  <div style="background:linear-gradient(135deg,var(--black-3),var(--black-4));border:1px solid var(--white-10);border-radius:var(--radius-xl);padding:36px;text-align:center;border-top:3px solid var(--red)">
+    <div style="font-size:2.5rem;margin-bottom:12px">🧑‍💼</div>
+    <h3 style="font-size:1.4rem;color:var(--white);margin-bottom:8px">Are you an experienced professional?</h3>
+    <p style="color:var(--gray-4);margin-bottom:24px;max-width:480px;margin-left:auto;margin-right:auto">Join our mentor network. Share your knowledge, build your personal brand, and earn ₹500–₹3000 per session.</p>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+      <button onclick="openModal('becomeMentorModal')" class="btn btn-primary">Apply as Mentor →</button>
+      <button class="btn btn-outline">Learn More</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- BOOKING MODAL -->
+<div class="modal-overlay" id="bookingModal">
+  <div class="modal" style="max-width:560px">
+    <div class="modal-header">
+      <div>
+        <h3 class="modal-title" id="bookingTitle">Book a Session</h3>
+        <p style="color:var(--gray-4);font-size:0.85rem;margin-top:2px" id="bookingSubtitle"></p>
+      </div>
+      <button class="modal-close" onclick="closeModal('bookingModal')">✕</button>
+    </div>
+
+    <div class="tabs" style="margin-bottom:20px">
+      <button class="tab-btn active" onclick="setBookTab(this,'date')">① Pick Date</button>
+      <button class="tab-btn" onclick="setBookTab(this,'time')">② Pick Time</button>
+      <button class="tab-btn" onclick="setBookTab(this,'confirm')">③ Confirm</button>
+    </div>
+
+    <div id="bookTab-date">
+      <div style="font-family:var(--font-cond);font-size:0.8rem;font-weight:700;color:var(--gray-4);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:12px">Session Duration</div>
+      <div class="duration-btns">
+        <div class="dur-btn selected" onclick="selectDur(this,'30')">30 min<br><span style="font-size:0.72rem;opacity:0.7">₹250</span></div>
+        <div class="dur-btn" onclick="selectDur(this,'60')">60 min<br><span style="font-size:0.72rem;opacity:0.7">₹500</span></div>
+        <div class="dur-btn" onclick="selectDur(this,'90')">90 min<br><span style="font-size:0.72rem;opacity:0.7">₹700</span></div>
+      </div>
+      <div style="font-family:var(--font-cond);font-size:0.8rem;font-weight:700;color:var(--gray-4);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:12px">Select Date</div>
+      <div class="calendar-grid" id="calGrid"></div>
+      <button onclick="setBookTab(document.querySelector('.tab-btn:nth-child(2)'),'time')" class="btn btn-primary w-full" style="justify-content:center">Choose Time →</button>
+    </div>
+
+    <div id="bookTab-time" style="display:none">
+      <div style="font-family:var(--font-cond);font-size:0.8rem;font-weight:700;color:var(--gray-4);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:12px">Available Time Slots</div>
+      <div class="time-slots">
+        <div class="time-slot" onclick="selectTime(this,'9:00 AM')">9:00 AM</div>
+        <div class="time-slot" onclick="selectTime(this,'10:00 AM')">10:00 AM</div>
+        <div class="time-slot taken">11:00 AM</div>
+        <div class="time-slot" onclick="selectTime(this,'2:00 PM')">2:00 PM</div>
+        <div class="time-slot" onclick="selectTime(this,'3:00 PM')">3:00 PM</div>
+        <div class="time-slot taken">4:00 PM</div>
+        <div class="time-slot" onclick="selectTime(this,'5:00 PM')">5:00 PM</div>
+        <div class="time-slot" onclick="selectTime(this,'6:00 PM')">6:00 PM</div>
+        <div class="time-slot" onclick="selectTime(this,'7:00 PM')">7:00 PM</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">What do you want to discuss? (optional)</label>
+        <textarea class="form-textarea" id="sessionNote" placeholder="e.g. Review my React project, career advice on moving from sales to dev…" style="min-height:80px"></textarea>
+      </div>
+      <button onclick="setBookTab(document.querySelector('.tab-btn:nth-child(3)'),'confirm')" class="btn btn-primary w-full" style="justify-content:center">Review Booking →</button>
+    </div>
+
+    <div id="bookTab-confirm" style="display:none">
+      <div style="background:var(--black-4);border-radius:var(--radius);padding:20px;margin-bottom:20px">
+        <div style="font-family:var(--font-cond);font-size:0.78rem;font-weight:700;color:var(--gray-3);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:12px">Booking Summary</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div class="flex-between"><span style="color:var(--gray-4);font-size:0.88rem">Mentor</span><span style="color:var(--white);font-weight:700" id="confMentor">—</span></div>
+          <div class="flex-between"><span style="color:var(--gray-4);font-size:0.88rem">Date</span><span style="color:var(--white)" id="confDate">—</span></div>
+          <div class="flex-between"><span style="color:var(--gray-4);font-size:0.88rem">Time</span><span style="color:var(--white)" id="confTime">—</span></div>
+          <div class="flex-between"><span style="color:var(--gray-4);font-size:0.88rem">Duration</span><span style="color:var(--white)" id="confDur">—</span></div>
+          <div class="divider"></div>
+          <div class="flex-between"><span style="color:var(--white);font-weight:700">Total</span><span style="color:var(--red-light);font-family:var(--font-display);font-size:1.2rem" id="confPrice">₹0</span></div>
+        </div>
+      </div>
+      <!-- Stripe Payment Button -->
+      <!-- Replace with your Stripe publishable key and price ID -->
+      <p style="font-size:0.78rem;color:var(--gray-4);text-align:center;margin-bottom:14px">🔒 Secure payment via Stripe. Amount released to mentor after session.</p>
+      <button onclick="confirmBooking()" class="btn btn-primary w-full" style="justify-content:center;padding:14px">Confirm & Pay →</button>
+    </div>
+  </div>
+</div>
+
+<!-- BECOME MENTOR MODAL -->
+<div class="modal-overlay" id="becomeMentorModal">
+  <div class="modal">
+    <div class="modal-header"><h3 class="modal-title">Apply as Mentor</h3><button class="modal-close" onclick="closeModal('becomeMentorModal')">✕</button></div>
+    <div class="form-group"><label class="form-label">Full Name</label><input class="form-input" placeholder="Your name"></div>
+    <div class="form-group"><label class="form-label">LinkedIn Profile URL</label><input class="form-input" placeholder="https://linkedin.com/in/yourname"></div>
+    <div class="form-group"><label class="form-label">Domain of Expertise</label><select class="form-select"><option>Web Development</option><option>Data Science</option><option>UI/UX Design</option><option>Product Management</option></select></div>
+    <div class="form-group"><label class="form-label">Years of Experience</label><input class="form-input" type="number" placeholder="e.g. 7"></div>
+    <div class="form-group"><label class="form-label">Hourly Rate (₹)</label><input class="form-input" type="number" placeholder="e.g. 800"></div>
+    <button onclick="submitMentorApp()" class="btn btn-primary w-full" style="justify-content:center">Submit Application →</button>
+  </div>
+</div>
+
+<!-- CHATBOT -->
+<button class="chatbot-fab">🤖</button>
+<div class="chatbot-panel">
+  <div class="chatbot-header">
+    <div style="display:flex;align-items:center;gap:10px"><span style="font-size:1.3rem">🤖</span><div><div style="font-weight:700;font-size:0.95rem">LearnBot</div></div></div>
+    <button onclick="document.querySelector('.chatbot-panel').classList.remove('open')" style="background:none;border:none;color:white;font-size:1.2rem;cursor:pointer">✕</button>
+  </div>
+  <div class="chatbot-messages"><div class="msg msg-bot">I can help you find the right mentor for your goals. Tell me what you're working on! 🧑‍💼</div></div>
+  <div class="chatbot-input-area"><input class="chatbot-input" placeholder="I need help with…" type="text"><button class="chatbot-send">→</button></div>
+</div>
+
+<script src="../js/global.js"></script>
+<script>
+const user = LP.user();
+if (user) document.getElementById('navAvatar').textContent = user.avatar || 'LP';
+
+const mentors = [
+  { id:1, name:'Priya Rao', initials:'PR', role:'SDE-3 @ Google', domain:'Web Development', skills:['React','Node.js','System Design','TypeScript'], rating:4.9, reviews:124, sessions:340, price:'₹800/hr', availability:'now', exp:'7 yrs', bio:'Ex-Infosys, currently at Google Bangalore. Helped 200+ learners crack product companies. Specialises in frontend systems and interview prep.' },
+  { id:2, name:'Arjun Kapoor', initials:'AK', role:'Data Scientist @ Flipkart', domain:'Data Science', skills:['Python','ML','Pandas','SQL','Power BI'], rating:4.8, reviews:89, sessions:210, price:'₹650/hr', availability:'soon', exp:'5 yrs', bio:'Building recommendation systems at Flipkart. Passionate about teaching data science to non-CS backgrounds.' },
+  { id:3, name:'Sneha Kulkarni', initials:'SK', role:'Product Designer @ Razorpay', domain:'UI/UX Design', skills:['Figma','User Research','Prototyping','Design Systems'], rating:4.9, reviews:67, sessions:180, price:'₹600/hr', availability:'now', exp:'6 yrs', bio:'Lead designer at Razorpay. Portfolio reviewer and design mentor. Helped 100+ designers land their first roles.' },
+  { id:4, name:'Rahul Verma', initials:'RV', role:'Senior PM @ Swiggy', domain:'Product Management', skills:['Product Strategy','Roadmapping','A/B Testing','Analytics'], rating:4.7, reviews:42, sessions:120, price:'₹1000/hr', availability:'busy', exp:'8 yrs', bio:'10+ years in product. Built 0-to-1 products at Swiggy and Zomato. Expert in growth frameworks and case study interviews.' },
+  { id:5, name:'Kavya Nair', initials:'KN', role:'DevOps Lead @ Microsoft', domain:'DevOps / Cloud', skills:['AWS','Docker','Kubernetes','CI/CD','Terraform'], rating:4.8, reviews:56, sessions:145, price:'₹900/hr', availability:'soon', exp:'9 yrs', bio:'Cloud architect at Microsoft Azure. Certified AWS Solutions Architect. Specialises in DevOps interview prep and cloud migration.' },
+  { id:6, name:'Dev Sharma', initials:'DS', role:'Android Dev @ Meesho', domain:'Mobile Development', skills:['Android','Kotlin','Jetpack Compose','REST APIs'], rating:4.6, reviews:38, sessions:95, price:'₹550/hr', availability:'now', exp:'4 yrs', bio:'Building Android experiences for 150M+ users at Meesho. Passionate about clean code and performance optimisation.' },
+  { id:7, name:'Pooja Mehta', initials:'PM', role:'ML Engineer @ NVIDIA', domain:'Data Science', skills:['Deep Learning','PyTorch','NLP','Computer Vision'], rating:4.9, reviews:71, sessions:190, price:'₹1200/hr', availability:'soon', exp:'6 yrs', bio:'Research-focused ML engineer. Published 3 papers. Helps learners break into ML roles at top AI companies.' },
+  { id:8, name:'Vikram Singh', initials:'VS', role:'Freelance Full-Stack', domain:'Web Development', skills:['MERN Stack','Next.js','PostgreSQL','GraphQL'], rating:4.7, reviews:103, sessions:260, price:'Free · ₹400 paid', availability:'now', exp:'5 yrs', bio:'Full-stack freelancer earning ₹15L/yr. Helps others transition to freelancing and build their first client projects.' },
+];
+
+let selectedMentor = null;
+let selectedDate = null;
+let selectedTime = null;
+let selectedDuration = '30';
+
+function renderMentors(data) {
+  const grid = document.getElementById('mentorsGrid');
+  document.getElementById('mentorCount').textContent = data.length;
+  grid.innerHTML = '';
+  data.forEach(m => {
+    const availClass = m.availability === 'now' ? 'avail-now' : m.availability === 'soon' ? 'avail-soon' : 'avail-busy';
+    const availText = m.availability === 'now' ? 'Available Now' : m.availability === 'soon' ? 'Available This Week' : 'Fully Booked';
+    grid.innerHTML += `
+    <div class="mentor-card">
+      <div style="display:flex;gap:14px;align-items:flex-start;margin-bottom:14px">
+        <div class="mentor-avatar">${m.initials}</div>
+        <div style="flex:1">
+          <div class="mentor-name">${m.name}</div>
+          <div class="mentor-role">${m.role} · ${m.exp} exp</div>
+          <div class="rating-stars">★★★★★ <span style="color:var(--gray-4);font-size:0.8rem">${m.rating} (${m.reviews} reviews)</span></div>
+        </div>
+      </div>
+      <p style="font-size:0.82rem;color:var(--gray-5);line-height:1.6;margin-bottom:12px">${m.bio}</p>
+      <div class="mentor-skills">${m.skills.map(s=>`<span class="mentor-skill">${s}</span>`).join('')}</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-top:1px solid var(--white-5);border-bottom:1px solid var(--white-5);margin-bottom:14px">
+        <div class="mentor-stat"><div class="mentor-stat-val">${m.sessions}</div><div class="mentor-stat-label">Sessions</div></div>
+        <div class="mentor-stat"><div class="mentor-stat-val" style="color:var(--red-light)">${m.price}</div><div class="mentor-stat-label">Rate</div></div>
+        <div class="mentor-stat"><div style="font-size:0.8rem"><span class="availability-dot ${availClass}"></span><span style="color:var(--white-70);font-size:0.78rem">${availText}</span></div></div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button onclick="openBooking(${m.id})" class="btn btn-primary btn-sm" style="flex:1;justify-content:center" ${m.availability==='busy'?'disabled style="opacity:0.5;cursor:not-allowed"':''}>
+          ${m.availability==='busy'?'Fully Booked':'📅 Book Session'}
+        </button>
+        <button class="btn btn-ghost btn-sm" onclick="showToast('View profile coming soon','info')">View Profile</button>
+      </div>
+    </div>`;
+  });
+}
+
+function filterMentors() {
+  const q = document.getElementById('mentorSearch').value.toLowerCase();
+  const domain = document.getElementById('domainFilter').value;
+  const avail = document.getElementById('availFilter').value;
+  const filtered = mentors.filter(m => {
+    const matchQ = !q || m.name.toLowerCase().includes(q) || m.skills.some(s => s.toLowerCase().includes(q)) || m.domain.toLowerCase().includes(q);
+    const matchDomain = !domain || m.domain === domain;
+    const matchAvail = !avail || (avail === 'Available Now' && m.availability === 'now') || (avail === 'Available This Week' && m.availability !== 'busy');
+    return matchQ && matchDomain && matchAvail;
+  });
+  renderMentors(filtered);
+}
+
+function openBooking(id) {
+  selectedMentor = mentors.find(m => m.id === id);
+  if (!selectedMentor) return;
+  document.getElementById('bookingTitle').textContent = `Book with ${selectedMentor.name}`;
+  document.getElementById('bookingSubtitle').textContent = selectedMentor.role;
+  buildCalendar();
+  setBookTab(document.querySelector('#bookingModal .tab-btn'), 'date');
+  openModal('bookingModal');
+}
+
+function buildCalendar() {
+  const grid = document.getElementById('calGrid');
+  const days = ['S','M','T','W','T','F','S'];
+  grid.innerHTML = days.map(d => `<div class="cal-header">${d}</div>`).join('');
+  const now = new Date();
+  const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).getDay();
+  for (let i = 0; i < firstDay; i++) grid.innerHTML += `<div></div>`;
+  const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+  for (let d = 1; d <= daysInMonth; d++) {
+    const isPast = d < now.getDate();
+    const isWeekend = new Date(now.getFullYear(), now.getMonth(), d).getDay() % 6 === 0;
+    const cls = isPast || isWeekend ? 'unavailable' : 'available';
+    const today = d === now.getDate() ? ' today' : '';
+    grid.innerHTML += `<div class="cal-day ${cls}${today}" onclick="selectDay(this,${d})">${d}</div>`;
+  }
+}
+
+function selectDay(el, d) {
+  if (el.classList.contains('unavailable')) return;
+  document.querySelectorAll('.cal-day.selected').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  const now = new Date();
+  selectedDate = `${d} ${now.toLocaleString('default',{month:'long'})} ${now.getFullYear()}`;
+  document.getElementById('confDate').textContent = selectedDate;
+}
+
+function selectTime(el, t) {
+  if (el.classList.contains('taken')) return;
+  document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
+  el.classList.add('selected'); selectedTime = t;
+  document.getElementById('confTime').textContent = t;
+}
+
+function selectDur(el, d) {
+  document.querySelectorAll('.dur-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected'); selectedDuration = d;
+  const prices = {'30':'₹250','60':'₹500','90':'₹700'};
+  document.getElementById('confDur').textContent = d + ' minutes';
+  document.getElementById('confPrice').textContent = prices[d];
+}
+
+function setBookTab(btn, tab) {
+  const modal = document.getElementById('bookingModal');
+  modal.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  ['date','time','confirm'].forEach(t => {
+    const el = document.getElementById(`bookTab-${t}`);
+    if (el) el.style.display = t === tab ? 'block' : 'none';
+  });
+  if (tab === 'confirm' && selectedMentor) {
+    document.getElementById('confMentor').textContent = selectedMentor.name;
+    if (!selectedDate) document.getElementById('confDate').textContent = 'Not selected';
+    if (!selectedTime) document.getElementById('confTime').textContent = 'Not selected';
+  }
+}
+
+function confirmBooking() {
+  // In production: call Stripe Checkout
+  // stripe.redirectToCheckout({ sessionId: 'YOUR_STRIPE_SESSION_ID' });
+  showToast(`Session booked with ${selectedMentor?.name}! Check your email.`, 'success');
+  closeModal('bookingModal');
+  // Add to Google Calendar:
+  // window.open(`https://calendar.google.com/calendar/render?action=TEMPLATE&text=LearnPro Session with ${selectedMentor.name}&dates=…`)
+}
+
+function submitMentorApp() {
+  showToast('Application submitted! We\'ll review and get back within 3 days.', 'success');
+  closeModal('becomeMentorModal');
+}
+
+renderMentors(mentors);
+</script>
+</body>
+</html>

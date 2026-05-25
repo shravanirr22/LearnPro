@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Your Roadmap — LearnPro</title>
+<link rel="stylesheet" href="../css/global.css">
+<style>
+body { background: radial-gradient(ellipse 70% 60% at 60% 30%, rgba(180,18,27,0.1) 0%, transparent 60%); }
+.onboard-wrap { max-width:860px; margin:0 auto; padding:40px 24px; }
+.roadmap-visual { position:relative; margin:32px 0; padding:24px 0; }
+.roadmap-line { position:absolute; left:36px; top:0; bottom:0; width:3px; background:linear-gradient(180deg,var(--red),rgba(180,18,27,0.1)); border-radius:99px; }
+.roadmap-node { display:flex; gap:20px; align-items:flex-start; margin-bottom:28px; position:relative; z-index:1; }
+.node-circle { width:72px; height:72px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:1.4rem; border:3px solid; transition:all var(--transition); }
+.node-circle.done { background:var(--red-dark); border-color:var(--red); box-shadow:0 0 0 4px var(--red-glow); }
+.node-circle.current { background:var(--red); border-color:var(--red); box-shadow:0 0 20px var(--red-glow); animation:glow 3s infinite; }
+.node-circle.locked { background:var(--black-4); border-color:var(--gray-2); opacity:0.6; }
+.node-body { flex:1; padding-top:6px; }
+.node-title { font-size:1.1rem; font-weight:700; color:var(--white); margin-bottom:4px; }
+.node-sub { font-size:0.85rem; color:var(--gray-4); margin-bottom:8px; }
+.node-skills { display:flex; flex-wrap:wrap; gap:6px; }
+.node-skill { font-size:0.72rem; padding:3px 10px; border-radius:var(--radius-full); }
+.skill-have { background:rgba(16,185,129,0.1); color:#10b981; border:1px solid rgba(16,185,129,0.3); }
+.skill-need { background:var(--red-subtle); color:var(--red-light); border:1px solid rgba(180,18,27,0.3); }
+.skill-locked { background:var(--black-5); color:var(--gray-3); border:1px solid var(--white-5); }
+
+/* Big ring */
+.big-ring-wrap { position:relative; width:200px; height:200px; margin:0 auto 24px; }
+.big-ring-svg { width:200px; height:200px; transform:rotate(-90deg); }
+.big-ring-bg { fill:none; stroke:var(--black-5); stroke-width:14; }
+.big-ring-fill { fill:none; stroke:url(#bigGrad); stroke-width:14; stroke-linecap:round; stroke-dasharray:565; stroke-dashoffset:565; transition:stroke-dashoffset 2s ease; }
+.big-ring-center { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center; }
+
+.insight-card { background:var(--black-3); border:1px solid var(--white-10); border-radius:var(--radius-lg); padding:16px 18px; margin-bottom:12px; display:flex; align-items:flex-start; gap:14px; transition:all var(--transition); }
+.insight-card:hover { border-color:rgba(180,18,27,0.3); }
+.insight-icon { font-size:1.4rem; flex-shrink:0; }
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="../index.html" class="nav-logo">LEARN<span>PRO</span></a>
+  <div class="nav-actions">
+    <a href="settings.html" class="btn btn-ghost btn-sm">Settings</a>
+    <div class="avatar" id="navAvatar">LP</div>
+  </div>
+</nav>
+
+<div style="padding-top:var(--nav-h)">
+<div class="onboard-wrap">
+
+  <!-- HEADER -->
+  <div style="text-align:center;margin-bottom:36px" class="fade-up">
+    <span class="section-tag">Your Personalised Roadmap</span>
+    <h1 style="font-size:2.4rem;color:var(--white);margin-bottom:8px">Here's where you <span style="color:var(--red)">stand today</span></h1>
+    <p style="color:var(--gray-4);max-width:520px;margin:0 auto">We analysed your survey answers and built your personalised plan. Below is your current skill coverage vs. what your target role requires.</p>
+  </div>
+
+  <!-- SCORE RING + STATS -->
+  <div style="background:var(--black-3);border:1px solid var(--white-10);border-radius:var(--radius-xl);padding:36px;margin-bottom:32px;text-align:center" class="fade-up fade-up-1">
+    <div class="big-ring-wrap">
+      <svg class="big-ring-svg" viewBox="0 0 200 200">
+        <defs>
+          <linearGradient id="bigGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="var(--red-dark)"/>
+            <stop offset="100%" stop-color="var(--red-light)"/>
+          </linearGradient>
+        </defs>
+        <circle class="big-ring-bg" cx="100" cy="100" r="90"/>
+        <circle class="big-ring-fill" cx="100" cy="100" r="90" id="bigRingFill"/>
+      </svg>
+      <div class="big-ring-center">
+        <div style="font-family:var(--font-display);font-size:3rem;color:var(--white);line-height:1" id="scoreDisplay">0%</div>
+        <div style="font-size:0.78rem;color:var(--gray-4);text-transform:uppercase;letter-spacing:0.08em">Job Ready</div>
+      </div>
+    </div>
+    <h2 style="font-size:1.4rem;color:var(--white);margin-bottom:6px" id="roleTitle">Full-Stack Developer</h2>
+    <p style="color:var(--gray-4);font-size:0.9rem;margin-bottom:24px" id="timeEst">Estimated to be job-ready in ~6 months at your current pace</p>
+    <div style="display:flex;justify-content:center;gap:32px;flex-wrap:wrap">
+      <div><div style="font-family:var(--font-display);font-size:1.8rem;color:var(--white)" id="skillsHave">0</div><div style="font-size:0.75rem;color:var(--gray-4)">Skills You Have</div></div>
+      <div><div style="font-family:var(--font-display);font-size:1.8rem;color:var(--red-light)" id="skillsNeed">0</div><div style="font-size:0.75rem;color:var(--gray-4)">Skills to Learn</div></div>
+      <div><div style="font-family:var(--font-display);font-size:1.8rem;color:#f59e0b" id="weeksEst">0</div><div style="font-size:0.75rem;color:var(--gray-4)">Weeks to Goal</div></div>
+    </div>
+  </div>
+
+  <div class="grid-2" style="gap:24px;margin-bottom:32px">
+
+    <!-- ROADMAP -->
+    <div class="fade-up fade-up-2">
+      <h3 style="font-size:1.2rem;color:var(--white);margin-bottom:4px">🗺️ Your Roadmap</h3>
+      <p style="font-size:0.85rem;color:var(--gray-4);margin-bottom:20px">5 milestones from your current level to job-ready.</p>
+      <div class="roadmap-visual" id="roadmapVisual">
+        <div class="roadmap-line"></div>
+      </div>
+    </div>
+
+    <!-- RIGHT COLUMN -->
+    <div class="fade-up fade-up-3">
+      <h3 style="font-size:1.2rem;color:var(--white);margin-bottom:4px">💡 AI Insights</h3>
+      <p style="font-size:0.85rem;color:var(--gray-4);margin-bottom:16px">Personalised observations from your survey.</p>
+      <div id="insightsArea"></div>
+
+      <div style="margin-top:24px">
+        <h3 style="font-size:1.1rem;color:var(--white);margin-bottom:12px">📅 Your Weekly Plan</h3>
+        <div style="background:var(--black-3);border:1px solid var(--white-10);border-radius:var(--radius-lg);padding:16px">
+          <div id="weeklyPlan"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JOB MATCH PREVIEW -->
+  <div style="background:var(--black-3);border:1px solid var(--white-10);border-radius:var(--radius-xl);padding:28px;margin-bottom:28px" class="fade-up fade-up-4">
+    <div class="flex-between" style="margin-bottom:16px">
+      <h3 style="font-size:1.1rem;color:var(--white)">💼 Jobs You Can Apply For Right Now</h3>
+      <a href="jobs.html" style="font-size:0.82rem;color:var(--red-light)">View All →</a>
+    </div>
+    <div id="nowJobsPreview" style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px"></div>
+  </div>
+
+  <!-- CTA -->
+  <div style="text-align:center;padding:32px;background:linear-gradient(135deg,var(--red-dark),var(--red));border-radius:var(--radius-xl);position:relative;overflow:hidden" class="fade-up fade-up-5">
+    <div style="position:absolute;inset:0;background:radial-gradient(circle at 30% 50%,rgba(255,255,255,0.08),transparent);pointer-events:none"></div>
+    <div style="position:relative;z-index:1">
+      <h2 style="font-family:var(--font-display);font-size:2.4rem;color:var(--white);margin-bottom:8px">READY TO START?</h2>
+      <p style="color:rgba(255,255,255,0.8);margin-bottom:24px">Your roadmap is set. Your first lesson is waiting. Let's go.</p>
+      <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+        <a href="courses.html" class="btn btn-lg" style="background:var(--white);color:var(--red);font-family:var(--font-cond)">🚀 Start First Lesson</a>
+        <a href="dashboard.html" class="btn btn-lg btn-outline" style="border-color:rgba(255,255,255,0.5);color:var(--white)">Go to Dashboard</a>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<script src="../js/global.js"></script>
+<script>
+const user = LP.user() || {};
+if (user) document.getElementById('navAvatar').textContent = user.avatar || 'LP';
+
+const targetRole = user.targetRole || 'Full-Stack Web Developer';
+const userSkills = user.skills || [];
+const timeAvail = parseInt(user.timeAvail || 60);
+const timeline = user.timeline || '6';
+
+document.getElementById('roleTitle').textContent = targetRole;
+
+// Roadmap data by role
+const roadmaps = {
+  default: [
+    { icon:'🌱', title:'Foundations', status:'done', sub:'The basics every developer needs', skills:['HTML/CSS','Git & GitHub','Command Line','How the Web Works'], have:['HTML/CSS','Git & GitHub'] },
+    { icon:'⚡', title:'Core Language', status:'current', sub:'Deep-dive into your primary language', skills:['JavaScript ES6+','Async/Await','DOM Manipulation','Error Handling'], have:['JavaScript ES6+'] },
+    { icon:'⚛️', title:'Frontend Framework', status:'locked', sub:'Build interactive UIs at scale', skills:['React.js','Hooks','State Management','React Router'], have:[] },
+    { icon:'🖥️', title:'Backend & Database', status:'locked', sub:'Build APIs and work with data', skills:['Node.js','Express','MongoDB','REST APIs'], have:[] },
+    { icon:'🎓', title:'Job Ready', status:'locked', sub:'Polish, deploy, and get hired', skills:['Portfolio Projects','Deployment','System Design Basics','Interview Prep'], have:[] },
+  ]
+};
+
+const roadmap = roadmaps.default;
+const allSkillsNeeded = roadmap.flatMap(n => n.skills);
+const allSkillsHave = roadmap.flatMap(n => n.have);
+const skillsNeeded = allSkillsNeeded.filter(s => !allSkillsHave.includes(s));
+const pct = Math.round((allSkillsHave.length / allSkillsNeeded.length) * 100);
+const weeksLeft = Math.ceil((skillsNeeded.length * 14) / (timeAvail / 60));
+
+// Animate ring
+setTimeout(() => {
+  const r = 90, c = 2 * Math.PI * r;
+  const fill = document.getElementById('bigRingFill');
+  fill.style.strokeDashoffset = c - (c * pct / 100);
+  animateCounter({ textContent: '0%' }, pct, '%', 1800, (el, val, suf) => document.getElementById('scoreDisplay').textContent = val + suf);
+  animateCounter(document.getElementById('skillsHave'), allSkillsHave.length, '', 1200);
+  animateCounter(document.getElementById('skillsNeed'), skillsNeeded.length, '', 1200);
+  animateCounter(document.getElementById('weeksEst'), weeksLeft, '', 1200);
+}, 400);
+
+// Custom counter with callback
+function animateCounter(el, target, suffix, duration, cb) {
+  let start = 0;
+  const step = (ts) => {
+    if (!start) start = ts;
+    const progress = Math.min((ts - start) / duration, 1);
+    const val = Math.floor(progress * target);
+    if (cb) cb(el, val, suffix);
+    else el.textContent = val + (suffix || '');
+    if (progress < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+
+// Time estimate text
+const timeMap = {'3':'3 months','6':'6 months','12':'12 months','flexible':'~12 months'};
+document.getElementById('timeEst').textContent = `Estimated to be job-ready in ~${timeMap[timeline] || '6 months'} at ${timeAvail} minutes/day`;
+
+// Render roadmap
+const visual = document.getElementById('roadmapVisual');
+roadmap.forEach(node => {
+  const div = document.createElement('div');
+  div.className = 'roadmap-node';
+  div.innerHTML = `
+    <div class="node-circle ${node.status}">${node.icon}</div>
+    <div class="node-body">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:2px">
+        <div class="node-title">${node.title}</div>
+        ${node.status==='done'?'<span class="badge badge-green">Complete</span>':node.status==='current'?'<span class="badge badge-red">In Progress</span>':'<span class="badge badge-gray">Locked</span>'}
+      </div>
+      <div class="node-sub">${node.sub}</div>
+      <div class="node-skills">
+        ${node.skills.map(s => `<span class="node-skill ${node.have.includes(s)?'skill-have':node.status==='locked'?'skill-locked':'skill-need'}">${node.have.includes(s)?'✓ ':node.status==='locked'?'🔒 ':'→ '}${s}</span>`).join('')}
+      </div>
+    </div>`;
+  visual.appendChild(div);
+});
+
+// Insights
+const insights = [
+  { icon:'🎯', title:'Your strongest foundation', text:`You already have ${allSkillsHave.length > 0 ? allSkillsHave.join(', ') : 'general computer skills'} — that's a real head start. We'll build on these first.` },
+  { icon:'⚡', title:'Fastest path to employment', text:`Based on your timeline, focusing 45 min/day on JavaScript and React will get you interview-ready in 4–5 months for junior frontend roles.` },
+  { icon:'💼', title:'Your first realistic job', text:`With your current skills, you qualify for ${timeAvail >= 60 ? 'Junior Developer and Trainee roles' : 'internship and trainee positions'} at ₹3–6 LPA. These will appear on your Jobs Board.` },
+  { icon:'🤖', title:'AI will adapt your plan', text:`Every week, LearnBot reviews your quiz scores and lesson completion rate and automatically adjusts your roadmap to keep you on track.` },
+];
+document.getElementById('insightsArea').innerHTML = insights.map(i => `
+  <div class="insight-card">
+    <div class="insight-icon">${i.icon}</div>
+    <div><div style="font-weight:700;color:var(--white);font-size:0.9rem;margin-bottom:4px">${i.title}</div><div style="font-size:0.82rem;color:var(--gray-5);line-height:1.6">${i.text}</div></div>
+  </div>`).join('');
+
+// Weekly plan
+const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const tasks = ['JavaScript: Closures (30 min)','JavaScript: Promises (30 min)','Mini Project: Todo App (45 min)','Quiz: JS Basics (20 min)','Review + GitHub commit (30 min)','Resource: MDN Docs reading','Rest day 🙏'];
+document.getElementById('weeklyPlan').innerHTML = days.map((d,i) => `
+  <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--white-5);font-size:0.82rem">
+    <span style="font-family:var(--font-cond);font-weight:700;color:var(--gray-4);width:36px">${d}</span>
+    <span style="color:var(--white);flex:1">${tasks[i]}</span>
+    ${i < 5 ? `<span style="color:#f59e0b">+${[20,20,30,15,20][i]} XP</span>` : ''}
+  </div>`).join('');
+
+// Job previews
+const nowJobs = [
+  { title:'Junior Frontend Dev', company:'Infosys', salary:'₹4.5–7 LPA', match:87 },
+  { title:'UI Developer Intern', company:'Razorpay', salary:'₹20K/mo', match:92 },
+  { title:'Web Developer', company:'Freelance', salary:'₹800/hr', match:78 },
+  { title:'HTML/CSS Developer', company:'Agency', salary:'₹3–5 LPA', match:95 },
+];
+document.getElementById('nowJobsPreview').innerHTML = nowJobs.map(j => `
+  <div style="background:var(--black-4);border:1px solid var(--white-10);border-radius:var(--radius-lg);padding:14px;transition:all var(--transition)" onmouseenter="this.style.borderColor='var(--red)'" onmouseleave="this.style.borderColor='rgba(255,255,255,0.1)'">
+    <div style="font-weight:700;color:var(--white);font-size:0.9rem;margin-bottom:2px">${j.title}</div>
+    <div style="font-size:0.78rem;color:var(--gray-4);margin-bottom:8px">${j.company} · ${j.salary}</div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <div class="progress-bar" style="flex:1;height:5px"><div class="progress-fill" style="width:${j.match}%"></div></div>
+      <span style="font-size:0.72rem;color:#10b981;font-weight:700">${j.match}%</span>
+    </div>
+  </div>`).join('');
+</script>
+</body>
+</html>

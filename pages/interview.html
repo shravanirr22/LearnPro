@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mock Interview — LearnPro</title>
+<link rel="stylesheet" href="../css/global.css">
+<style>
+.interview-layout { padding:32px; max-width:900px; margin:0 auto; }
+.interview-card { background:var(--black-3); border:1px solid var(--white-10); border-radius:var(--radius-xl); padding:32px; }
+.ai-face { width:80px; height:80px; border-radius:50%; background:linear-gradient(135deg,var(--red-dark),var(--red)); border:3px solid var(--red); display:flex; align-items:center; justify-content:center; font-size:2rem; margin:0 auto 16px; box-shadow:var(--shadow-red); animation:glow 3s infinite; }
+.stage-card { background:var(--black-4); border:1.5px solid var(--gray-1); border-radius:var(--radius-lg); padding:20px; cursor:pointer; transition:all var(--transition); text-align:center; }
+.stage-card:hover, .stage-card.selected { border-color:var(--red); background:var(--red-subtle); }
+.recording-dot { width:12px; height:12px; background:var(--red); border-radius:50%; display:inline-block; animation:pulse 1s infinite; margin-right:8px; }
+.score-item { display:flex; align-items:center; gap:14px; margin-bottom:16px; }
+.score-label { font-family:var(--font-cond); font-weight:700; font-size:0.88rem; color:var(--white); width:130px; flex-shrink:0; }
+.score-track { flex:1; height:8px; background:var(--black-5); border-radius:99px; overflow:hidden; }
+.score-num { font-family:var(--font-display); font-size:1rem; color:var(--white); width:44px; text-align:right; }
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="../index.html" class="nav-logo">LEARN<span>PRO</span></a>
+  <div class="nav-links">
+    <a href="dashboard.html" class="nav-link">Dashboard</a>
+    <a href="practice.html" class="nav-link">Practice</a>
+    <a href="mentors.html" class="nav-link">Mentors</a>
+  </div>
+  <div class="nav-actions"><div class="avatar" id="navAvatar">LP</div></div>
+</nav>
+
+<div style="padding-top:var(--nav-h)">
+<div class="interview-layout">
+
+  <!-- SETUP PAGE -->
+  <div id="setupPage">
+    <div style="text-align:center;margin-bottom:36px">
+      <span class="section-tag">AI Mock Interview</span>
+      <h1 style="font-size:2.2rem;color:var(--white)">Practice like it's <span style="color:var(--red)">real</span></h1>
+      <p style="color:var(--gray-4)">AI-powered voice interview. Get scored on technical accuracy, communication, and confidence.</p>
+    </div>
+
+    <div class="interview-card">
+      <div class="form-group">
+        <label class="form-label">Interview Role</label>
+        <select class="form-select" id="interviewRole">
+          <option>Frontend Developer</option>
+          <option>Full-Stack Developer</option>
+          <option>Backend Developer</option>
+          <option>Data Analyst</option>
+          <option>UI/UX Designer</option>
+          <option>Product Manager</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Difficulty</label>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+          <div class="stage-card selected" onclick="selectDiff(this,'fresher')">
+            <div style="font-size:1.3rem;margin-bottom:6px">🌱</div>
+            <div style="font-family:var(--font-cond);font-weight:700;color:var(--white);font-size:0.9rem">Fresher</div>
+            <div style="font-size:0.72rem;color:var(--gray-4)">0–1 year</div>
+          </div>
+          <div class="stage-card" onclick="selectDiff(this,'mid')">
+            <div style="font-size:1.3rem;margin-bottom:6px">⚡</div>
+            <div style="font-family:var(--font-cond);font-weight:700;color:var(--white);font-size:0.9rem">Mid-Level</div>
+            <div style="font-size:0.72rem;color:var(--gray-4)">1–3 years</div>
+          </div>
+          <div class="stage-card" onclick="selectDiff(this,'senior')">
+            <div style="font-size:1.3rem;margin-bottom:6px">🔥</div>
+            <div style="font-family:var(--font-cond);font-weight:700;color:var(--white);font-size:0.9rem">Senior</div>
+            <div style="font-size:0.72rem;color:var(--gray-4)">3+ years</div>
+          </div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Interview Type</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="stage-card selected" id="typeHR" onclick="selectType(this,'hr')">
+            <div style="font-size:1.3rem;margin-bottom:6px">🤝</div>
+            <div style="font-family:var(--font-cond);font-weight:700;color:var(--white);font-size:0.9rem">HR Round</div>
+            <div style="font-size:0.72rem;color:var(--gray-4)">Behavioural & culture fit</div>
+          </div>
+          <div class="stage-card" id="typeTech" onclick="selectType(this,'tech')">
+            <div style="font-size:1.3rem;margin-bottom:6px">💻</div>
+            <div style="font-family:var(--font-cond);font-weight:700;color:var(--white);font-size:0.9rem">Technical</div>
+            <div style="font-size:0.72rem;color:var(--gray-4)">Concepts & problem-solving</div>
+          </div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Number of Questions</label>
+        <select class="form-select" id="numQ">
+          <option value="5">5 Questions (~10 min)</option>
+          <option value="10" selected>10 Questions (~20 min)</option>
+          <option value="15">15 Questions (~30 min)</option>
+        </select>
+      </div>
+      <div style="background:var(--black-4);border-radius:var(--radius);padding:14px;margin-bottom:20px;font-size:0.85rem;color:var(--gray-5)">
+        <strong style="color:var(--white)">⚠️ Powered by Claude API.</strong> Add your API key in <code style="color:var(--red-light)">js/global.js</code> for full AI responses. Demo mode works without a key.
+      </div>
+      <button onclick="startInterview()" class="btn btn-primary w-full" style="justify-content:center;padding:16px;font-size:1rem">🎤 Start Interview →</button>
+    </div>
+  </div>
+
+  <!-- INTERVIEW PAGE -->
+  <div id="interviewPage" style="display:none">
+    <div style="text-align:center;margin-bottom:28px">
+      <div class="ai-face">🤖</div>
+      <div style="font-family:var(--font-cond);font-weight:700;font-size:0.85rem;color:var(--red-light);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px">AI Interviewer</div>
+      <div style="font-size:0.82rem;color:var(--gray-4)" id="interviewMeta">Frontend Developer · Fresher · HR Round</div>
+    </div>
+
+    <div class="interview-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <div style="font-size:0.85rem;color:var(--gray-4)">Question <span id="ivQNum">1</span> of <span id="ivQTotal">10</span></div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="recording-dot"></span>
+          <span style="font-family:var(--font-cond);font-size:0.8rem;color:var(--red-light)">LIVE</span>
+        </div>
+      </div>
+      <div class="progress-bar" style="margin-bottom:20px"><div class="progress-fill" id="ivProgress" style="width:10%"></div></div>
+
+      <div style="background:var(--black-4);border-radius:var(--radius-lg);padding:20px;margin-bottom:20px;border-left:3px solid var(--red)">
+        <div style="font-size:0.75rem;color:var(--gray-4);margin-bottom:8px;font-family:var(--font-cond);letter-spacing:0.08em">INTERVIEWER ASKS:</div>
+        <p style="font-size:1rem;color:var(--white);line-height:1.7" id="ivQuestion">Loading question…</p>
+        <button onclick="speakQuestion()" style="margin-top:10px;background:none;border:none;color:var(--red-light);font-size:0.82rem;cursor:pointer;font-family:var(--font-cond);font-weight:700;letter-spacing:0.06em">🔊 READ ALOUD</button>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Your Answer</label>
+        <textarea class="form-textarea" id="ivAnswer" placeholder="Type your answer here, or use voice…" style="min-height:140px"></textarea>
+      </div>
+
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button onclick="startVoice()" class="btn btn-ghost" id="voiceBtn">🎤 Use Voice</button>
+        <button onclick="getHint()" class="btn btn-ghost">💡 Get Hint</button>
+        <button onclick="submitAnswer()" class="btn btn-primary" style="margin-left:auto">Submit Answer →</button>
+      </div>
+
+      <div id="ivFeedback" style="display:none;margin-top:16px;padding:16px;background:var(--black-4);border-radius:var(--radius);border-left:3px solid #10b981">
+        <div style="font-family:var(--font-cond);font-size:0.78rem;font-weight:700;color:#10b981;letter-spacing:0.1em;margin-bottom:8px">AI FEEDBACK</div>
+        <p style="font-size:0.88rem;color:var(--gray-5);line-height:1.7" id="ivFeedbackText"></p>
+        <button onclick="nextIVQuestion()" class="btn btn-primary btn-sm" style="margin-top:12px">Next Question →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULTS PAGE -->
+  <div id="resultsPage" style="display:none">
+    <div style="text-align:center;margin-bottom:28px">
+      <div style="font-size:3rem;margin-bottom:8px">🎉</div>
+      <h2 style="font-size:2rem;color:var(--white)">Interview Complete!</h2>
+      <p style="color:var(--gray-4)">Here's how you did. Review feedback to improve.</p>
+    </div>
+    <div class="interview-card" style="margin-bottom:20px">
+      <div style="text-align:center;margin-bottom:28px">
+        <div style="font-family:var(--font-display);font-size:5rem;color:var(--red-light)" id="totalScore">0</div>
+        <div style="font-size:1rem;color:var(--gray-4)">Overall Score / 100</div>
+      </div>
+      <div id="scoreBreakdown"></div>
+    </div>
+    <div class="interview-card" style="margin-bottom:20px">
+      <h3 style="font-size:1rem;color:var(--white);margin-bottom:16px">💡 Key Improvement Areas</h3>
+      <div id="improvements"></div>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+      <button onclick="retryInterview()" class="btn btn-primary">🔄 Try Again</button>
+      <button onclick="document.getElementById('resultsPage').style.display='none';document.getElementById('setupPage').style.display='block'" class="btn btn-outline">Change Settings</button>
+      <a href="mentors.html" class="btn btn-ghost">Book Mentor Session →</a>
+    </div>
+  </div>
+</div>
+</div>
+
+<script src="../js/global.js"></script>
+<script>
+const user = LP.user();
+if (user) document.getElementById('navAvatar').textContent = user.avatar || 'LP';
+
+const hrQuestions = [
+  "Tell me about yourself and why you want to be a developer.",
+  "Where do you see yourself in 3 years?",
+  "Describe a challenge you faced while learning and how you overcame it.",
+  "Why do you want to work at a tech company?",
+  "What's your biggest strength as a developer?",
+  "How do you handle tight deadlines and pressure?",
+  "Tell me about a project you're proud of.",
+  "Why should we hire you?",
+  "What do you know about our company and products?",
+  "Do you prefer working alone or in a team and why?",
+];
+const techQuestions = [
+  "What is the difference between let, const, and var in JavaScript?",
+  "Explain the concept of closures in JavaScript with an example.",
+  "What is the Virtual DOM in React and how does it improve performance?",
+  "Explain the CSS Box Model.",
+  "What is an API and how does REST work?",
+  "What is the difference between == and === in JavaScript?",
+  "How does useEffect work in React? Explain the dependency array.",
+  "What is responsive design and how do you achieve it?",
+  "Explain async/await in JavaScript.",
+  "What is the difference between GET and POST HTTP methods?",
+];
+const feedbackPool = [
+  "Good answer! You clearly explained the concept. To improve, add a specific example from a project you've worked on to make it more memorable.",
+  "Decent response. Try to be more concise — aim for 2–3 minutes max. Practice the STAR method: Situation, Task, Action, Result.",
+  "Strong technical accuracy. Your communication could be more confident — avoid filler words like 'um' and 'like'. Project confidence!",
+  "Good structure. Next time, tie your answer back to the specific role and company to show you've done your research.",
+  "Well done! You hit the key points. Consider adding metrics or numbers to quantify your achievements — e.g. 'reduced load time by 40%'.",
+];
+
+let selectedDiff = 'fresher', selectedType = 'hr', ivQ = 0, totalQs = 10;
+let answers = [], recognition = null;
+
+function selectDiff(el, val) {
+  document.querySelectorAll('.stage-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected'); selectedDiff = val;
+}
+function selectType(el, val) {
+  ['typeHR','typeTech'].forEach(id => document.getElementById(id)?.classList.remove('selected'));
+  el.classList.add('selected'); selectedType = val;
+}
+
+function startInterview() {
+  totalQs = parseInt(document.getElementById('numQ').value);
+  const role = document.getElementById('interviewRole').value;
+  document.getElementById('interviewMeta').textContent = `${role} · ${selectedDiff.charAt(0).toUpperCase()+selectedDiff.slice(1)} · ${selectedType==='hr'?'HR Round':'Technical'}`;
+  ivQ = 0; answers = [];
+  document.getElementById('ivQTotal').textContent = totalQs;
+  document.getElementById('setupPage').style.display = 'none';
+  document.getElementById('interviewPage').style.display = 'block';
+  loadIVQuestion();
+}
+
+function loadIVQuestion() {
+  const questions = selectedType === 'hr' ? hrQuestions : techQuestions;
+  const q = questions[ivQ % questions.length];
+  document.getElementById('ivQNum').textContent = ivQ + 1;
+  document.getElementById('ivProgress').style.width = `${((ivQ)/totalQs)*100}%`;
+  document.getElementById('ivQuestion').textContent = q;
+  document.getElementById('ivAnswer').value = '';
+  document.getElementById('ivFeedback').style.display = 'none';
+}
+
+function speakQuestion() {
+  const q = document.getElementById('ivQuestion').textContent;
+  const utter = new SpeechSynthesisUtterance(q);
+  utter.rate = 0.9; window.speechSynthesis.speak(utter);
+}
+
+function startVoice() {
+  if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
+    showToast('Voice not supported in this browser. Use Chrome.', 'error'); return;
+  }
+  const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+  recognition = new SpeechRec();
+  recognition.lang = 'en-IN'; recognition.continuous = true; recognition.interimResults = true;
+  recognition.onresult = e => {
+    let transcript = '';
+    for (let i = 0; i < e.results.length; i++) transcript += e.results[i][0].transcript;
+    document.getElementById('ivAnswer').value = transcript;
+  };
+  recognition.start();
+  const btn = document.getElementById('voiceBtn');
+  btn.textContent = '⏹ Stop Recording'; btn.classList.add('btn-primary'); btn.classList.remove('btn-ghost');
+  btn.onclick = () => { recognition.stop(); btn.textContent = '🎤 Use Voice'; btn.classList.remove('btn-primary'); btn.classList.add('btn-ghost'); btn.onclick = startVoice; };
+  showToast('Recording started. Speak clearly…', 'info');
+}
+
+function getHint() {
+  const hints = {
+    hr:['Use the STAR method: Situation, Task, Action, Result.','Keep your answer to 2–3 minutes.','Always relate back to the specific role.'],
+    tech:['Start with the definition, then explain with an example.','Mention trade-offs or alternatives when relevant.','Use real project experience to illustrate your point.']
+  };
+  const h = hints[selectedType][Math.floor(Math.random()*3)];
+  showToast(`💡 Hint: ${h}`, 'info');
+}
+
+async function submitAnswer() {
+  const answer = document.getElementById('ivAnswer').value.trim();
+  if (!answer) { showToast('Please type or speak your answer first.', 'error'); return; }
+  answers.push(answer);
+  // Try Claude API for real feedback
+  let feedback = feedbackPool[Math.floor(Math.random() * feedbackPool.length)];
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json','x-api-key':'YOUR_CLAUDE_API_KEY','anthropic-version':'2023-06-01' },
+      body: JSON.stringify({ model:'claude-opus-4-5', max_tokens:300,
+        system:`You are an expert ${document.getElementById('interviewRole').value} interviewer. Give concise, constructive feedback (2-3 sentences) on interview answers. Focus on technical accuracy, communication style, and what to improve.`,
+        messages:[{ role:'user', content:`Question: ${document.getElementById('ivQuestion').textContent}\n\nCandidate Answer: ${answer}\n\nGive feedback:` }] })
+    });
+    const data = await res.json();
+    if (data?.content?.[0]?.text) feedback = data.content[0].text;
+  } catch { /* use default feedback */ }
+
+  document.getElementById('ivFeedbackText').textContent = feedback;
+  document.getElementById('ivFeedback').style.display = 'block';
+}
+
+function nextIVQuestion() {
+  ivQ++;
+  if (ivQ >= totalQs) { showResults(); return; }
+  loadIVQuestion();
+}
+
+function showResults() {
+  document.getElementById('interviewPage').style.display = 'none';
+  document.getElementById('resultsPage').style.display = 'block';
+  const score = 62 + Math.floor(Math.random() * 25);
+  animateCounter(document.getElementById('totalScore'), score, '', 1500);
+  const breakdown = [
+    { label:'Technical Knowledge', score: Math.min(100, score + 8), color:'#10b981' },
+    { label:'Communication', score: Math.max(40, score - 5), color:'#f59e0b' },
+    { label:'Confidence', score: Math.max(40, score - 10), color:'#60a5fa' },
+    { label:'Problem Solving', score: Math.min(100, score + 4), color:var_('--red-light') },
+  ];
+  function var_(v) { return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
+  document.getElementById('scoreBreakdown').innerHTML = breakdown.map(b => `
+    <div class="score-item">
+      <div class="score-label">${b.label}</div>
+      <div class="score-track"><div style="height:100%;width:${b.score}%;background:${b.color};border-radius:99px;transition:width 1.5s ease"></div></div>
+      <div class="score-num">${b.score}</div>
+    </div>`).join('');
+  document.getElementById('improvements').innerHTML = [
+    'Use concrete examples from real projects in every answer.',
+    'Slow down when explaining technical concepts — clarity over speed.',
+    'Research the company before the real interview — mention their products.',
+  ].map(i => `<div style="display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--white-5);font-size:0.88rem;color:var(--gray-5)"><span style="color:var(--red)">→</span>${i}</div>`).join('');
+}
+
+function retryInterview() {
+  ivQ = 0; answers = [];
+  document.getElementById('resultsPage').style.display = 'none';
+  document.getElementById('interviewPage').style.display = 'block';
+  loadIVQuestion();
+}
+</script>
+</body>
+</html>

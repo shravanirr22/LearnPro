@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Practice Arena — LearnPro</title>
+<link rel="stylesheet" href="../css/global.css">
+<style>
+.arena-layout { display:grid; grid-template-columns:260px 1fr; min-height:calc(100vh - var(--nav-h)); }
+.arena-sidebar { border-right:1px solid var(--white-10); padding:20px 14px; overflow-y:auto; }
+.arena-main { display:flex; flex-direction:column; }
+
+/* Code Editor */
+.editor-wrap { display:grid; grid-template-columns:1fr 1fr; height:calc(100vh - var(--nav-h) - 120px); }
+.editor-panel { display:flex; flex-direction:column; border-right:1px solid var(--white-10); }
+.editor-header { padding:10px 16px; background:var(--black-3); border-bottom:1px solid var(--white-10); display:flex; align-items:center; justify-content:space-between; }
+.editor-tabs { display:flex; gap:2px; }
+.editor-tab { padding:6px 14px; font-family:var(--font-cond); font-size:0.82rem; font-weight:700; color:var(--gray-4); border-radius:var(--radius) var(--radius) 0 0; cursor:pointer; transition:all var(--transition); border:none; background:none; }
+.editor-tab.active { background:var(--black-4); color:var(--white); }
+.code-area { flex:1; padding:16px; background:var(--black); color:#f8f8f2; font-family:'Courier New', monospace; font-size:0.88rem; line-height:1.7; resize:none; border:none; outline:none; overflow-y:auto; }
+.output-panel { display:flex; flex-direction:column; }
+.output-area { flex:1; padding:16px; background:var(--black-2); font-family:'Courier New', monospace; font-size:0.85rem; color:#10b981; overflow-y:auto; white-space:pre-wrap; }
+
+/* Quiz */
+.quiz-option { padding:14px 18px; background:var(--black-4); border:1.5px solid var(--gray-1); border-radius:var(--radius); cursor:pointer; transition:all var(--transition); margin-bottom:10px; font-size:0.9rem; color:var(--white); display:flex; align-items:center; gap:12px; }
+.quiz-option:hover { border-color:var(--red); background:var(--red-subtle); }
+.quiz-option.correct { border-color:#10b981; background:rgba(16,185,129,0.1); color:#10b981; }
+.quiz-option.wrong { border-color:var(--red); background:var(--red-subtle); color:var(--red-light); }
+.quiz-option.disabled { cursor:not-allowed; }
+.quiz-letter { width:28px; height:28px; border-radius:50%; background:var(--black-5); display:flex; align-items:center; justify-content:center; font-family:var(--font-cond); font-weight:700; font-size:0.82rem; flex-shrink:0; }
+
+/* Challenge card */
+.challenge-card { background:var(--black-3); border:1px solid var(--white-10); border-radius:var(--radius-lg); padding:16px; margin-bottom:10px; cursor:pointer; transition:all var(--transition); }
+.challenge-card:hover, .challenge-card.active { border-color:var(--red); background:var(--red-subtle); }
+.diff-dot { width:8px; height:8px; border-radius:50%; display:inline-block; margin-right:6px; }
+.diff-easy { background:#10b981; }
+.diff-medium { background:#f59e0b; }
+.diff-hard { background:var(--red); }
+
+/* Timer */
+.timer-display { font-family:var(--font-display); font-size:2rem; color:var(--white); }
+.timer-danger { color:var(--red-light); animation:pulse 1s infinite; }
+
+/* Leaderboard */
+.lb-row { display:flex; align-items:center; gap:12px; padding:12px 0; border-bottom:1px solid var(--white-5); }
+.lb-rank { font-family:var(--font-display); font-size:1.2rem; width:32px; text-align:center; }
+.lb-rank.gold { color:#f59e0b; }
+.lb-rank.silver { color:#94a3b8; }
+.lb-rank.bronze { color:#b45309; }
+
+/* Mode selector */
+.mode-card { background:var(--black-3); border:1.5px solid var(--white-10); border-radius:var(--radius-lg); padding:20px; text-align:center; cursor:pointer; transition:all var(--transition); }
+.mode-card:hover, .mode-card.active { border-color:var(--red); background:var(--red-subtle); }
+.mode-icon { font-size:2.2rem; margin-bottom:8px; }
+.mode-title { font-family:var(--font-cond); font-size:1rem; font-weight:700; color:var(--white); margin-bottom:4px; }
+.mode-sub { font-size:0.78rem; color:var(--gray-4); }
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="../index.html" class="nav-logo">LEARN<span>PRO</span></a>
+  <div class="nav-links">
+    <a href="dashboard.html" class="nav-link">Dashboard</a>
+    <a href="resources.html" class="nav-link">Resources</a>
+    <a href="jobs.html" class="nav-link">Jobs</a>
+    <a href="mentors.html" class="nav-link">Mentors</a>
+    <a href="courses.html" class="nav-link">Courses</a>
+    <a href="community.html" class="nav-link">Community</a>
+  </div>
+  <div class="nav-actions">
+    <div style="display:flex;align-items:center;gap:6px;background:var(--black-3);border:1px solid var(--white-10);border-radius:var(--radius-full);padding:6px 14px">
+      <span style="font-size:0.78rem;color:var(--gray-4)">XP</span>
+      <span style="font-family:var(--font-display);color:#f59e0b" id="navXP">1240</span>
+    </div>
+    <div class="avatar" id="navAvatar">LP</div>
+  </div>
+</nav>
+
+<div style="padding-top:var(--nav-h)">
+
+<!-- MODE SELECTOR -->
+<div id="modeSelectorPage" style="padding:40px 32px;max-width:900px;margin:0 auto">
+  <div style="text-align:center;margin-bottom:40px">
+    <span class="section-tag">Practice Arena</span>
+    <h1 style="font-size:2.2rem;color:var(--white)">Sharpen your skills. <span style="color:var(--red)">Beat the leaderboard.</span></h1>
+    <p style="color:var(--gray-4)">Code challenges, quizzes, timed tests — all aligned to your roadmap.</p>
+  </div>
+  <div class="grid-3" style="gap:20px;margin-bottom:32px">
+    <div class="mode-card" onclick="startMode('sandbox')">
+      <div class="mode-icon">💻</div>
+      <div class="mode-title">Code Sandbox</div>
+      <div class="mode-sub">HTML · CSS · JS live editor. Build and preview in browser.</div>
+    </div>
+    <div class="mode-card" onclick="startMode('quiz')">
+      <div class="mode-icon">🧠</div>
+      <div class="mode-title">Quiz Mode</div>
+      <div class="mode-sub">500+ MCQs by topic and difficulty. Earn XP per correct answer.</div>
+    </div>
+    <div class="mode-card" onclick="startMode('timed')">
+      <div class="mode-icon">⏱️</div>
+      <div class="mode-title">Timed Challenge</div>
+      <div class="mode-sub">Race against the clock. Top scores go on the leaderboard.</div>
+    </div>
+  </div>
+  <!-- LEADERBOARD PREVIEW -->
+  <div style="background:var(--black-3);border:1px solid var(--white-10);border-radius:var(--radius-xl);padding:28px">
+    <div class="flex-between" style="margin-bottom:20px">
+      <h3 style="font-size:1.1rem;color:var(--white)">🏆 Weekly Leaderboard — Full-Stack Track</h3>
+      <span class="badge badge-red">Resets Monday</span>
+    </div>
+    <div id="leaderboardList"></div>
+    <div style="text-align:center;margin-top:14px">
+      <button onclick="startMode('quiz')" class="btn btn-primary btn-sm">Compete This Week →</button>
+    </div>
+  </div>
+</div>
+
+<!-- SANDBOX PAGE -->
+<div id="sandboxPage" style="display:none">
+  <div style="padding:12px 16px;background:var(--black-3);border-bottom:1px solid var(--white-10);display:flex;align-items:center;justify-content:space-between">
+    <div style="display:flex;align-items:center;gap:12px">
+      <button onclick="backToModes()" class="btn btn-ghost btn-sm">← Back</button>
+      <div style="font-family:var(--font-cond);font-weight:700;color:var(--white)">Code Sandbox</div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <select id="sandboxLang" onchange="updateTemplate()" style="background:var(--black-4);border:1px solid var(--gray-1);border-radius:var(--radius-full);color:var(--white);padding:6px 12px;font-size:0.82rem;outline:none;cursor:pointer">
+        <option value="html">HTML / CSS / JS</option>
+        <option value="python">Python (simulated)</option>
+        <option value="sql">SQL (simulated)</option>
+      </select>
+      <button onclick="runCode()" class="btn btn-primary btn-sm">▶ Run</button>
+      <button onclick="resetCode()" class="btn btn-ghost btn-sm">↺ Reset</button>
+      <button onclick="showToast('Code saved!','success')" class="btn btn-ghost btn-sm">💾 Save</button>
+    </div>
+  </div>
+  <div class="editor-wrap">
+    <div class="editor-panel">
+      <div class="editor-header">
+        <div class="editor-tabs">
+          <button class="editor-tab active" onclick="switchEditorTab(this,'html')">HTML</button>
+          <button class="editor-tab" onclick="switchEditorTab(this,'css')">CSS</button>
+          <button class="editor-tab" onclick="switchEditorTab(this,'js')">JS</button>
+        </div>
+        <span style="font-size:0.72rem;color:var(--gray-4)">Auto-saved</span>
+      </div>
+      <textarea class="code-area" id="htmlEditor" placeholder="Write your HTML here…" oninput="autoSave()"></textarea>
+      <textarea class="code-area" id="cssEditor" placeholder="Write your CSS here…" style="display:none" oninput="autoSave()"></textarea>
+      <textarea class="code-area" id="jsEditor" placeholder="Write your JavaScript here…" style="display:none" oninput="autoSave()"></textarea>
+    </div>
+    <div class="output-panel">
+      <div class="editor-header">
+        <div style="font-family:var(--font-cond);font-size:0.85rem;font-weight:700;color:var(--white)">Output Preview</div>
+        <button onclick="openInNewTab()" class="btn btn-ghost btn-sm" style="font-size:0.72rem">Open in New Tab ↗</button>
+      </div>
+      <iframe id="outputFrame" style="flex:1;border:none;background:white"></iframe>
+    </div>
+  </div>
+</div>
+
+<!-- QUIZ PAGE -->
+<div id="quizPage" style="display:none;padding:32px;max-width:760px;margin:0 auto">
+  <div class="flex-between" style="margin-bottom:24px">
+    <button onclick="backToModes()" class="btn btn-ghost btn-sm">← Back</button>
+    <div style="display:flex;align-items:center;gap:16px">
+      <div class="timer-display" id="quizTimer">05:00</div>
+      <div style="font-size:0.85rem;color:var(--gray-4)">Question <span id="qNum">1</span> / <span id="qTotal">10</span></div>
+    </div>
+  </div>
+  <div style="background:var(--black-3);border:1px solid var(--white-10);border-radius:var(--radius-xl);padding:28px;margin-bottom:24px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <span class="badge badge-yellow" id="quizTopic">JavaScript</span>
+      <span style="font-size:0.8rem;color:var(--gray-4)" id="quizDiff">Intermediate</span>
+    </div>
+    <div style="margin:20px 0">
+      <div class="progress-bar"><div class="progress-fill" id="quizProgressBar" style="width:10%"></div></div>
+    </div>
+    <h3 style="font-size:1.1rem;color:var(--white);line-height:1.5;margin-bottom:24px" id="quizQuestion">Loading question…</h3>
+    <div id="quizOptions"></div>
+    <div id="quizExplanation" style="display:none;margin-top:16px;padding:14px;background:var(--black-4);border-radius:var(--radius);border-left:3px solid #10b981;font-size:0.88rem;color:var(--gray-5);line-height:1.7"></div>
+  </div>
+  <div class="flex-between">
+    <div style="font-family:var(--font-display);font-size:1.2rem;color:#f59e0b">XP: <span id="quizXP">0</span></div>
+    <button id="nextQBtn" onclick="nextQuestion()" class="btn btn-primary" style="display:none">Next Question →</button>
+  </div>
+</div>
+
+<!-- TIMED CHALLENGE PAGE -->
+<div id="timedPage" style="display:none;padding:32px;max-width:760px;margin:0 auto">
+  <div class="flex-between" style="margin-bottom:24px">
+    <button onclick="backToModes()" class="btn btn-ghost btn-sm">← Back</button>
+    <div id="timedTimer" class="timer-display">10:00</div>
+    <div style="font-size:0.85rem;color:var(--gray-4)">Score: <span id="timedScore" style="color:#f59e0b;font-family:var(--font-display)">0</span></div>
+  </div>
+  <div style="background:var(--black-3);border:1px solid var(--white-10);border-radius:var(--radius-xl);padding:28px">
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+      <span class="badge badge-red">⏱ Timed Mode</span>
+      <span class="badge badge-yellow" id="timedTopic">React.js</span>
+    </div>
+    <h3 style="font-size:1.1rem;color:var(--white);line-height:1.5;margin-bottom:20px" id="timedQuestion">Loading…</h3>
+    <div id="timedOptions"></div>
+  </div>
+</div>
+
+</div>
+
+<!-- CHATBOT -->
+<button class="chatbot-fab">🤖</button>
+<div class="chatbot-panel">
+  <div class="chatbot-header">
+    <div style="display:flex;align-items:center;gap:10px"><span style="font-size:1.3rem">🤖</span><div><div style="font-weight:700;font-size:0.95rem">LearnBot</div></div></div>
+    <button onclick="document.querySelector('.chatbot-panel').classList.remove('open')" style="background:none;border:none;color:white;font-size:1.2rem;cursor:pointer">✕</button>
+  </div>
+  <div class="chatbot-messages"><div class="msg msg-bot">Stuck on a challenge? Paste your code and I'll help you debug it! ⚡</div></div>
+  <div class="chatbot-input-area"><input class="chatbot-input" placeholder="Help me debug…" type="text"><button class="chatbot-send">→</button></div>
+</div>
+
+<script src="../js/global.js"></script>
+<script>
+const user = LP.user();
+if (user) { document.getElementById('navAvatar').textContent = user.avatar || 'LP'; }
+
+// Leaderboard data
+const leaderboard = [
+  { rank:1, name:'Rahul Mehta', xp:4280, streak:21, initials:'RM' },
+  { rank:2, name:'Sneha Kulkarni', xp:3940, streak:18, initials:'SK' },
+  { rank:3, name:'Arjun Kapoor', xp:3710, streak:14, initials:'AK' },
+  { rank:4, name:'Kavya Nair', xp:3320, streak:11, initials:'KN' },
+  { rank:5, name:user?.name || 'You', xp:1240, streak:14, initials:user?.avatar || 'LP', isYou:true },
+];
+const classes = ['gold','silver','bronze','',''];
+const emojis = ['🥇','🥈','🥉','4','5'];
+document.getElementById('leaderboardList').innerHTML = leaderboard.map((l,i) => `
+  <div class="lb-row" style="${l.isYou?'background:var(--red-subtle);margin:0 -14px;padding:12px 14px;border-radius:var(--radius);':''}">
+    <div class="lb-rank ${classes[i]}">${emojis[i]}</div>
+    <div class="avatar avatar-sm" style="${l.isYou?'border-color:var(--red)':''}">${l.initials}</div>
+    <div style="flex:1"><div style="font-weight:700;color:var(--white);font-size:0.9rem">${l.name}${l.isYou?' (You)':''}</div><div style="font-size:0.72rem;color:var(--gray-4)">🔥 ${l.streak} day streak</div></div>
+    <div style="font-family:var(--font-display);font-size:1.1rem;color:#f59e0b">${l.xp.toLocaleString()} XP</div>
+  </div>`).join('');
+
+// Quiz questions
+const questions = [
+  { q:'What does "==" do differently from "===" in JavaScript?', opts:['Both check type and value','== checks value only, === checks type and value','=== checks value only','== is faster'], correct:1, topic:'JavaScript', diff:'Beginner', xp:20, exp:'"==" (loose equality) converts types before comparing. "===" (strict equality) checks both value and type without conversion. Always prefer "===". ' },
+  { q:'Which React hook would you use to fetch data when a component mounts?', opts:['useState','useCallback','useEffect','useRef'], correct:2, topic:'React', diff:'Intermediate', xp:25, exp:'useEffect with an empty dependency array [] runs once after the first render — equivalent to componentDidMount in class components.' },
+  { q:'What is the output of: console.log(typeof null)?', opts:['null','undefined','object','string'], correct:2, topic:'JavaScript', diff:'Intermediate', xp:30, exp:'"typeof null" returns "object" — this is a well-known bug in JavaScript that has existed since the language was created and is kept for backwards compatibility.' },
+  { q:'In CSS, what does "position: sticky" do?', opts:['Makes element always fixed to viewport','Makes element scroll normally then sticks at threshold','Same as position: fixed','Removes element from document flow'], correct:1, topic:'CSS', diff:'Intermediate', xp:20, exp:'A sticky element scrolls normally until it hits a defined threshold (e.g. top: 0), then behaves like position:fixed. Unlike fixed, it remains in document flow.' },
+  { q:'What is a REST API?', opts:['A database structure','A front-end framework','An architectural style for web services using HTTP','A JavaScript runtime'], correct:2, topic:'Web Basics', diff:'Beginner', xp:15, exp:'REST (Representational State Transfer) is an architectural style that defines constraints for creating web services. RESTful APIs use HTTP methods (GET, POST, PUT, DELETE) and are stateless.' },
+  { q:'What does the "async" keyword do before a function?', opts:['Makes the function synchronous','Forces the function to use callbacks','Makes the function return a Promise automatically','Disables error handling'], correct:2, topic:'JavaScript', diff:'Intermediate', xp:25, exp:'An async function always returns a Promise. Inside it, you can use "await" to pause execution until a Promise resolves, making async code read like synchronous code.' },
+  { q:'In React, what is "prop drilling"?', opts:['Removing unused props','Passing props down multiple component levels','Validating prop types','Optimising prop rendering'], correct:1, topic:'React', diff:'Intermediate', xp:25, exp:'Prop drilling is when you pass props through many intermediate components that don\'t need them, just to reach a deeply nested child. Context API or state management tools solve this.' },
+  { q:'Which HTTP method is used to UPDATE an existing resource?', opts:['GET','POST','PUT','DELETE'], correct:2, topic:'Web Basics', diff:'Beginner', xp:15, exp:'PUT replaces the entire resource. PATCH is used for partial updates. GET retrieves, POST creates, DELETE removes.' },
+  { q:'What is a Promise in JavaScript?', opts:['A variable declaration','An object representing eventual completion of async operation','A loop construct','A CSS property'], correct:1, topic:'JavaScript', diff:'Intermediate', xp:25, exp:'A Promise is an object representing the eventual completion (or failure) of an asynchronous operation. It has three states: pending, fulfilled, and rejected.' },
+  { q:'What does "npm install" do?', opts:['Publishes a package','Runs your Node.js app','Installs all packages listed in package.json','Creates a new Node project'], correct:2, topic:'Node.js', diff:'Beginner', xp:15, exp:'"npm install" reads your package.json and installs all listed dependencies into the node_modules folder. Add --save-dev for development-only packages.' },
+];
+
+let currentQ = 0;
+let quizXP = 0;
+let quizInterval = null;
+let timedInterval = null;
+let timedQ = 0;
+let timedScore = 0;
+let timedSecondsLeft = 600;
+
+function startMode(mode) {
+  document.getElementById('modeSelectorPage').style.display = 'none';
+  document.getElementById('sandboxPage').style.display = 'none';
+  document.getElementById('quizPage').style.display = 'none';
+  document.getElementById('timedPage').style.display = 'none';
+  if (mode === 'sandbox') { document.getElementById('sandboxPage').style.display = 'block'; loadDefaultCode(); }
+  else if (mode === 'quiz') { document.getElementById('quizPage').style.display = 'block'; currentQ = 0; quizXP = 0; loadQuestion(); startQuizTimer(); }
+  else if (mode === 'timed') { document.getElementById('timedPage').style.display = 'block'; timedQ = 0; timedScore = 0; timedSecondsLeft = 600; loadTimedQuestion(); startTimedTimer(); }
+}
+
+function backToModes() {
+  clearInterval(quizInterval); clearInterval(timedInterval);
+  document.getElementById('modeSelectorPage').style.display = 'block';
+  document.getElementById('sandboxPage').style.display = 'none';
+  document.getElementById('quizPage').style.display = 'none';
+  document.getElementById('timedPage').style.display = 'none';
+}
+
+/* ── QUIZ ── */
+function loadQuestion() {
+  const q = questions[currentQ];
+  document.getElementById('qNum').textContent = currentQ + 1;
+  document.getElementById('qTotal').textContent = questions.length;
+  document.getElementById('quizProgressBar').style.width = `${((currentQ)/questions.length)*100}%`;
+  document.getElementById('quizTopic').textContent = q.topic;
+  document.getElementById('quizDiff').textContent = q.diff;
+  document.getElementById('quizQuestion').textContent = q.q;
+  document.getElementById('quizExplanation').style.display = 'none';
+  document.getElementById('nextQBtn').style.display = 'none';
+  const letters = ['A','B','C','D'];
+  document.getElementById('quizOptions').innerHTML = q.opts.map((opt,i) => `
+    <div class="quiz-option" onclick="answerQ(${i},this)" id="opt${i}">
+      <div class="quiz-letter">${letters[i]}</div>${opt}
+    </div>`).join('');
+}
+
+function answerQ(idx, el) {
+  const q = questions[currentQ];
+  document.querySelectorAll('.quiz-option').forEach(o => o.classList.add('disabled'));
+  document.querySelectorAll('.quiz-option').forEach(o => o.onclick = null);
+  if (idx === q.correct) {
+    el.classList.add('correct');
+    quizXP += q.xp;
+    document.getElementById('quizXP').textContent = quizXP;
+    showToast(`+${q.xp} XP! Correct! ✅`, 'success');
+  } else {
+    el.classList.add('wrong');
+    document.getElementById(`opt${q.correct}`)?.classList.add('correct');
+    showToast('Wrong answer. Study the explanation below.', 'error');
+  }
+  const expEl = document.getElementById('quizExplanation');
+  expEl.textContent = q.exp; expEl.style.display = 'block';
+  document.getElementById('nextQBtn').style.display = 'block';
+}
+
+function nextQuestion() {
+  currentQ++;
+  if (currentQ >= questions.length) {
+    clearInterval(quizInterval);
+    showToast(`Quiz complete! Total XP earned: ${quizXP} 🎉`, 'success');
+    const xpEl = document.getElementById('navXP');
+    animateCounter(xpEl, parseInt(xpEl.textContent) + quizXP, '', 1000);
+    setTimeout(() => backToModes(), 2000);
+    return;
+  }
+  loadQuestion();
+}
+
+function startQuizTimer() {
+  let s = 300;
+  quizInterval = setInterval(() => {
+    const m = String(Math.floor(s/60)).padStart(2,'0');
+    const sec = String(s%60).padStart(2,'0');
+    const el = document.getElementById('quizTimer');
+    el.textContent = `${m}:${sec}`;
+    el.className = s <= 30 ? 'timer-display timer-danger' : 'timer-display';
+    if (--s < 0) { clearInterval(quizInterval); showToast('Time\'s up!', 'error'); }
+  }, 1000);
+}
+
+/* ── TIMED ── */
+function loadTimedQuestion() {
+  const q = questions[timedQ % questions.length];
+  document.getElementById('timedTopic').textContent = q.topic;
+  document.getElementById('timedQuestion').textContent = q.q;
+  const letters = ['A','B','C','D'];
+  document.getElementById('timedOptions').innerHTML = q.opts.map((opt,i) => `
+    <div class="quiz-option" onclick="answerTimed(${i},this,${q.correct},${q.xp})">
+      <div class="quiz-letter">${letters[i]}</div>${opt}
+    </div>`).join('');
+}
+
+function answerTimed(idx, el, correct, xp) {
+  if (idx === correct) {
+    timedScore += xp; el.classList.add('correct');
+    document.getElementById('timedScore').textContent = timedScore;
+  } else {
+    el.classList.add('wrong');
+  }
+  timedQ++;
+  setTimeout(() => loadTimedQuestion(), 600);
+}
+
+function startTimedTimer() {
+  timedInterval = setInterval(() => {
+    const m = String(Math.floor(timedSecondsLeft/60)).padStart(2,'0');
+    const s = String(timedSecondsLeft%60).padStart(2,'0');
+    const el = document.getElementById('timedTimer');
+    el.textContent = `${m}:${s}`;
+    el.className = timedSecondsLeft <= 60 ? 'timer-display timer-danger' : 'timer-display';
+    if (--timedSecondsLeft < 0) {
+      clearInterval(timedInterval);
+      showToast(`Time's up! Final score: ${timedScore} XP 🏆`, 'success');
+      setTimeout(() => backToModes(), 2000);
+    }
+  }, 1000);
+}
+
+/* ── SANDBOX ── */
+const defaultCode = {
+  html: `<!DOCTYPE html>\n<html>\n<head>\n  <link rel="stylesheet" href="style.css">\n</head>\n<body>\n  <div class="container">\n    <h1>Hello, LearnPro! 🚀</h1>\n    <p>Edit the HTML, CSS, and JS tabs and click <strong>Run</strong></p>\n    <button onclick="greet()">Click me!</button>\n  </div>\n  <script src="app.js"><\/script>\n</body>\n</html>`,
+  css: `body {\n  background: #111;\n  color: white;\n  font-family: Arial, sans-serif;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  min-height: 100vh;\n  margin: 0;\n}\n.container {\n  text-align: center;\n  padding: 40px;\n  background: #1a1a1a;\n  border-radius: 12px;\n  border: 1px solid #333;\n}\nh1 { color: #B4121B; }\nbutton {\n  background: #B4121B;\n  color: white;\n  border: none;\n  padding: 12px 28px;\n  border-radius: 999px;\n  font-size: 1rem;\n  cursor: pointer;\n  margin-top: 16px;\n}`,
+  js: `function greet() {\n  const msg = document.createElement('p');\n  msg.textContent = '🎉 You clicked it! Keep building!';\n  msg.style.color = '#10b981';\n  document.querySelector('.container').appendChild(msg);\n}`
+};
+
+function loadDefaultCode() {
+  document.getElementById('htmlEditor').value = defaultCode.html;
+  document.getElementById('cssEditor').value = defaultCode.css;
+  document.getElementById('jsEditor').value = defaultCode.js;
+  runCode();
+}
+
+function switchEditorTab(btn, tab) {
+  document.querySelectorAll('.editor-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  ['htmlEditor','cssEditor','jsEditor'].forEach(id => document.getElementById(id).style.display = 'none');
+  document.getElementById(tab + 'Editor').style.display = 'block';
+}
+
+function runCode() {
+  const html = document.getElementById('htmlEditor').value;
+  const css = `<style>${document.getElementById('cssEditor').value}</style>`;
+  const js = `<script>${document.getElementById('jsEditor').value}<\/script>`;
+  const combined = html.replace('</head>', css + '</head>').replace('</body>', js + '</body>');
+  const frame = document.getElementById('outputFrame');
+  frame.srcdoc = combined;
+}
+
+function resetCode() { loadDefaultCode(); showToast('Code reset to default.', 'info'); }
+function openInNewTab() {
+  const w = window.open(); w.document.write(document.getElementById('outputFrame').srcdoc);
+}
+let autoSaveTimer;
+function autoSave() { clearTimeout(autoSaveTimer); autoSaveTimer = setTimeout(() => LP.set('sandboxCode', { html: document.getElementById('htmlEditor').value, css: document.getElementById('cssEditor').value, js: document.getElementById('jsEditor').value }), 1500); }
+
+// Load any saved code
+const saved = LP.get('sandboxCode');
+if (saved) { document.getElementById('htmlEditor').value = saved.html || ''; document.getElementById('cssEditor').value = saved.css || ''; document.getElementById('jsEditor').value = saved.js || ''; }
+</script>
+</body>
+</html>

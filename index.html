@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LearnPro — Learn. Grow. Get Hired.</title>
+<link rel="stylesheet" href="css/global.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23B4121B'/%3E%3Ctext x='16' y='24' font-size='20' text-anchor='middle' fill='white' font-family='Arial Black'%3EL%3C/text%3E%3C/svg%3E">
+<style>
+/* HERO */
+.hero {
+  min-height: 100vh; display: flex; align-items: center;
+  position: relative; overflow: hidden;
+  background: radial-gradient(ellipse 80% 60% at 60% 40%, rgba(180,18,27,0.12) 0%, transparent 70%);
+  padding: var(--nav-h) 0 0;
+}
+.hero::before {
+  content: ''; position: absolute; inset: 0;
+  background:
+    repeating-linear-gradient(0deg, transparent, transparent 59px, rgba(255,255,255,0.025) 59px, rgba(255,255,255,0.025) 60px),
+    repeating-linear-gradient(90deg, transparent, transparent 59px, rgba(255,255,255,0.025) 59px, rgba(255,255,255,0.025) 60px);
+  pointer-events: none;
+}
+.hero-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center; padding: 80px 0; }
+.hero-tag {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--red-subtle); border: 1px solid var(--red);
+  padding: 6px 16px; border-radius: var(--radius-full);
+  font-family: var(--font-cond); font-size: 0.82rem; font-weight: 700;
+  letter-spacing: 0.1em; color: var(--red-light); text-transform: uppercase;
+  margin-bottom: 24px;
+}
+.hero-tag::before { content: '●'; font-size: 0.5rem; animation: pulse 1.5s infinite; }
+.hero-title {
+  font-family: var(--font-display); font-size: clamp(3.5rem, 7vw, 7rem);
+  line-height: 0.95; color: var(--white); margin-bottom: 24px;
+}
+.hero-title .accent { color: var(--red); }
+.hero-sub { font-size: 1.1rem; color: var(--gray-5); line-height: 1.7; margin-bottom: 36px; max-width: 480px; }
+.hero-actions { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 48px; }
+.hero-stats { display: flex; gap: 32px; }
+.hero-stat-val { font-family: var(--font-display); font-size: 2rem; color: var(--white); }
+.hero-stat-label { font-size: 0.8rem; color: var(--gray-4); text-transform: uppercase; letter-spacing: 0.08em; }
+
+/* HERO VISUAL */
+.hero-visual { position: relative; }
+.hero-card-stack { position: relative; height: 480px; }
+.hc {
+  position: absolute; background: var(--black-3);
+  border: 1px solid var(--white-10); border-radius: var(--radius-xl);
+  padding: 20px; backdrop-filter: blur(8px);
+  box-shadow: var(--shadow-card);
+  animation: float 6s ease-in-out infinite;
+}
+.hc-main { width: 320px; top: 40px; left: 50%; transform: translateX(-50%); z-index: 3; animation-delay: 0s; }
+.hc-sm1 { width: 200px; top: 20px; left: 0; z-index: 2; animation-delay: 1s; opacity: 0.8; }
+.hc-sm2 { width: 200px; bottom: 80px; right: 0; z-index: 2; animation-delay: 2s; opacity: 0.8; }
+.hc-sm3 { width: 220px; bottom: 20px; left: 20px; z-index: 1; animation-delay: 0.5s; opacity: 0.7; }
+@keyframes float { 0%,100% { transform: translateY(0) translateX(-50%); } 50% { transform: translateY(-12px) translateX(-50%); } }
+.hc-sm1, .hc-sm2, .hc-sm3 { animation: floatSimple 6s ease-in-out infinite; }
+@keyframes floatSimple { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+
+/* FEATURES */
+.features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+.feature-card {
+  background: var(--black-3); border: 1px solid var(--white-10);
+  border-radius: var(--radius-xl); padding: 32px;
+  transition: all 0.3s ease; position: relative; overflow: hidden;
+}
+.feature-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, var(--red-dark), var(--red-light));
+  opacity: 0; transition: opacity 0.3s;
+}
+.feature-card:hover { border-color: rgba(180,18,27,0.4); transform: translateY(-6px); box-shadow: 0 12px 40px var(--red-glow); }
+.feature-card:hover::before { opacity: 1; }
+.feature-icon { font-size: 2.2rem; margin-bottom: 16px; display: block; }
+.feature-title { font-size: 1.2rem; color: var(--white); margin-bottom: 10px; }
+.feature-desc { font-size: 0.9rem; color: var(--gray-4); line-height: 1.6; }
+
+/* HOW IT WORKS */
+.steps-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; position: relative; }
+.steps-grid::before {
+  content: ''; position: absolute; top: 28px; left: 12.5%; right: 12.5%;
+  height: 2px; background: linear-gradient(90deg, transparent, var(--red), var(--red), transparent);
+}
+.step { text-align: center; padding: 20px; position: relative; z-index: 1; }
+.step-num {
+  width: 56px; height: 56px; border-radius: 50%; margin: 0 auto 16px;
+  background: var(--red); color: var(--white);
+  font-family: var(--font-display); font-size: 1.5rem;
+  display: flex; align-items: center; justify-content: center;
+  border: 3px solid var(--black); box-shadow: 0 0 0 4px var(--red-glow);
+}
+.step-title { font-size: 1.05rem; color: var(--white); margin-bottom: 8px; }
+.step-desc { font-size: 0.86rem; color: var(--gray-4); }
+
+/* TESTIMONIALS */
+.testimonial-card {
+  background: var(--black-3); border: 1px solid var(--white-10);
+  border-radius: var(--radius-xl); padding: 28px; position: relative;
+}
+.testimonial-card::before { content: '"'; position: absolute; top: 16px; right: 24px; font-size: 4rem; color: var(--red); opacity: 0.2; font-family: serif; line-height: 1; }
+.testimonial-text { font-size: 0.95rem; color: var(--gray-5); line-height: 1.7; margin-bottom: 20px; }
+.testimonial-stars { color: #f59e0b; font-size: 0.9rem; margin-bottom: 12px; }
+
+/* PRICING */
+.pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+.pricing-card {
+  background: var(--black-3); border: 1px solid var(--white-10);
+  border-radius: var(--radius-xl); padding: 36px; transition: all 0.3s ease;
+}
+.pricing-card.popular {
+  border-color: var(--red); position: relative;
+  background: linear-gradient(145deg, var(--black-3), var(--black-4));
+  box-shadow: 0 0 40px var(--red-glow);
+}
+.popular-badge {
+  position: absolute; top: -14px; left: 50%; transform: translateX(-50%);
+  background: var(--red); color: var(--white); padding: 4px 20px;
+  border-radius: var(--radius-full); font-family: var(--font-cond);
+  font-size: 0.8rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+}
+.pricing-plan { font-family: var(--font-cond); font-size: 0.85rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gray-4); margin-bottom: 8px; }
+.pricing-price { font-family: var(--font-display); font-size: 3.2rem; color: var(--white); margin-bottom: 4px; line-height: 1; }
+.pricing-price sup { font-size: 1.2rem; vertical-align: top; margin-top: 10px; display: inline-block; }
+.pricing-per { font-size: 0.82rem; color: var(--gray-4); margin-bottom: 24px; }
+.pricing-features { list-style: none; margin-bottom: 32px; }
+.pricing-features li { padding: 8px 0; border-bottom: 1px solid var(--white-5); font-size: 0.9rem; color: var(--gray-5); display: flex; align-items: center; gap: 10px; }
+.pricing-features li::before { content: '✓'; color: var(--red); font-weight: 700; }
+
+/* CTA BANNER */
+.cta-banner {
+  background: linear-gradient(135deg, var(--red-dark) 0%, var(--red) 50%, var(--red-dark) 100%);
+  border-radius: var(--radius-xl); padding: 64px; text-align: center;
+  position: relative; overflow: hidden;
+}
+.cta-banner::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(circle at 30% 50%, rgba(255,255,255,0.08) 0%, transparent 60%);
+}
+
+/* FOOTER */
+footer {
+  background: var(--black-2); border-top: 1px solid var(--white-10);
+  padding: 60px 0 30px;
+}
+.footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 40px; margin-bottom: 40px; }
+.footer-brand p { font-size: 0.9rem; color: var(--gray-4); margin: 12px 0 20px; max-width: 280px; }
+.footer-col h4 { font-family: var(--font-cond); font-size: 0.82rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gray-4); margin-bottom: 14px; }
+.footer-col a { display: block; color: var(--gray-5); font-size: 0.9rem; margin-bottom: 8px; text-decoration: none; transition: color var(--transition); }
+.footer-col a:hover { color: var(--red-light); }
+.footer-bottom { border-top: 1px solid var(--white-5); padding-top: 24px; display: flex; justify-content: space-between; align-items: center; }
+.footer-bottom p { font-size: 0.85rem; color: var(--gray-4); }
+.social-links { display: flex; gap: 12px; }
+.social-link {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--white-5); border: 1px solid var(--white-10);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--gray-5); font-size: 0.9rem; transition: all var(--transition);
+}
+.social-link:hover { background: var(--red-subtle); border-color: var(--red); color: var(--red-light); }
+
+/* BRANDS MARQUEE */
+.marquee-wrap { overflow: hidden; padding: 20px 0; }
+.marquee-track { display: flex; gap: 40px; animation: marquee 20s linear infinite; width: max-content; }
+.marquee-item { font-family: var(--font-cond); font-size: 1.2rem; font-weight: 700; color: var(--gray-2); letter-spacing: 0.1em; text-transform: uppercase; white-space: nowrap; }
+@keyframes marquee { to { transform: translateX(-50%); } }
+
+@media (max-width:1024px) { .hero-grid { grid-template-columns: 1fr; } .hero-visual { display: none; } .features-grid, .pricing-grid { grid-template-columns: repeat(2,1fr); } .steps-grid { grid-template-columns: repeat(2,1fr); } .steps-grid::before { display: none; } .footer-grid { grid-template-columns: 1fr 1fr; } }
+@media (max-width:640px) { .features-grid, .pricing-grid { grid-template-columns: 1fr; } .footer-grid { grid-template-columns: 1fr; } .hero-stats { gap: 20px; flex-wrap: wrap; } }
+</style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar" id="navbar">
+  <a href="index.html" class="nav-logo">LEARN<span>PRO</span></a>
+  <div class="nav-links">
+    <a href="index.html" class="nav-link active">Home</a>
+    <a href="pages/resources.html" class="nav-link">Resources</a>
+    <a href="pages/jobs.html" class="nav-link">Jobs</a>
+    <a href="pages/mentors.html" class="nav-link">Mentors</a>
+    <a href="pages/courses.html" class="nav-link">Courses</a>
+    <a href="pages/community.html" class="nav-link">Community</a>
+  </div>
+  <div class="nav-actions">
+    <a href="pages/login.html" class="btn btn-ghost btn-sm">Log In</a>
+    <a href="pages/signup.html" class="btn btn-primary btn-sm">Get Started</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-grid">
+      <div class="fade-up">
+        <div class="hero-tag">🚀 #1 Career Launch Platform for India</div>
+        <h1 class="hero-title">
+          LEARN.<br>
+          <span class="accent">GROW.</span><br>
+          GET HIRED.
+        </h1>
+        <p class="hero-sub">From where you are to where you want to be. AI-powered roadmaps, real mentors, live job intelligence — everything in one platform.</p>
+        <div class="hero-actions">
+          <a href="pages/signup.html" class="btn btn-primary btn-lg">Start For Free →</a>
+          <a href="#how" class="btn btn-outline btn-lg">See How It Works</a>
+        </div>
+        <div class="hero-stats">
+          <div>
+            <div class="hero-stat-val" id="c1">0</div>
+            <div class="hero-stat-label">Learners Enrolled</div>
+          </div>
+          <div>
+            <div class="hero-stat-val" id="c2">0</div>
+            <div class="hero-stat-label">Jobs Unlocked</div>
+          </div>
+          <div>
+            <div class="hero-stat-val" id="c3">0</div>
+            <div class="hero-stat-label">Top Mentors</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-visual fade-up fade-up-3">
+        <div class="hero-card-stack">
+          <!-- Main card -->
+          <div class="hc hc-main">
+            <div class="flex-between" style="margin-bottom:14px">
+              <div>
+                <div style="font-family:var(--font-cond);font-weight:700;color:var(--white)">Your Roadmap</div>
+                <div style="font-size:0.78rem;color:var(--gray-4)">Full-Stack Developer · 72% Complete</div>
+              </div>
+              <div style="width:48px;height:48px;border-radius:50%;background:var(--red-subtle);border:2px solid var(--red);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:1.1rem;color:var(--red-light)">72</div>
+            </div>
+            <div class="progress-bar" style="margin-bottom:10px"><div class="progress-fill" style="width:72%"></div></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px">
+              <div style="background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);border-radius:6px;padding:8px;font-size:0.78rem;color:#10b981">✓ HTML/CSS</div>
+              <div style="background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);border-radius:6px;padding:8px;font-size:0.78rem;color:#10b981">✓ JavaScript</div>
+              <div style="background:var(--red-subtle);border:1px solid var(--red);border-radius:6px;padding:8px;font-size:0.78rem;color:var(--red-light)">→ React.js</div>
+              <div style="background:var(--white-5);border:1px solid var(--white-10);border-radius:6px;padding:8px;font-size:0.78rem;color:var(--gray-4)">Node.js</div>
+            </div>
+          </div>
+          <!-- Job card -->
+          <div class="hc hc-sm1">
+            <div style="font-size:0.75rem;color:var(--gray-4);margin-bottom:4px">🎯 NEW JOB MATCH</div>
+            <div style="font-size:0.88rem;font-weight:700;color:var(--white);margin-bottom:2px">Frontend Dev</div>
+            <div style="font-size:0.75rem;color:var(--gray-4)">Bangalore · ₹8–12 LPA</div>
+            <div style="margin-top:8px;background:rgba(16,185,129,0.1);border-radius:4px;padding:4px 8px;font-size:0.72rem;color:#10b981;display:inline-block">87% Match ✓</div>
+          </div>
+          <!-- Mentor card -->
+          <div class="hc hc-sm2">
+            <div style="font-size:0.75rem;color:var(--gray-4);margin-bottom:8px">⭐ TOP MENTOR</div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <div class="avatar avatar-sm">PR</div>
+              <div>
+                <div style="font-size:0.85rem;font-weight:700;color:var(--white)">Priya Rao</div>
+                <div style="font-size:0.72rem;color:var(--gray-4)">SDE-3 @ Google</div>
+              </div>
+            </div>
+            <div style="margin-top:8px;font-size:0.72rem;color:#f59e0b">⭐⭐⭐⭐⭐ 4.9</div>
+          </div>
+          <!-- XP card -->
+          <div class="hc hc-sm3">
+            <div style="font-size:0.75rem;color:var(--gray-4);margin-bottom:4px">🔥 STREAK</div>
+            <div style="font-family:var(--font-display);font-size:1.8rem;color:var(--white)">14 DAYS</div>
+            <div style="font-size:0.75rem;color:var(--red-light);margin-top:2px">+240 XP this week</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BRANDS MARQUEE -->
+<div style="border-top:1px solid var(--white-5);border-bottom:1px solid var(--white-5);background:var(--black-2);padding:4px 0">
+  <div class="marquee-wrap">
+    <div class="marquee-track">
+      <span class="marquee-item">Google</span><span class="marquee-item">·</span>
+      <span class="marquee-item">Microsoft</span><span class="marquee-item">·</span>
+      <span class="marquee-item">Amazon</span><span class="marquee-item">·</span>
+      <span class="marquee-item">Infosys</span><span class="marquee-item">·</span>
+      <span class="marquee-item">Wipro</span><span class="marquee-item">·</span>
+      <span class="marquee-item">Flipkart</span><span class="marquee-item">·</span>
+      <span class="marquee-item">Razorpay</span><span class="marquee-item">·</span>
+      <span class="marquee-item">Swiggy</span><span class="marquee-item">·</span>
+      <span class="marquee-item">Zepto</span><span class="marquee-item">·</span>
+      <span class="marquee-item">Meesho</span><span class="marquee-item">·</span>
+      <!-- duplicate for seamless loop -->
+      <span class="marquee-item">Google</span><span class="marquee-item">·</span>
+      <span class="marquee-item">Microsoft</span><span class="marquee-item">·</span>
+      <span class="marquee-item">Amazon</span><span class="marquee-item">·</span>
+      <span class="marquee-item">Infosys</span><span class="marquee-item">·</span>
+      <span class="marquee-item">Wipro</span><span class="marquee-item">·</span>
+      <span class="marquee-item">Flipkart</span><span class="marquee-item">·</span>
+      <span class="marquee-item">Razorpay</span><span class="marquee-item">·</span>
+      <span class="marquee-item">Swiggy</span><span class="marquee-item">·</span>
+      <span class="marquee-item">Zepto</span><span class="marquee-item">·</span>
+      <span class="marquee-item">Meesho</span><span class="marquee-item">·</span>
+    </div>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<section class="section" id="features">
+  <div class="container">
+    <div class="section-header text-center scroll-reveal">
+      <span class="section-tag">What You Get</span>
+      <h2 class="section-title">Everything to take you from zero to hired</h2>
+      <p class="section-sub" style="margin:0 auto">One platform. Six powerful modules. Your entire career journey — mapped, guided, and accelerated.</p>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card scroll-reveal">
+        <span class="feature-icon">🗺️</span>
+        <h3 class="feature-title">AI Goal Mapping</h3>
+        <p class="feature-desc">Take a 3-minute survey. Get a visual roadmap showing exactly where you stand today and step-by-step what you need to learn to reach your target role.</p>
+      </div>
+      <div class="feature-card scroll-reveal">
+        <span class="feature-icon">📚</span>
+        <h3 class="feature-title">Resources Hub</h3>
+        <p class="feature-desc">Curated YouTube videos, blogs, Reddit threads, and articles — filtered to your skill level and goal. No more aimless Googling.</p>
+      </div>
+      <div class="feature-card scroll-reveal">
+        <span class="feature-icon">💼</span>
+        <h3 class="feature-title">Live Jobs Board</h3>
+        <p class="feature-desc">See jobs you can apply for TODAY vs. jobs unlocked after learning. Real salary data, skill match percentage, and one-click apply.</p>
+      </div>
+      <div class="feature-card scroll-reveal">
+        <span class="feature-icon">🧑‍💼</span>
+        <h3 class="feature-title">Mentor Connect</h3>
+        <p class="feature-desc">Book 1-on-1 sessions with verified industry mentors in your domain. Real feedback, real guidance, real network connections.</p>
+      </div>
+      <div class="feature-card scroll-reveal">
+        <span class="feature-icon">✨</span>
+        <h3 class="feature-title">Profile Enhancer</h3>
+        <p class="feature-desc">AI-powered improvements to your LinkedIn, GitHub, and Instagram. Auto-generate a resume that beats ATS filters every time.</p>
+      </div>
+      <div class="feature-card scroll-reveal">
+        <span class="feature-icon">🤖</span>
+        <h3 class="feature-title">AI Study Buddy</h3>
+        <p class="feature-desc">A 24/7 AI assistant that answers doubts, reviews your code, gives career advice, and keeps you motivated throughout your journey.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="section" id="how" style="background:var(--black-2)">
+  <div class="container">
+    <div class="section-header text-center scroll-reveal">
+      <span class="section-tag">The Process</span>
+      <h2 class="section-title">Four steps to your dream job</h2>
+    </div>
+    <div class="steps-grid scroll-reveal">
+      <div class="step">
+        <div class="step-num">1</div>
+        <h4 class="step-title">Sign Up & Survey</h4>
+        <p class="step-desc">Create your account, complete a 3-minute smart survey about your background and goals.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <h4 class="step-title">Get Your Roadmap</h4>
+        <p class="step-desc">Receive a personalised, AI-generated learning path with milestones and curated resources.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <h4 class="step-title">Learn & Build</h4>
+        <p class="step-desc">Complete courses, practise in the arena, build projects, and enhance your profiles along the way.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <h4 class="step-title">Get Hired</h4>
+        <p class="step-desc">Apply to matched jobs, ace mock interviews, leverage mentor connections, and land the offer.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="section">
+  <div class="container">
+    <div class="section-header text-center scroll-reveal">
+      <span class="section-tag">Success Stories</span>
+      <h2 class="section-title">Real learners. Real results.</h2>
+    </div>
+    <div class="grid-3 scroll-reveal">
+      <div class="testimonial-card">
+        <div class="testimonial-stars">★★★★★</div>
+        <p class="testimonial-text">I was a sales executive with zero tech background. In 7 months on LearnPro I got hired as a frontend developer at ₹9.6 LPA. The roadmap was everything.</p>
+        <div class="flex gap-12">
+          <div class="avatar">AS</div>
+          <div><strong>Arjun Sharma</strong><br><span style="font-size:0.82rem;color:var(--gray-4)">Frontend Dev @ TechCorp, Pune</span></div>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <div class="testimonial-stars">★★★★★</div>
+        <p class="testimonial-text">The mentor I found here completely changed how I approach interviews. Priya reviewed my GitHub and told me exactly what to fix. I got 3 offers in 2 weeks.</p>
+        <div class="flex gap-12">
+          <div class="avatar">NK</div>
+          <div><strong>Neha Kulkarni</strong><br><span style="font-size:0.82rem;color:var(--gray-4)">Data Analyst @ Meesho, Bangalore</span></div>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <div class="testimonial-stars">★★★★★</div>
+        <p class="testimonial-text">The AI chatbot is insane. It helped me debug my first React project at 2am. The jobs board showed me exactly what salary to expect. Best platform I've used.</p>
+        <div class="flex gap-12">
+          <div class="avatar">RM</div>
+          <div><strong>Rahul Mehta</strong><br><span style="font-size:0.82rem;color:var(--gray-4)">Full-Stack Dev @ Startup, Mumbai</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="section" style="background:var(--black-2)" id="pricing">
+  <div class="container">
+    <div class="section-header text-center scroll-reveal">
+      <span class="section-tag">Pricing</span>
+      <h2 class="section-title">Start free. Upgrade when ready.</h2>
+    </div>
+    <div class="pricing-grid scroll-reveal">
+      <div class="pricing-card">
+        <div class="pricing-plan">Free Forever</div>
+        <div class="pricing-price">₹<span>0</span></div>
+        <div class="pricing-per">No credit card needed</div>
+        <ul class="pricing-features">
+          <li>Personalised roadmap</li>
+          <li>Resources Hub (limited)</li>
+          <li>Jobs Board (10/day)</li>
+          <li>AI Chatbot (20 msgs/day)</li>
+          <li>Community access</li>
+        </ul>
+        <a href="pages/signup.html" class="btn btn-outline w-full" style="justify-content:center">Get Started Free</a>
+      </div>
+      <div class="pricing-card popular">
+        <div class="popular-badge">Most Popular</div>
+        <div class="pricing-plan">Pro</div>
+        <div class="pricing-price"><sup>₹</sup>499</div>
+        <div class="pricing-per">per month · billed monthly</div>
+        <ul class="pricing-features">
+          <li>Everything in Free</li>
+          <li>Unlimited Resources</li>
+          <li>Unlimited Jobs + Alerts</li>
+          <li>Unlimited AI Chatbot</li>
+          <li>Mock Interviews (5/mo)</li>
+          <li>Resume Builder + Export</li>
+          <li>Skill Certifications</li>
+          <li>Priority Support</li>
+        </ul>
+        <a href="pages/signup.html" class="btn btn-primary w-full" style="justify-content:center">Start Pro →</a>
+      </div>
+      <div class="pricing-card">
+        <div class="pricing-plan">Teams</div>
+        <div class="pricing-price"><sup>₹</sup>299</div>
+        <div class="pricing-per">per user/month · min 5 users</div>
+        <ul class="pricing-features">
+          <li>Everything in Pro</li>
+          <li>Team dashboard</li>
+          <li>Bulk mentor sessions</li>
+          <li>Custom roadmaps</li>
+          <li>Progress analytics</li>
+          <li>Dedicated account manager</li>
+        </ul>
+        <a href="pages/signup.html" class="btn btn-outline w-full" style="justify-content:center">Contact Sales</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="section">
+  <div class="container">
+    <div class="cta-banner scroll-reveal">
+      <h2 class="display" style="font-size:clamp(2.5rem,5vw,4rem);color:var(--white);margin-bottom:16px;position:relative;z-index:1">YOUR CAREER CHANGE STARTS TODAY</h2>
+      <p style="color:rgba(255,255,255,0.8);font-size:1.05rem;margin-bottom:32px;position:relative;z-index:1">Join 50,000+ learners who have already started their journey. Free forever. No credit card required.</p>
+      <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;position:relative;z-index:1">
+        <a href="pages/signup.html" class="btn btn-lg" style="background:var(--white);color:var(--red);font-family:var(--font-cond)">Create Free Account →</a>
+        <a href="pages/courses.html" class="btn btn-lg btn-outline" style="border-color:rgba(255,255,255,0.5);color:var(--white)">Browse Courses</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="index.html" class="nav-logo" style="font-size:2rem">LEARN<span>PRO</span></a>
+        <p>The complete platform to guide learners from their current state to job-ready status in any career domain.</p>
+        <div class="social-links">
+          <a href="#" class="social-link">𝕏</a>
+          <a href="#" class="social-link">in</a>
+          <a href="#" class="social-link">YT</a>
+          <a href="#" class="social-link">ig</a>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h4>Platform</h4>
+        <a href="pages/courses.html">Courses</a>
+        <a href="pages/resources.html">Resources</a>
+        <a href="pages/jobs.html">Jobs Board</a>
+        <a href="pages/mentors.html">Mentors</a>
+        <a href="pages/community.html">Community</a>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <a href="#">About Us</a>
+        <a href="#">Blog</a>
+        <a href="#">Careers</a>
+        <a href="#">Press</a>
+        <a href="#">Contact</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="#">Privacy Policy</a>
+        <a href="#">Terms of Service</a>
+        <a href="#">Cookie Policy</a>
+        <a href="#">GDPR</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2026 LearnPro. All rights reserved. Made with ❤️ in India.</p>
+      <p style="font-size:0.82rem;color:var(--gray-3)">Proudly serving learners across India 🇮🇳</p>
+    </div>
+  </div>
+</footer>
+
+<!-- CHATBOT -->
+<button class="chatbot-fab" title="Ask LearnBot">🤖</button>
+<div class="chatbot-panel">
+  <div class="chatbot-header">
+    <div style="display:flex;align-items:center;gap:10px">
+      <span style="font-size:1.3rem">🤖</span>
+      <div><div style="font-weight:700;font-size:0.95rem">LearnBot</div><div style="font-size:0.75rem;opacity:0.8">AI Career Assistant</div></div>
+    </div>
+    <button onclick="document.querySelector('.chatbot-panel').classList.remove('open')" style="background:none;border:none;color:white;font-size:1.2rem;cursor:pointer">✕</button>
+  </div>
+  <div class="chatbot-messages">
+    <div class="msg msg-bot">Hi! I'm LearnBot 👋 I can help you with career advice, skill roadmaps, and course recommendations. What would you like to know?</div>
+  </div>
+  <div class="chatbot-input-area">
+    <input class="chatbot-input" placeholder="Ask me anything…" type="text">
+    <button class="chatbot-send">→</button>
+  </div>
+</div>
+
+<script src="js/global.js"></script>
+<script>
+  // Animate hero counters
+  const counters = [
+    { el: document.getElementById('c1'), target: 52000, suffix: '+' },
+    { el: document.getElementById('c2'), target: 8400, suffix: '+' },
+    { el: document.getElementById('c3'), target: 340, suffix: '+' }
+  ];
+  counters.forEach(({el, target, suffix}) => animateCounter(el, target, suffix));
+</script>
+</body>
+</html>

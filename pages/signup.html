@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sign Up — LearnPro</title>
+<link rel="stylesheet" href="../css/global.css">
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+body { display:flex; min-height:100vh; align-items:center; justify-content:center;
+  background: radial-gradient(ellipse 60% 60% at 80% 20%, rgba(180,18,27,0.1), transparent); padding:40px 20px; }
+.signup-wrapper { width:100%; max-width:520px; }
+.signup-logo { font-family:var(--font-display); font-size:2rem; color:var(--white); text-align:center; margin-bottom:32px; display:block; text-decoration:none; }
+.signup-logo span { color:var(--red); }
+.signup-card { background:var(--black-3); border:1px solid var(--white-10); border-radius:var(--radius-xl); padding:40px; }
+.signup-title { font-size:1.7rem; color:var(--white); margin-bottom:4px; }
+.signup-sub { color:var(--gray-4); font-size:0.88rem; margin-bottom:28px; }
+
+/* STEP INDICATOR */
+.steps-indicator { display:flex; align-items:center; gap:0; margin-bottom:32px; }
+.step-dot {
+  width:36px; height:36px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-family:var(--font-cond); font-weight:700; font-size:0.9rem;
+  background:var(--black-5); border:2px solid var(--gray-2); color:var(--gray-3);
+  transition:all 0.3s; position:relative; z-index:1; flex-shrink:0;
+}
+.step-dot.active { background:var(--red); border-color:var(--red); color:var(--white); box-shadow:0 0 0 4px var(--red-glow); }
+.step-dot.done { background:var(--red-dark); border-color:var(--red-dark); color:var(--white); }
+.step-line { flex:1; height:2px; background:var(--gray-1); position:relative; }
+.step-line.done { background:var(--red-dark); }
+
+.step-page { display:none; }
+.step-page.active { display:block; animation:fadeUp 0.4s ease; }
+
+.oauth-btns { display:flex; flex-direction:column; gap:8px; margin-bottom:20px; }
+.oauth-btn {
+  display:flex; align-items:center; justify-content:center; gap:10px;
+  padding:12px; border-radius:var(--radius); border:1.5px solid var(--gray-1);
+  background:var(--black-4); color:var(--white); font-size:0.88rem; font-weight:600;
+  cursor:pointer; transition:all var(--transition); font-family:var(--font-body);
+}
+.oauth-btn:hover { border-color:var(--red); background:var(--red-subtle); }
+
+.role-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px; }
+.role-card {
+  padding:16px; border-radius:var(--radius); border:1.5px solid var(--gray-1);
+  background:var(--black-4); cursor:pointer; transition:all var(--transition); text-align:center;
+}
+.role-card:hover, .role-card.selected { border-color:var(--red); background:var(--red-subtle); }
+.role-card.selected .role-icon { color:var(--red-light); }
+.role-icon { font-size:1.6rem; display:block; margin-bottom:6px; }
+.role-label { font-family:var(--font-cond); font-size:0.88rem; font-weight:700; color:var(--white); }
+
+.skill-grid { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:20px; }
+.skill-chip {
+  padding:7px 14px; border-radius:var(--radius-full); border:1.5px solid var(--gray-1);
+  background:var(--black-4); color:var(--gray-5); font-size:0.82rem; cursor:pointer;
+  transition:all var(--transition); font-family:var(--font-cond); font-weight:600;
+}
+.skill-chip:hover, .skill-chip.selected { border-color:var(--red); background:var(--red-subtle); color:var(--red-light); }
+
+.password-strength { margin-top:6px; }
+.strength-bar { height:4px; background:var(--gray-1); border-radius:99px; overflow:hidden; margin-bottom:4px; }
+.strength-fill { height:100%; border-radius:99px; transition:all 0.3s; width:0; }
+.strength-text { font-size:0.76rem; color:var(--gray-4); }
+
+.divider-or { display:flex; align-items:center; gap:12px; margin:16px 0; color:var(--gray-3); font-size:0.82rem; text-transform:uppercase; letter-spacing:0.1em; }
+.divider-or::before, .divider-or::after { content:''; flex:1; height:1px; background:var(--gray-1); }
+</style>
+</head>
+<body>
+
+<div class="signup-wrapper">
+  <a href="../index.html" class="signup-logo">LEARN<span>PRO</span></a>
+
+  <div class="signup-card">
+    <!-- STEP INDICATOR -->
+    <div class="steps-indicator" id="stepsBar">
+      <div class="step-dot active" id="sd1">1</div>
+      <div class="step-line" id="sl1"></div>
+      <div class="step-dot" id="sd2">2</div>
+      <div class="step-line" id="sl2"></div>
+      <div class="step-dot" id="sd3">3</div>
+      <div class="step-line" id="sl3"></div>
+      <div class="step-dot" id="sd4">4</div>
+    </div>
+
+    <!-- STEP 1: Account Creation -->
+    <div class="step-page active" id="step1">
+      <h2 class="signup-title">Create your account</h2>
+      <p class="signup-sub">Already have one? <a href="login.html" style="color:var(--red-light);font-weight:600">Sign in →</a></p>
+
+      <div class="oauth-btns">
+        <button class="oauth-btn" onclick="showToast('Add YOUR_GOOGLE_CLIENT_ID to enable','info')">
+          <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+          Sign up with Google
+        </button>
+        <button class="oauth-btn" onclick="showToast('Add YOUR_GITHUB_CLIENT_ID to enable','info')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+          Sign up with GitHub
+        </button>
+      </div>
+      <div class="divider-or"><span>or with email</span></div>
+
+      <form onsubmit="return goStep(2)">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="form-group" style="margin-bottom:0">
+            <label class="form-label">First Name</label>
+            <input class="form-input" id="fName" placeholder="Shravani" required>
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label class="form-label">Last Name</label>
+            <input class="form-input" id="lName" placeholder="Sharma" required>
+          </div>
+        </div>
+        <div class="form-group" style="margin-top:16px">
+          <label class="form-label">Email Address</label>
+          <input type="email" class="form-input" id="regEmail" placeholder="you@example.com" required autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <div style="position:relative">
+            <input type="password" class="form-input" id="regPass" placeholder="Min 8 characters" required oninput="checkStrength(this.value)" style="padding-right:48px">
+            <button type="button" onclick="togglePass('regPass',this)" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--gray-4);cursor:pointer">👁</button>
+          </div>
+          <div class="password-strength">
+            <div class="strength-bar"><div class="strength-fill" id="strengthFill"></div></div>
+            <div class="strength-text" id="strengthText"></div>
+          </div>
+        </div>
+        <!-- Cloudflare Turnstile — Replace with your site key -->
+        <div class="cf-turnstile" data-sitekey="YOUR_TURNSTILE_SITE_KEY" data-theme="dark" style="margin-bottom:16px"></div>
+        <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:20px">
+          <input type="checkbox" id="terms" required style="margin-top:3px;accent-color:var(--red)">
+          <label for="terms" style="font-size:0.82rem;color:var(--gray-4)">I agree to the <a href="#" style="color:var(--red-light)">Terms of Service</a> and <a href="#" style="color:var(--red-light)">Privacy Policy</a></label>
+        </div>
+        <button type="submit" class="btn btn-primary w-full" style="justify-content:center;padding:14px">Create Account →</button>
+      </form>
+    </div>
+
+    <!-- STEP 2: Email Verification -->
+    <div class="step-page" id="step2">
+      <h2 class="signup-title">Verify your email</h2>
+      <p class="signup-sub">We sent a 6-digit code to <strong id="verifyEmail" style="color:var(--white)"></strong></p>
+      <div class="otp-inputs" id="verifyOTP">
+        <input class="otp-input" maxlength="1" type="text" inputmode="numeric">
+        <input class="otp-input" maxlength="1" type="text" inputmode="numeric">
+        <input class="otp-input" maxlength="1" type="text" inputmode="numeric">
+        <input class="otp-input" maxlength="1" type="text" inputmode="numeric">
+        <input class="otp-input" maxlength="1" type="text" inputmode="numeric">
+        <input class="otp-input" maxlength="1" type="text" inputmode="numeric">
+      </div>
+      <div style="font-size:0.8rem;color:var(--gray-4);margin-bottom:20px">Expires in <span id="verifyTimer" style="color:var(--red-light);font-weight:700">10:00</span> · <a href="#" onclick="resendOTP()" style="color:var(--red-light)">Resend</a></div>
+      <button onclick="verifyOTP()" class="btn btn-primary w-full" style="justify-content:center;padding:14px">Verify Email →</button>
+    </div>
+
+    <!-- STEP 3: Survey -->
+    <div class="step-page" id="step3">
+      <h2 class="signup-title">Tell us about you</h2>
+      <p class="signup-sub">This helps us build your personalised roadmap.</p>
+
+      <div class="form-group">
+        <label class="form-label">Current Status</label>
+        <div class="role-grid">
+          <div class="role-card" onclick="selectRole(this,'student')">
+            <span class="role-icon">🎓</span><span class="role-label">Student</span>
+          </div>
+          <div class="role-card" onclick="selectRole(this,'working')">
+            <span class="role-icon">💼</span><span class="role-label">Working</span>
+          </div>
+          <div class="role-card" onclick="selectRole(this,'freelancer')">
+            <span class="role-icon">🧑‍💻</span><span class="role-label">Freelancer</span>
+          </div>
+          <div class="role-card" onclick="selectRole(this,'jobseeker')">
+            <span class="role-icon">🔍</span><span class="role-label">Job Seeker</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Target Role / Goal</label>
+        <select class="form-select" id="targetRole">
+          <option value="">Choose your target role…</option>
+          <optgroup label="Technology">
+            <option>Full-Stack Web Developer</option>
+            <option>Frontend Developer</option>
+            <option>Backend Developer</option>
+            <option>Mobile App Developer</option>
+            <option>Data Scientist</option>
+            <option>ML / AI Engineer</option>
+            <option>DevOps / Cloud Engineer</option>
+            <option>Cybersecurity Analyst</option>
+          </optgroup>
+          <optgroup label="Design">
+            <option>UI/UX Designer</option>
+            <option>Product Designer</option>
+            <option>Graphic Designer</option>
+            <option>3D Artist / Animator</option>
+          </optgroup>
+          <optgroup label="Business">
+            <option>Product Manager</option>
+            <option>Digital Marketer</option>
+            <option>Data Analyst</option>
+            <option>Business Analyst</option>
+          </optgroup>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Current Skills (select all that apply)</label>
+        <div class="skill-grid" id="skillGrid">
+          <div class="skill-chip" onclick="this.classList.toggle('selected')">HTML/CSS</div>
+          <div class="skill-chip" onclick="this.classList.toggle('selected')">JavaScript</div>
+          <div class="skill-chip" onclick="this.classList.toggle('selected')">Python</div>
+          <div class="skill-chip" onclick="this.classList.toggle('selected')">React</div>
+          <div class="skill-chip" onclick="this.classList.toggle('selected')">Node.js</div>
+          <div class="skill-chip" onclick="this.classList.toggle('selected')">SQL</div>
+          <div class="skill-chip" onclick="this.classList.toggle('selected')">Figma</div>
+          <div class="skill-chip" onclick="this.classList.toggle('selected')">Git</div>
+          <div class="skill-chip" onclick="this.classList.toggle('selected')">Java</div>
+          <div class="skill-chip" onclick="this.classList.toggle('selected')">Excel</div>
+          <div class="skill-chip" onclick="this.classList.toggle('selected')">None yet</div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Daily Time Available</label>
+        <select class="form-select" id="timeAvail">
+          <option value="30">30 minutes / day</option>
+          <option value="60" selected>1 hour / day</option>
+          <option value="120">2 hours / day</option>
+          <option value="180">3+ hours / day</option>
+        </select>
+      </div>
+      <button onclick="goStep(4)" class="btn btn-primary w-full" style="justify-content:center;padding:14px">Continue →</button>
+    </div>
+
+    <!-- STEP 4: Goal Timeline -->
+    <div class="step-page" id="step4">
+      <h2 class="signup-title">Set your goal</h2>
+      <p class="signup-sub">When do you want to be job-ready?</p>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:24px" id="timelineGrid">
+        <div class="role-card" onclick="selectTimeline(this,'3')">
+          <span class="role-icon">⚡</span><span class="role-label">3 Months</span>
+          <p style="font-size:0.75rem;color:var(--gray-4);margin-top:4px">Intensive pace</p>
+        </div>
+        <div class="role-card" onclick="selectTimeline(this,'6')">
+          <span class="role-icon">🎯</span><span class="role-label">6 Months</span>
+          <p style="font-size:0.75rem;color:var(--gray-4);margin-top:4px">Recommended</p>
+        </div>
+        <div class="role-card" onclick="selectTimeline(this,'12')">
+          <span class="role-icon">🌱</span><span class="role-label">12 Months</span>
+          <p style="font-size:0.75rem;color:var(--gray-4);margin-top:4px">Comfortable pace</p>
+        </div>
+        <div class="role-card" onclick="selectTimeline(this,'flexible')">
+          <span class="role-icon">🕐</span><span class="role-label">Flexible</span>
+          <p style="font-size:0.75rem;color:var(--gray-4);margin-top:4px">No pressure</p>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Learning Style</label>
+        <select class="form-select" id="learnStyle">
+          <option>Video-first (YouTube tutorials)</option>
+          <option>Reading-first (articles, docs)</option>
+          <option>Project-based (build things)</option>
+          <option>Mixed (a bit of everything)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">City / Location</label>
+        <input class="form-input" id="city" placeholder="e.g. Mumbai, Maharashtra">
+      </div>
+
+      <button onclick="completeSignup()" class="btn btn-primary w-full" style="justify-content:center;padding:14px">🚀 Launch My Roadmap →</button>
+    </div>
+  </div>
+</div>
+
+<script src="../js/global.js"></script>
+<script>
+let currentStep = 1;
+let selectedRole = '';
+let selectedTimeline = '';
+
+function goStep(n) {
+  if (n === 2) {
+    // Trigger email verification
+    document.getElementById('verifyEmail').textContent = document.getElementById('regEmail').value;
+    // await fetch('/api/auth/register', { method:'POST', body: JSON.stringify({...}) }) → send OTP
+    startTimer('verifyTimer', 600);
+    setupOTPAuto('verifyOTP');
+    showToast('OTP sent! (demo: any 6 digits work)', 'success');
+  }
+  document.getElementById(`step${currentStep}`)?.classList.remove('active');
+  document.getElementById(`sd${currentStep}`)?.classList.replace('active', 'done');
+  document.getElementById(`sd${currentStep}`)?.textContent = '✓';
+  if (currentStep < 4) document.getElementById(`sl${currentStep}`)?.classList.add('done');
+  currentStep = n;
+  document.getElementById(`step${n}`)?.classList.add('active');
+  document.getElementById(`sd${n}`)?.classList.add('active');
+  return false;
+}
+
+function setupOTPAuto(containerId) {
+  const inputs = document.querySelectorAll(`#${containerId} .otp-input`);
+  inputs.forEach((inp, i) => {
+    inp.addEventListener('input', () => { if (inp.value && i < inputs.length - 1) inputs[i+1].focus(); });
+    inp.addEventListener('keydown', e => { if (e.key === 'Backspace' && !inp.value && i > 0) inputs[i-1].focus(); });
+  });
+}
+
+function startTimer(elId, seconds) {
+  const el = document.getElementById(elId);
+  const iv = setInterval(() => {
+    const m = String(Math.floor(seconds / 60)).padStart(2,'0');
+    const s = String(seconds % 60).padStart(2,'0');
+    el.textContent = `${m}:${s}`;
+    if (--seconds < 0) { clearInterval(iv); el.textContent = 'Expired'; }
+  }, 1000);
+}
+
+function verifyOTP() {
+  const otp = [...document.querySelectorAll('#verifyOTP .otp-input')].map(i => i.value).join('');
+  if (otp.length === 6) {
+    showToast('Email verified!', 'success');
+    goStep(3);
+  } else { showToast('Enter 6-digit code', 'error'); }
+}
+
+function resendOTP() {
+  showToast('New OTP sent!', 'info');
+  startTimer('verifyTimer', 600);
+}
+
+function selectRole(el, val) {
+  document.querySelectorAll('.role-grid .role-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected'); selectedRole = val;
+}
+
+function selectTimeline(el, val) {
+  document.querySelectorAll('#timelineGrid .role-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected'); selectedTimeline = val;
+}
+
+function checkStrength(pass) {
+  const fill = document.getElementById('strengthFill');
+  const text = document.getElementById('strengthText');
+  let strength = 0;
+  if (pass.length >= 8) strength++;
+  if (/[A-Z]/.test(pass)) strength++;
+  if (/[0-9]/.test(pass)) strength++;
+  if (/[^A-Za-z0-9]/.test(pass)) strength++;
+  const colors = ['var(--red)', '#f59e0b', '#3b82f6', '#10b981'];
+  const labels = ['Weak', 'Fair', 'Good', 'Strong'];
+  fill.style.width = `${strength * 25}%`;
+  fill.style.background = colors[strength - 1] || 'var(--gray-2)';
+  text.textContent = strength > 0 ? labels[strength - 1] : '';
+  text.style.color = colors[strength - 1] || 'var(--gray-4)';
+}
+
+function togglePass(id, btn) {
+  const el = document.getElementById(id);
+  el.type = el.type === 'password' ? 'text' : 'password';
+  btn.textContent = el.type === 'password' ? '👁' : '🙈';
+}
+
+function completeSignup() {
+  const user = {
+    name: document.getElementById('fName').value + ' ' + document.getElementById('lName').value,
+    email: document.getElementById('regEmail').value,
+    avatar: (document.getElementById('fName').value[0] || 'U') + (document.getElementById('lName').value[0] || ''),
+    role: selectedRole,
+    targetRole: document.getElementById('targetRole').value,
+    timeline: selectedTimeline,
+    city: document.getElementById('city').value,
+    skills: [...document.querySelectorAll('.skill-chip.selected')].map(c => c.textContent)
+  };
+  LP.set('user', user);
+  // POST to your backend: fetch('/api/users/onboard', { method:'POST', body: JSON.stringify(user) })
+  showToast('🚀 Roadmap ready! Taking you to your dashboard…', 'success');
+  setTimeout(() => window.location.href = 'dashboard.html', 1500);
+}
+</script>
+</body>
+</html>

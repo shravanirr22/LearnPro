@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — LearnPro</title>
+<link rel="stylesheet" href="../css/global.css">
+<style>
+/* GOAL RING */
+.ring-wrap { position:relative; width:160px; height:160px; flex-shrink:0; }
+.ring-svg { width:160px; height:160px; transform:rotate(-90deg); }
+.ring-bg { fill:none; stroke:var(--black-5); stroke-width:12; }
+.ring-fill { fill:none; stroke:url(#ringGrad); stroke-width:12; stroke-linecap:round; stroke-dasharray:440; stroke-dashoffset:440; transition:stroke-dashoffset 1.5s ease; }
+.ring-center { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center; }
+.ring-pct { font-family:var(--font-display); font-size:2.2rem; color:var(--white); line-height:1; }
+.ring-label { font-size:0.72rem; color:var(--gray-4); text-transform:uppercase; letter-spacing:0.08em; }
+
+/* TODAY TASKS */
+.task-item { display:flex; align-items:center; gap:14px; padding:14px 0; border-bottom:1px solid var(--white-5); }
+.task-item:last-child { border-bottom:none; }
+.task-check { width:22px; height:22px; border-radius:50%; border:2px solid var(--gray-2); display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all var(--transition); flex-shrink:0; }
+.task-check.done { background:var(--red); border-color:var(--red); }
+.task-check.done::after { content:'✓'; color:var(--white); font-size:0.7rem; font-weight:700; }
+.task-text { flex:1; font-size:0.9rem; color:var(--white); }
+.task-xp { font-family:var(--font-cond); font-size:0.8rem; font-weight:700; color:var(--red-light); }
+
+/* MILESTONE TRACK */
+.milestone-track { display:flex; align-items:center; gap:0; margin:24px 0; }
+.milestone-node {
+  width:44px; height:44px; border-radius:50%; border:2px solid var(--gray-2);
+  background:var(--black-4); display:flex; align-items:center; justify-content:center;
+  font-size:0.9rem; flex-shrink:0; transition:all var(--transition); position:relative;
+}
+.milestone-node.done { background:var(--red-dark); border-color:var(--red-dark); }
+.milestone-node.current { background:var(--red); border-color:var(--red); box-shadow:0 0 0 4px var(--red-glow); animation:glow 3s infinite; }
+.milestone-node .tip { position:absolute; bottom:-24px; white-space:nowrap; font-size:0.68rem; color:var(--gray-4); }
+.milestone-line { flex:1; height:2px; background:var(--gray-1); }
+.milestone-line.done { background:var(--red-dark); }
+
+/* SKILL BARS */
+.skill-bar-item { margin-bottom:14px; }
+.skill-bar-top { display:flex; justify-content:space-between; margin-bottom:6px; }
+.skill-bar-name { font-family:var(--font-cond); font-size:0.88rem; font-weight:700; color:var(--white); }
+.skill-bar-pct { font-size:0.8rem; color:var(--gray-4); }
+
+/* ACTIVITY HEATMAP simple */
+.heatmap { display:grid; grid-template-columns:repeat(12,1fr); gap:3px; }
+.hm-cell { width:100%; aspect-ratio:1; border-radius:2px; background:var(--black-5); transition:all var(--transition); }
+.hm-cell:hover { transform:scale(1.3); }
+.hm-0 { background:var(--black-5); }
+.hm-1 { background:rgba(180,18,27,0.2); }
+.hm-2 { background:rgba(180,18,27,0.45); }
+.hm-3 { background:rgba(180,18,27,0.7); }
+.hm-4 { background:var(--red); }
+
+/* COURSE CARD MINI */
+.course-mini { display:flex; gap:14px; padding:14px 0; border-bottom:1px solid var(--white-5); align-items:center; }
+.course-mini:last-child { border-bottom:none; }
+.course-mini-thumb { width:54px; height:54px; border-radius:var(--radius); background:var(--red-subtle); border:1px solid var(--red); display:flex; align-items:center; justify-content:center; font-size:1.4rem; flex-shrink:0; }
+.course-mini-info { flex:1; min-width:0; }
+.course-mini-title { font-size:0.9rem; font-weight:700; color:var(--white); margin-bottom:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.course-mini-pct { font-size:0.78rem; color:var(--gray-4); }
+</style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <button onclick="toggleSidebar()" style="background:none;border:none;color:var(--white);font-size:1.3rem;cursor:pointer;margin-right:12px;display:none" class="mob-menu">☰</button>
+  <a href="../index.html" class="nav-logo">LEARN<span>PRO</span></a>
+  <div style="margin:0 auto"></div>
+  <div class="nav-actions" style="gap:16px">
+    <div style="position:relative;cursor:pointer" title="Notifications">
+      <span style="font-size:1.3rem">🔔</span>
+      <span style="position:absolute;top:-4px;right:-4px;width:16px;height:16px;background:var(--red);border-radius:50%;font-size:0.6rem;display:flex;align-items:center;justify-content:center;font-weight:700">3</span>
+    </div>
+    <div id="userAvatar" class="avatar" style="cursor:pointer" onclick="window.location.href='profile.html'">LP</div>
+  </div>
+</nav>
+
+<!-- SIDEBAR -->
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-section">
+    <div class="sidebar-label">Main</div>
+    <a href="dashboard.html" class="sidebar-link active"><span class="icon">📊</span> Dashboard</a>
+    <a href="courses.html" class="sidebar-link"><span class="icon">📚</span> My Courses</a>
+    <a href="resources.html" class="sidebar-link"><span class="icon">🗂️</span> Resources</a>
+    <a href="practice.html" class="sidebar-link"><span class="icon">⚡</span> Practice Arena</a>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-label">Career</div>
+    <a href="jobs.html" class="sidebar-link"><span class="icon">💼</span> Jobs Board</a>
+    <a href="mentors.html" class="sidebar-link"><span class="icon">🧑‍💼</span> Mentors</a>
+    <a href="profile.html" class="sidebar-link"><span class="icon">✨</span> Profile Enhancer</a>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-label">Social</div>
+    <a href="community.html" class="sidebar-link"><span class="icon">👥</span> Community</a>
+    <a href="leaderboard.html" class="sidebar-link"><span class="icon">🏆</span> Leaderboard</a>
+  </div>
+  <div style="margin-top:auto">
+    <div style="padding:14px;background:var(--red-subtle);border:1px solid var(--red);border-radius:var(--radius);margin-bottom:8px">
+      <div style="font-family:var(--font-cond);font-size:0.78rem;font-weight:700;color:var(--red-light);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:4px">Free Plan</div>
+      <div style="font-size:0.8rem;color:var(--gray-4);margin-bottom:10px">Upgrade for unlimited access</div>
+      <a href="#" class="btn btn-primary btn-sm w-full" style="justify-content:center">Upgrade Pro</a>
+    </div>
+    <a href="#" onclick="LP.logout()" class="sidebar-link" style="color:var(--gray-3)"><span class="icon">🚪</span> Logout</a>
+  </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="dash-layout">
+  <main class="dash-main">
+
+    <!-- HEADER ROW -->
+    <div class="flex-between" style="margin-bottom:28px">
+      <div>
+        <h1 style="font-size:1.8rem;color:var(--white)" id="greetMsg">Good morning, <span style="color:var(--red)">Shravani</span> 👋</h1>
+        <p style="color:var(--gray-4);font-size:0.9rem">Day 14 of your journey · Keep going!</p>
+      </div>
+      <div style="display:flex;gap:10px">
+        <div style="text-align:center;padding:10px 18px;background:var(--black-3);border:1px solid var(--white-10);border-radius:var(--radius)">
+          <div style="font-family:var(--font-display);font-size:1.5rem;color:var(--red-light)">🔥 14</div>
+          <div style="font-size:0.72rem;color:var(--gray-4)">Day Streak</div>
+        </div>
+        <div style="text-align:center;padding:10px 18px;background:var(--black-3);border:1px solid var(--white-10);border-radius:var(--radius)">
+          <div style="font-family:var(--font-display);font-size:1.5rem;color:#f59e0b" id="xpCount">1240</div>
+          <div style="font-size:0.72rem;color:var(--gray-4)">Total XP</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STATS ROW -->
+    <div class="grid-4" style="margin-bottom:28px">
+      <div class="stat-card scroll-reveal">
+        <div class="stat-label">Roadmap Progress</div>
+        <div class="stat-value">72%</div>
+        <div class="progress-bar" style="margin-top:8px"><div class="progress-fill" style="width:72%"></div></div>
+        <div class="stat-change up" style="margin-top:6px">↑ +8% this week</div>
+      </div>
+      <div class="stat-card scroll-reveal">
+        <div class="stat-label">Lessons Done</div>
+        <div class="stat-value" id="lessonsCount">0</div>
+        <div class="stat-sub">of 84 total lessons</div>
+        <div class="stat-change up">↑ 3 this week</div>
+      </div>
+      <div class="stat-card scroll-reveal">
+        <div class="stat-label">Job Match</div>
+        <div class="stat-value">87%</div>
+        <div class="stat-sub">for Frontend Dev roles</div>
+        <div class="stat-change up">↑ up from 71%</div>
+      </div>
+      <div class="stat-card scroll-reveal">
+        <div class="stat-label">Mentor Sessions</div>
+        <div class="stat-value">3</div>
+        <div class="stat-sub">Next: Tomorrow 5PM</div>
+        <div class="badge badge-green" style="margin-top:6px">Scheduled</div>
+      </div>
+    </div>
+
+    <!-- GOAL MAP + TODAY TASKS -->
+    <div class="grid-2" style="margin-bottom:28px">
+      <!-- Goal Visualiser -->
+      <div class="card" style="padding:28px">
+        <h3 style="font-size:1.1rem;color:var(--white);margin-bottom:20px">🗺️ Your Goal Map</h3>
+        <div style="display:flex;gap:24px;align-items:center;margin-bottom:20px">
+          <div class="ring-wrap">
+            <svg class="ring-svg" id="goalRing" viewBox="0 0 160 160">
+              <defs>
+                <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="var(--red-dark)"/>
+                  <stop offset="100%" stop-color="var(--red-light)"/>
+                </linearGradient>
+              </defs>
+              <circle class="ring-bg" cx="80" cy="80" r="70"/>
+              <circle class="ring-fill" cx="80" cy="80" r="70"/>
+            </svg>
+            <div class="ring-center">
+              <div class="ring-pct">72%</div>
+              <div class="ring-label">Complete</div>
+            </div>
+          </div>
+          <div style="flex:1">
+            <div style="font-family:var(--font-cond);font-weight:700;font-size:1rem;color:var(--white);margin-bottom:4px">Full-Stack Developer</div>
+            <div style="font-size:0.82rem;color:var(--gray-4);margin-bottom:12px">Est. completion: Sep 2026</div>
+            <div style="font-size:0.82rem;color:var(--gray-5);margin-bottom:6px">Skill gap closing: <strong style="color:var(--white)">React.js → Node.js → SQL</strong></div>
+            <div class="badge badge-yellow">2 milestones left</div>
+          </div>
+        </div>
+        <!-- Milestone Track -->
+        <div class="milestone-track">
+          <div class="milestone-node done" title="Beginner">✓<span class="tip">Beginner</span></div>
+          <div class="milestone-line done"></div>
+          <div class="milestone-node done" title="Foundations">✓<span class="tip">Foundations</span></div>
+          <div class="milestone-line done"></div>
+          <div class="milestone-node current" title="Intermediate">★<span class="tip">Intermediate</span></div>
+          <div class="milestone-line"></div>
+          <div class="milestone-node" title="Advanced">4<span class="tip">Advanced</span></div>
+          <div class="milestone-line"></div>
+          <div class="milestone-node" title="Job Ready">🎓<span class="tip">Job Ready</span></div>
+        </div>
+      </div>
+
+      <!-- Today's Tasks -->
+      <div class="card" style="padding:28px">
+        <div class="flex-between" style="margin-bottom:16px">
+          <h3 style="font-size:1.1rem;color:var(--white)">✅ Today's Tasks</h3>
+          <span class="badge badge-red" id="taskBadge">0 / 5 done</span>
+        </div>
+        <div id="taskList">
+          <div class="task-item">
+            <div class="task-check" onclick="checkTask(this)"></div>
+            <span class="task-text">Complete React Hooks — Lesson 3</span>
+            <span class="task-xp">+30 XP</span>
+          </div>
+          <div class="task-item">
+            <div class="task-check" onclick="checkTask(this)"></div>
+            <span class="task-text">Do JavaScript Quiz (10 questions)</span>
+            <span class="task-xp">+20 XP</span>
+          </div>
+          <div class="task-item">
+            <div class="task-check" onclick="checkTask(this)"></div>
+            <span class="task-text">Read: CSS Grid vs Flexbox article</span>
+            <span class="task-xp">+10 XP</span>
+          </div>
+          <div class="task-item">
+            <div class="task-check" onclick="checkTask(this)"></div>
+            <span class="task-text">Push 1 commit to GitHub</span>
+            <span class="task-xp">+15 XP</span>
+          </div>
+          <div class="task-item">
+            <div class="task-check" onclick="checkTask(this)"></div>
+            <span class="task-text">Watch Priya's mentor session recording</span>
+            <span class="task-xp">+25 XP</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SKILL PROGRESS + ACTIVE COURSES -->
+    <div class="grid-2" style="margin-bottom:28px">
+      <!-- Skill Progress -->
+      <div class="card">
+        <h3 style="font-size:1.1rem;color:var(--white);margin-bottom:20px">📈 Skill Progress</h3>
+        <div class="skill-bar-item">
+          <div class="skill-bar-top"><span class="skill-bar-name">HTML / CSS</span><span class="skill-bar-pct">95%</span></div>
+          <div class="progress-bar"><div class="progress-fill" style="width:95%"></div></div>
+        </div>
+        <div class="skill-bar-item">
+          <div class="skill-bar-top"><span class="skill-bar-name">JavaScript</span><span class="skill-bar-pct">78%</span></div>
+          <div class="progress-bar"><div class="progress-fill" style="width:78%"></div></div>
+        </div>
+        <div class="skill-bar-item">
+          <div class="skill-bar-top"><span class="skill-bar-name">React.js</span><span class="skill-bar-pct">45%</span></div>
+          <div class="progress-bar"><div class="progress-fill" style="width:45%"></div></div>
+        </div>
+        <div class="skill-bar-item">
+          <div class="skill-bar-top"><span class="skill-bar-name">Node.js</span><span class="skill-bar-pct">20%</span></div>
+          <div class="progress-bar"><div class="progress-fill" style="width:20%"></div></div>
+        </div>
+        <div class="skill-bar-item" style="margin-bottom:0">
+          <div class="skill-bar-top"><span class="skill-bar-name">SQL / Databases</span><span class="skill-bar-pct">35%</span></div>
+          <div class="progress-bar"><div class="progress-fill" style="width:35%"></div></div>
+        </div>
+      </div>
+
+      <!-- Active Courses -->
+      <div class="card">
+        <div class="flex-between" style="margin-bottom:16px">
+          <h3 style="font-size:1.1rem;color:var(--white)">📚 Active Courses</h3>
+          <a href="courses.html" style="font-size:0.82rem;color:var(--red-light)">View all →</a>
+        </div>
+        <div class="course-mini">
+          <div class="course-mini-thumb">⚛️</div>
+          <div class="course-mini-info">
+            <div class="course-mini-title">React.js Complete Guide</div>
+            <div class="progress-bar" style="height:4px;margin:6px 0"><div class="progress-fill" style="width:45%"></div></div>
+            <div class="course-mini-pct">45% · Lesson 9 of 20</div>
+          </div>
+          <a href="courses.html" class="btn btn-ghost btn-sm">▶</a>
+        </div>
+        <div class="course-mini">
+          <div class="course-mini-thumb">🟨</div>
+          <div class="course-mini-info">
+            <div class="course-mini-title">JavaScript Advanced Patterns</div>
+            <div class="progress-bar" style="height:4px;margin:6px 0"><div class="progress-fill" style="width:78%"></div></div>
+            <div class="course-mini-pct">78% · Lesson 14 of 18</div>
+          </div>
+          <a href="courses.html" class="btn btn-ghost btn-sm">▶</a>
+        </div>
+        <div class="course-mini">
+          <div class="course-mini-thumb">🟢</div>
+          <div class="course-mini-info">
+            <div class="course-mini-title">Node.js & Express Crash Course</div>
+            <div class="progress-bar" style="height:4px;margin:6px 0"><div class="progress-fill" style="width:20%"></div></div>
+            <div class="course-mini-pct">20% · Lesson 3 of 15</div>
+          </div>
+          <a href="courses.html" class="btn btn-ghost btn-sm">▶</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ACTIVITY + AI NUDGE -->
+    <div class="grid-2">
+      <!-- Activity Heatmap -->
+      <div class="card">
+        <h3 style="font-size:1.1rem;color:var(--white);margin-bottom:16px">📅 Learning Activity (Last 84 days)</h3>
+        <div class="heatmap" id="heatmap"></div>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:12px;font-size:0.75rem;color:var(--gray-4)">
+          <span>Less</span>
+          <div style="width:12px;height:12px;background:var(--black-5);border-radius:2px"></div>
+          <div style="width:12px;height:12px;background:rgba(180,18,27,0.25);border-radius:2px"></div>
+          <div style="width:12px;height:12px;background:rgba(180,18,27,0.5);border-radius:2px"></div>
+          <div style="width:12px;height:12px;background:var(--red);border-radius:2px"></div>
+          <span>More</span>
+        </div>
+      </div>
+
+      <!-- AI Nudge Card -->
+      <div class="card" style="background:linear-gradient(135deg,var(--black-3),var(--black-4));border-color:rgba(180,18,27,0.3)">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+          <span style="font-size:1.8rem">🤖</span>
+          <div>
+            <div style="font-family:var(--font-cond);font-weight:700;color:var(--white)">LearnBot says</div>
+            <div style="font-size:0.78rem;color:var(--gray-4)">Personalised for you · Today</div>
+          </div>
+        </div>
+        <div id="aiNudge" style="font-size:0.9rem;color:var(--gray-5);line-height:1.7;margin-bottom:20px">
+          Loading your daily insight…
+        </div>
+        <div style="border-top:1px solid var(--white-5);padding-top:16px">
+          <div style="font-family:var(--font-cond);font-size:0.78rem;font-weight:700;color:var(--gray-3);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px">Quick Actions</div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px">
+            <button onclick="askBot('What should I learn today?')" class="btn btn-ghost btn-sm">📚 Today's plan</button>
+            <button onclick="askBot('Review my progress and suggest improvements')" class="btn btn-ghost btn-sm">📊 My progress</button>
+            <button onclick="askBot('Which jobs can I apply to right now?')" class="btn btn-ghost btn-sm">💼 Job matches</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- CHATBOT -->
+<button class="chatbot-fab" title="Ask LearnBot">🤖</button>
+<div class="chatbot-panel">
+  <div class="chatbot-header">
+    <div style="display:flex;align-items:center;gap:10px">
+      <span style="font-size:1.3rem">🤖</span>
+      <div><div style="font-weight:700;font-size:0.95rem">LearnBot</div><div style="font-size:0.75rem;opacity:0.8">AI Career Assistant</div></div>
+    </div>
+    <button onclick="document.querySelector('.chatbot-panel').classList.remove('open')" style="background:none;border:none;color:white;font-size:1.2rem;cursor:pointer">✕</button>
+  </div>
+  <div class="chatbot-messages">
+    <div class="msg msg-bot">Hi Shravani! 👋 I see you're 72% through your Full-Stack roadmap. You're crushing it! What can I help you with today?</div>
+  </div>
+  <div class="chatbot-input-area">
+    <input class="chatbot-input" placeholder="Ask me anything…" type="text">
+    <button class="chatbot-send">→</button>
+  </div>
+</div>
+
+<script src="../js/global.js"></script>
+<script>
+// Set user info
+const user = LP.user();
+if (user) {
+  document.getElementById('userAvatar').textContent = user.avatar || 'LP';
+  const hour = new Date().getHours();
+  const greet = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+  document.getElementById('greetMsg').innerHTML = `${greet}, <span style="color:var(--red)">${user.name?.split(' ')[0] || 'Learner'}</span> 👋`;
+}
+
+// Animate counters
+setTimeout(() => {
+  animateCounter(document.getElementById('lessonsCount'), 61);
+  // Goal ring: 72%
+  const circle = document.querySelector('.ring-fill');
+  const r = 70; const c = 2 * Math.PI * r;
+  circle.style.strokeDasharray = c;
+  circle.style.strokeDashoffset = c - (c * 0.72);
+}, 300);
+
+// Tasks
+let doneCount = 0;
+function checkTask(el) {
+  el.classList.toggle('done');
+  const allDone = el.classList.contains('done');
+  doneCount = document.querySelectorAll('.task-check.done').length;
+  document.getElementById('taskBadge').textContent = `${doneCount} / 5 done`;
+  if (allDone) {
+    const xp = parseInt(el.nextElementSibling.nextElementSibling.textContent) || 20;
+    const xpEl = document.getElementById('xpCount');
+    animateCounter(xpEl, parseInt(xpEl.textContent) + xp, '', 400);
+    showToast(`+${xp} XP earned! 🎉`, 'success');
+  }
+}
+
+// Heatmap
+const hm = document.getElementById('heatmap');
+const levels = [0,0,0,1,1,2,0,1,3,4,4,3,2,1,0,0,2,3,4,4,3,2,2,1,0,1,2,4,4,3,2,0,0,1,3,4,4,3,2,1,0,0,2,3,4,3,2,1,0,1,2,3,4,4,3,2,1,0,0,2,3,4,4,3,2,1,0,1,2,3,4,3,2,1,0,0,2,3,4,4,3,2,1,0];
+levels.forEach(l => {
+  const cell = document.createElement('div');
+  cell.className = `hm-cell hm-${l}`;
+  cell.title = ['No activity','Light','Moderate','Active','Intense'][l];
+  hm.appendChild(cell);
+});
+
+// AI Nudge (fetch from Claude API or use static)
+const nudges = [
+  "You're 3 lessons away from completing the React.js module! Finishing it will unlock 5 new senior frontend job matches at ₹12–18 LPA. Set aside 45 minutes today.",
+  "Your JavaScript score jumped from 71% to 78% this week — that's in the top 15% of learners at your stage! Keep this momentum and tackle async/await next.",
+  "You've logged in 14 days straight 🔥 That's remarkable consistency. Learners who maintain 14-day streaks have 3× higher completion rates. You're on the right track."
+];
+document.getElementById('aiNudge').textContent = nudges[new Date().getDay() % nudges.length];
+
+function askBot(msg) {
+  const panel = document.querySelector('.chatbot-panel');
+  const input = document.querySelector('.chatbot-input');
+  panel.classList.add('open');
+  input.value = msg;
+  document.querySelector('.chatbot-send').click();
+}
+</script>
+</body>
+</html>

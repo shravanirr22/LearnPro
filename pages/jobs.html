@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jobs Board — LearnPro</title>
+<link rel="stylesheet" href="../css/global.css">
+<style>
+.jobs-layout { padding:32px; max-width:1400px; margin:0 auto; }
+.jobs-hero { background:linear-gradient(135deg,var(--black-3),var(--black-4)); border:1px solid var(--white-10); border-radius:var(--radius-xl); padding:36px; margin-bottom:32px; position:relative; overflow:hidden; }
+.jobs-hero::before { content:''; position:absolute; right:-60px; top:-60px; width:240px; height:240px; background:radial-gradient(circle, rgba(180,18,27,0.15), transparent); border-radius:50%; }
+
+.split-tabs { display:grid; grid-template-columns:1fr 1fr; gap:4px; background:var(--black-4); border-radius:var(--radius-lg); padding:4px; margin-bottom:28px; }
+.split-tab { padding:12px; text-align:center; border-radius:var(--radius); font-family:var(--font-cond); font-size:0.95rem; font-weight:700; letter-spacing:0.04em; cursor:pointer; transition:all var(--transition); border:none; background:none; color:var(--gray-4); }
+.split-tab.active { background:var(--red); color:var(--white); box-shadow:var(--shadow-red); }
+
+.job-card { background:var(--black-3); border:1px solid var(--white-10); border-radius:var(--radius-lg); padding:20px; transition:all var(--transition); margin-bottom:14px; }
+.job-card:hover { border-color:var(--red); box-shadow:0 0 20px var(--red-glow); }
+.job-card.locked { opacity:0.6; position:relative; }
+.job-card.locked::after { content:'🔒 Learn more to unlock'; position:absolute; inset:0; background:rgba(0,0,0,0.7); border-radius:var(--radius-lg); display:flex; align-items:center; justify-content:center; font-family:var(--font-cond); font-size:0.95rem; font-weight:700; color:var(--gray-4); letter-spacing:0.06em; }
+.job-logo { width:48px; height:48px; border-radius:var(--radius); background:var(--black-5); border:1px solid var(--white-10); display:flex; align-items:center; justify-content:center; font-size:1.4rem; flex-shrink:0; }
+.job-title { font-size:1rem; font-weight:700; color:var(--white); margin-bottom:4px; }
+.job-company { font-size:0.85rem; color:var(--gray-4); margin-bottom:8px; }
+.job-tags { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px; }
+.job-tag { font-size:0.72rem; padding:3px 10px; background:var(--black-5); border-radius:var(--radius-full); color:var(--gray-4); border:1px solid var(--white-5); }
+.skill-match-bar { height:6px; background:var(--black-5); border-radius:99px; overflow:hidden; margin:8px 0 4px; }
+.skill-match-fill { height:100%; border-radius:99px; transition:width 1s ease; }
+
+.salary-compare { background:var(--black-3); border:1px solid var(--white-10); border-radius:var(--radius-xl); padding:28px; margin-bottom:32px; }
+.salary-bar-row { display:grid; grid-template-columns:140px 1fr 80px; align-items:center; gap:16px; margin-bottom:14px; }
+.salary-label { font-family:var(--font-cond); font-size:0.85rem; font-weight:700; color:var(--white); }
+.salary-bar-track { height:10px; background:var(--black-5); border-radius:99px; overflow:hidden; }
+.salary-bar-fill { height:100%; border-radius:99px; }
+.salary-amount { font-family:var(--font-cond); font-size:0.82rem; font-weight:700; color:var(--gray-4); text-align:right; }
+
+.filter-row { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:24px; align-items:center; }
+.filter-select { padding:9px 14px; background:var(--black-4); border:1.5px solid var(--gray-1); border-radius:var(--radius-full); color:var(--white); font-size:0.85rem; outline:none; cursor:pointer; font-family:var(--font-body); transition:all var(--transition); }
+.filter-select:focus { border-color:var(--red); }
+
+.job-detail-panel { position:fixed; right:0; top:var(--nav-h); bottom:0; width:400px; background:var(--black-2); border-left:1px solid var(--white-10); padding:28px; overflow-y:auto; transform:translateX(100%); transition:transform var(--transition-slow); z-index:800; }
+.job-detail-panel.open { transform:translateX(0); }
+
+.match-meter { width:80px; height:80px; position:relative; flex-shrink:0; }
+.match-svg { width:80px; height:80px; transform:rotate(-90deg); }
+.match-bg { fill:none; stroke:var(--black-5); stroke-width:8; }
+.match-fill { fill:none; stroke-width:8; stroke-linecap:round; transition:stroke-dashoffset 1s ease; }
+.match-center { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-family:var(--font-display); font-size:1.1rem; color:var(--white); }
+
+@media(max-width:768px) { .job-detail-panel { width:100%; } .salary-bar-row { grid-template-columns:100px 1fr 60px; } }
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="../index.html" class="nav-logo">LEARN<span>PRO</span></a>
+  <div class="nav-links">
+    <a href="dashboard.html" class="nav-link">Dashboard</a>
+    <a href="resources.html" class="nav-link">Resources</a>
+    <a href="jobs.html" class="nav-link active">Jobs</a>
+    <a href="mentors.html" class="nav-link">Mentors</a>
+    <a href="courses.html" class="nav-link">Courses</a>
+    <a href="community.html" class="nav-link">Community</a>
+  </div>
+  <div class="nav-actions">
+    <div class="avatar" id="navAvatar">LP</div>
+  </div>
+</nav>
+
+<div style="padding-top:var(--nav-h)">
+<div class="jobs-layout">
+
+  <!-- HERO BANNER -->
+  <div class="jobs-hero">
+    <div style="position:relative;z-index:1">
+      <span class="section-tag">Jobs Intelligence</span>
+      <h1 style="font-size:2rem;color:var(--white);margin-bottom:8px">Your Job Market, <span style="color:var(--red)">Visualised</span></h1>
+      <p style="color:var(--gray-4);max-width:560px;font-size:0.95rem">See jobs you qualify for TODAY vs. the better-paying jobs you'll unlock after finishing your roadmap. Know your exact salary growth trajectory.</p>
+      <div style="display:flex;gap:20px;margin-top:20px;flex-wrap:wrap">
+        <div style="text-align:center"><div style="font-family:var(--font-display);font-size:1.8rem;color:var(--red-light)" id="nowCount">0</div><div style="font-size:0.75rem;color:var(--gray-4)">Jobs Available Now</div></div>
+        <div style="text-align:center"><div style="font-family:var(--font-display);font-size:1.8rem;color:#10b981" id="afterCount">0</div><div style="font-size:0.75rem;color:var(--gray-4)">Jobs After Learning</div></div>
+        <div style="text-align:center"><div style="font-family:var(--font-display);font-size:1.8rem;color:#f59e0b">₹4.2L</div><div style="font-size:0.75rem;color:var(--gray-4)">Avg Salary Increase</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SALARY INTELLIGENCE -->
+  <div class="salary-compare scroll-reveal">
+    <div class="flex-between" style="margin-bottom:20px">
+      <h3 style="font-size:1.1rem;color:var(--white)">💰 Salary Intelligence — Full-Stack Developer Track</h3>
+      <span class="badge badge-gray">India Market · 2026</span>
+    </div>
+    <div class="salary-bar-row">
+      <div class="salary-label">Junior Dev</div>
+      <div class="salary-bar-track"><div class="salary-bar-fill" style="width:25%;background:var(--gray-2)"></div></div>
+      <div class="salary-amount">₹3–5 LPA</div>
+    </div>
+    <div class="salary-bar-row">
+      <div class="salary-label" style="color:var(--red-light)">→ You Now</div>
+      <div class="salary-bar-track"><div class="salary-bar-fill" style="width:40%;background:var(--red)"></div></div>
+      <div class="salary-amount" style="color:var(--red-light)">₹5–8 LPA</div>
+    </div>
+    <div class="salary-bar-row">
+      <div class="salary-label">Mid-Level Dev</div>
+      <div class="salary-bar-track"><div class="salary-bar-fill" style="width:60%;background:rgba(245,158,11,0.7)"></div></div>
+      <div class="salary-amount">₹8–14 LPA</div>
+    </div>
+    <div class="salary-bar-row">
+      <div class="salary-label" style="color:#10b981">After Roadmap</div>
+      <div class="salary-bar-track"><div class="salary-bar-fill" style="width:75%;background:#10b981"></div></div>
+      <div class="salary-amount" style="color:#10b981">₹12–18 LPA</div>
+    </div>
+    <div class="salary-bar-row">
+      <div class="salary-label">Senior Dev</div>
+      <div class="salary-bar-track"><div class="salary-bar-fill" style="width:95%;background:rgba(16,185,129,0.5)"></div></div>
+      <div class="salary-amount">₹18–35 LPA</div>
+    </div>
+  </div>
+
+  <!-- SPLIT VIEW -->
+  <div class="split-tabs">
+    <button class="split-tab active" onclick="setSplit(this,'now')">💼 Jobs Available NOW <span id="nowBadge" style="background:var(--black-5);padding:2px 8px;border-radius:99px;font-size:0.75rem;margin-left:6px">12</span></button>
+    <button class="split-tab" onclick="setSplit(this,'after')">🚀 Unlocked After Learning <span id="afterBadge" style="background:var(--black-5);padding:2px 8px;border-radius:99px;font-size:0.75rem;margin-left:6px">24</span></button>
+  </div>
+
+  <!-- FILTERS -->
+  <div class="filter-row">
+    <select class="filter-select" onchange="filterJobs()">
+      <option value="">All Locations</option>
+      <option>Remote</option>
+      <option>Bangalore</option>
+      <option>Mumbai</option>
+      <option>Delhi NCR</option>
+      <option>Hyderabad</option>
+      <option>Pune</option>
+    </select>
+    <select class="filter-select" onchange="filterJobs()">
+      <option value="">All Types</option>
+      <option>Full-Time</option>
+      <option>Part-Time</option>
+      <option>Freelance</option>
+      <option>Internship</option>
+    </select>
+    <select class="filter-select" onchange="filterJobs()">
+      <option value="">All Salary Ranges</option>
+      <option>Under ₹5 LPA</option>
+      <option>₹5–10 LPA</option>
+      <option>₹10–15 LPA</option>
+      <option>₹15–25 LPA</option>
+      <option>₹25+ LPA</option>
+    </select>
+    <select class="filter-select" onchange="filterJobs()">
+      <option value="">All Experience</option>
+      <option>Fresher / 0–1 yr</option>
+      <option>1–3 years</option>
+      <option>3–5 years</option>
+      <option>5+ years</option>
+    </select>
+    <div style="margin-left:auto;font-size:0.85rem;color:var(--gray-4)">
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+        <input type="checkbox" style="accent-color:var(--red)" onchange="filterJobs()"> Remote only
+      </label>
+    </div>
+  </div>
+
+  <!-- JOBS LIST -->
+  <div id="jobsList"></div>
+
+</div>
+</div>
+
+<!-- JOB DETAIL PANEL -->
+<div class="job-detail-panel" id="jobDetail">
+  <div class="flex-between" style="margin-bottom:24px">
+    <h3 style="font-size:1.1rem;color:var(--white)">Job Details</h3>
+    <button onclick="closeDetail()" style="background:none;border:none;color:var(--gray-4);font-size:1.3rem;cursor:pointer">✕</button>
+  </div>
+  <div id="jobDetailContent"></div>
+</div>
+
+<!-- CHATBOT -->
+<button class="chatbot-fab">🤖</button>
+<div class="chatbot-panel">
+  <div class="chatbot-header">
+    <div style="display:flex;align-items:center;gap:10px"><span style="font-size:1.3rem">🤖</span><div><div style="font-weight:700;font-size:0.95rem">LearnBot</div><div style="font-size:0.75rem;opacity:0.8">Job Match Assistant</div></div></div>
+    <button onclick="document.querySelector('.chatbot-panel').classList.remove('open')" style="background:none;border:none;color:white;font-size:1.2rem;cursor:pointer">✕</button>
+  </div>
+  <div class="chatbot-messages">
+    <div class="msg msg-bot">I can help you find the best job matches and tell you exactly which skills to learn to qualify for higher-paying roles. Ask away! 💼</div>
+  </div>
+  <div class="chatbot-input-area">
+    <input class="chatbot-input" placeholder="Am I ready for this job?" type="text">
+    <button class="chatbot-send">→</button>
+  </div>
+</div>
+
+<script src="../js/global.js"></script>
+<script>
+const user = LP.user();
+if (user) document.getElementById('navAvatar').textContent = user.avatar || 'LP';
+
+const nowJobs = [
+  { id:1, title:'Junior Frontend Developer', company:'Infosys', logo:'🔷', location:'Pune · Hybrid', salary:'₹4.5–7 LPA', match:87, type:'Full-Time', skills:['HTML/CSS','JavaScript','Git'], exp:'0–1 yr', posted:'2d ago', url:'#', desc:'Join our digital team building responsive UIs for enterprise clients. Strong HTML, CSS and JavaScript required.' },
+  { id:2, title:'UI Developer Intern', company:'Razorpay', logo:'💳', location:'Bangalore · Remote', salary:'₹20–30K/mo', match:92, type:'Internship', skills:['HTML','CSS','JavaScript'], exp:'Fresher', posted:'1d ago', url:'#', desc:'6-month paid internship. Help build the next generation of payment UIs.' },
+  { id:3, title:'Web Developer', company:'Freelancer Project', logo:'💻', location:'Remote · Freelance', salary:'₹800–1500/hr', match:78, type:'Freelance', skills:['HTML/CSS','JavaScript','WordPress'], exp:'0–2 yr', posted:'5h ago', url:'#', desc:'Build and maintain client websites. Flexible hours, remote work.' },
+  { id:4, title:'Frontend Developer', company:'Zoho Corp', logo:'📊', location:'Chennai · On-Site', salary:'₹5–8 LPA', match:81, type:'Full-Time', skills:['JavaScript','CSS','React basics'], exp:'0–2 yr', posted:'3d ago', url:'#', desc:'Join our product team. Work on Zoho Creator and related tools.' },
+];
+
+const afterJobs = [
+  { id:5, title:'Full-Stack Developer', company:'Flipkart', logo:'🛒', location:'Bangalore · Hybrid', salary:'₹12–18 LPA', match:0, type:'Full-Time', skills:['React','Node.js','MongoDB','REST APIs'], exp:'1–3 yr', posted:'1d ago', url:'#', missingSkills:['React (45%→100%)','Node.js (20%→100%)','MongoDB (0%→80%)'], desc:'Build and scale features used by 300M+ users.', locked:true },
+  { id:6, title:'Software Engineer – Frontend', company:'Google India', logo:'🔍', location:'Bangalore · On-Site', salary:'₹18–28 LPA', match:0, type:'Full-Time', skills:['React','TypeScript','System Design','Node.js'], exp:'2–4 yr', posted:'Today', url:'#', missingSkills:['React (45%→100%)','TypeScript (0%→80%)','Node.js (20%→100%)'], desc:'Build products used by billions. Strong CS fundamentals + React required.', locked:true },
+  { id:7, title:'React Developer', company:'Swiggy', logo:'🍜', location:'Remote · Full-Time', salary:'₹10–15 LPA', match:0, type:'Full-Time', skills:['React','JavaScript','REST APIs','Git'], exp:'1–2 yr', posted:'2d ago', url:'#', missingSkills:['React (45%→100%)','REST APIs (30%→80%)'], desc:'Build consumer-facing features for our food delivery platform.', locked:false },
+  { id:8, title:'MERN Stack Developer', company:'Zepto', logo:'⚡', location:'Mumbai · Hybrid', salary:'₹8–14 LPA', match:0, type:'Full-Time', skills:['MongoDB','Express','React','Node.js'], exp:'1–3 yr', posted:'4d ago', url:'#', missingSkills:['React (45%→100%)','Node.js (20%→100%)','MongoDB (0%→80%)'], desc:'Fast-growing q-commerce startup. Build and ship fast.', locked:true },
+];
+
+let currentView = 'now';
+
+function setSplit(btn, view) {
+  document.querySelectorAll('.split-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  currentView = view;
+  renderJobs();
+}
+
+function renderJobs() {
+  const list = document.getElementById('jobsList');
+  const jobs = currentView === 'now' ? nowJobs : afterJobs;
+  list.innerHTML = '';
+
+  jobs.forEach(j => {
+    const matchColor = j.match >= 80 ? '#10b981' : j.match >= 60 ? '#f59e0b' : 'var(--red)';
+    const matchPct = j.match;
+    const r = 32; const c = 2 * Math.PI * r;
+    const offset = c - (c * matchPct / 100);
+
+    let missingHTML = '';
+    if (j.locked && j.missingSkills) {
+      missingHTML = `<div style="background:rgba(180,18,27,0.06);border:1px solid rgba(180,18,27,0.2);border-radius:var(--radius);padding:12px;margin-top:12px">
+        <div style="font-family:var(--font-cond);font-size:0.75rem;font-weight:700;letter-spacing:0.1em;color:var(--red-light);margin-bottom:6px">SKILLS NEEDED TO UNLOCK</div>
+        ${j.missingSkills.map(s => `<div style="font-size:0.8rem;color:var(--gray-5);margin-bottom:3px">→ ${s}</div>`).join('')}
+      </div>`;
+    }
+
+    list.innerHTML += `
+    <div class="job-card ${j.locked?'locked':''}" id="jcard${j.id}">
+      <div style="display:flex;gap:14px;align-items:flex-start">
+        <div class="job-logo">${j.logo}</div>
+        <div style="flex:1">
+          <div class="job-title">${j.title}</div>
+          <div class="job-company">${j.company} · ${j.location}</div>
+          <div class="job-tags">
+            ${j.skills.map(s=>`<span class="job-tag">${s}</span>`).join('')}
+            <span class="job-tag" style="color:#f59e0b">${j.exp}</span>
+            <span class="job-tag">${j.type}</span>
+          </div>
+          ${currentView === 'now' ? `
+          <div style="margin-bottom:4px">
+            <div style="display:flex;justify-content:space-between;font-size:0.75rem;color:var(--gray-4);margin-bottom:4px">
+              <span>Skill Match</span><span style="color:${matchColor};font-weight:700">${j.match}%</span>
+            </div>
+            <div class="skill-match-bar"><div class="skill-match-fill" style="width:${j.match}%;background:${matchColor}"></div></div>
+          </div>` : missingHTML}
+        </div>
+        <div style="text-align:right;flex-shrink:0">
+          <div style="font-family:var(--font-cond);font-weight:700;color:var(--white);font-size:1rem;margin-bottom:4px">${j.salary}</div>
+          <div style="font-size:0.72rem;color:var(--gray-4)">${j.posted}</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap">
+        <button onclick="openDetail(${j.id})" class="btn btn-ghost btn-sm">View Details</button>
+        ${!j.locked ? `<a href="${j.url}" target="_blank" class="btn btn-primary btn-sm">Apply Now →</a>` : `<a href="courses.html" class="btn btn-outline btn-sm">Unlock This Job →</a>`}
+        <button onclick="saveJob(${j.id},this)" class="btn btn-ghost btn-sm">☆ Save</button>
+      </div>
+    </div>`;
+  });
+}
+
+function openDetail(id) {
+  const all = [...nowJobs, ...afterJobs];
+  const j = all.find(j => j.id === id);
+  if (!j) return;
+  document.getElementById('jobDetailContent').innerHTML = `
+    <div style="display:flex;gap:14px;align-items:center;margin-bottom:20px">
+      <div class="job-logo" style="width:60px;height:60px;font-size:1.8rem">${j.logo}</div>
+      <div><div style="font-size:1.2rem;font-weight:700;color:var(--white)">${j.title}</div><div style="color:var(--gray-4)">${j.company}</div></div>
+    </div>
+    <div class="divider"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0">
+      <div><div style="font-size:0.72rem;color:var(--gray-4);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:2px">Salary</div><div style="color:var(--white);font-weight:700">${j.salary}</div></div>
+      <div><div style="font-size:0.72rem;color:var(--gray-4);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:2px">Location</div><div style="color:var(--white)">${j.location}</div></div>
+      <div><div style="font-size:0.72rem;color:var(--gray-4);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:2px">Type</div><div style="color:var(--white)">${j.type}</div></div>
+      <div><div style="font-size:0.72rem;color:var(--gray-4);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:2px">Experience</div><div style="color:var(--white)">${j.exp}</div></div>
+    </div>
+    <div class="divider"></div>
+    <div style="margin:16px 0">
+      <div style="font-family:var(--font-cond);font-size:0.82rem;font-weight:700;color:var(--gray-3);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px">Description</div>
+      <p style="font-size:0.88rem;color:var(--gray-5);line-height:1.7">${j.desc}</p>
+    </div>
+    <div style="margin:16px 0">
+      <div style="font-family:var(--font-cond);font-size:0.82rem;font-weight:700;color:var(--gray-3);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px">Required Skills</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px">${j.skills.map(s=>`<span class="badge badge-gray">${s}</span>`).join('')}</div>
+    </div>
+    <div style="margin-top:20px;display:flex;flex-direction:column;gap:10px">
+      ${!j.locked ? `<a href="${j.url}" target="_blank" class="btn btn-primary" style="justify-content:center">Apply Now →</a>` : `<a href="courses.html" class="btn btn-primary" style="justify-content:center">Start Learning to Unlock →</a>`}
+      <button onclick="saveJob(${j.id},this)" class="btn btn-outline" style="justify-content:center">☆ Save Job</button>
+    </div>`;
+  document.getElementById('jobDetail').classList.add('open');
+}
+
+function closeDetail() { document.getElementById('jobDetail').classList.remove('open'); }
+
+function saveJob(id, btn) { btn.textContent = '⭐ Saved'; showToast('Job saved!', 'success'); }
+function filterJobs() { renderJobs(); }
+
+// Init
+renderJobs();
+animateCounter(document.getElementById('nowCount'), nowJobs.length, '', 800);
+animateCounter(document.getElementById('afterCount'), afterJobs.length, '', 800);
+
+// In production: replace with Indeed/LinkedIn Jobs API
+// fetch(`https://api.indeed.com/ads/apisearch?publisher=YOUR_PUBLISHER_ID&q=frontend+developer&l=bangalore&format=json&v=2`)
+</script>
+</body>
+</html>

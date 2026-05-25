@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Profile Enhancer — LearnPro</title>
+<link rel="stylesheet" href="../css/global.css">
+<style>
+.profile-layout { display:grid; grid-template-columns:300px 1fr; gap:0; min-height:calc(100vh - var(--nav-h)); }
+.profile-sidebar { border-right:1px solid var(--white-10); padding:28px 20px; }
+.profile-main { padding:32px; max-width:900px; }
+.score-ring { width:100px; height:100px; position:relative; margin:0 auto 16px; }
+.score-svg { width:100px; height:100px; transform:rotate(-90deg); }
+.score-bg { fill:none; stroke:var(--black-5); stroke-width:10; }
+.score-fill { fill:none; stroke-width:10; stroke-linecap:round; transition:stroke-dashoffset 1.5s ease; }
+.score-center { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center; }
+.score-num { font-family:var(--font-display); font-size:1.5rem; color:var(--white); line-height:1; }
+.score-label { font-size:0.62rem; color:var(--gray-4); text-transform:uppercase; letter-spacing:0.08em; }
+.platform-card { background:var(--black-3); border:1px solid var(--white-10); border-radius:var(--radius-lg); padding:20px; margin-bottom:14px; transition:all var(--transition); cursor:pointer; }
+.platform-card:hover, .platform-card.active { border-color:var(--red); background:var(--red-subtle); }
+.platform-icon { width:40px; height:40px; border-radius:var(--radius); display:flex; align-items:center; justify-content:center; font-size:1.3rem; flex-shrink:0; }
+.connect-badge { font-size:0.72rem; padding:2px 8px; border-radius:99px; font-family:var(--font-cond); font-weight:700; letter-spacing:0.06em; }
+.connected { background:rgba(16,185,129,0.15); color:#10b981; border:1px solid rgba(16,185,129,0.3); }
+.not-connected { background:var(--red-subtle); color:var(--red-light); border:1px solid var(--red); }
+.suggestion-card { background:var(--black-3); border:1px solid var(--white-10); border-radius:var(--radius-lg); padding:18px; margin-bottom:12px; transition:all var(--transition); }
+.suggestion-card:hover { border-color:rgba(180,18,27,0.3); }
+.suggestion-priority { width:8px; height:8px; border-radius:50%; flex-shrink:0; margin-top:6px; }
+.priority-high { background:var(--red); }
+.priority-med { background:#f59e0b; }
+.priority-low { background:#10b981; }
+.ai-gen-box { background:linear-gradient(135deg,rgba(180,18,27,0.06),rgba(180,18,27,0.02)); border:1px solid rgba(180,18,27,0.2); border-radius:var(--radius-lg); padding:20px; }
+.github-contrib { display:grid; grid-template-columns:repeat(12,1fr); gap:2px; }
+.gc-cell { aspect-ratio:1; border-radius:1px; }
+.gc-0 { background:var(--black-5); }
+.gc-1 { background:rgba(180,18,27,0.2); }
+.gc-2 { background:rgba(180,18,27,0.5); }
+.gc-3 { background:var(--red); }
+@media(max-width:900px) { .profile-layout { grid-template-columns:1fr; } .profile-sidebar { border-right:none; border-bottom:1px solid var(--white-10); } }
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="../index.html" class="nav-logo">LEARN<span>PRO</span></a>
+  <div class="nav-links">
+    <a href="dashboard.html" class="nav-link">Dashboard</a>
+    <a href="resources.html" class="nav-link">Resources</a>
+    <a href="jobs.html" class="nav-link">Jobs</a>
+    <a href="mentors.html" class="nav-link">Mentors</a>
+    <a href="courses.html" class="nav-link">Courses</a>
+    <a href="community.html" class="nav-link">Community</a>
+  </div>
+  <div class="nav-actions"><div class="avatar" id="navAvatar">LP</div></div>
+</nav>
+
+<div style="padding-top:var(--nav-h)">
+<div class="profile-layout">
+
+  <!-- SIDEBAR -->
+  <div class="profile-sidebar">
+    <div style="text-align:center;margin-bottom:24px">
+      <div class="avatar avatar-xl" style="margin:0 auto 12px" id="profileAvatar">LP</div>
+      <div style="font-family:var(--font-cond);font-weight:700;font-size:1.1rem;color:var(--white)" id="profileName">Your Name</div>
+      <div style="font-size:0.82rem;color:var(--gray-4)">Full-Stack Developer (Target)</div>
+    </div>
+    <div class="score-ring">
+      <svg class="score-svg" viewBox="0 0 100 100">
+        <circle class="score-bg" cx="50" cy="50" r="42"/>
+        <circle class="score-fill" cx="50" cy="50" r="42" id="overallScoreFill" stroke="var(--red)" stroke-dasharray="264" stroke-dashoffset="264"/>
+      </svg>
+      <div class="score-center"><div class="score-num" id="overallScore">0</div><div class="score-label">Profile Score</div></div>
+    </div>
+    <div style="font-size:0.78rem;color:var(--gray-4);text-align:center;margin-bottom:24px">Improve to unlock more job matches</div>
+    <div style="font-family:var(--font-cond);font-size:0.72rem;font-weight:700;color:var(--gray-3);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:12px">Connected Platforms</div>
+    <div class="platform-card active" onclick="showPlatform('github')">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div class="platform-icon" style="background:var(--black-5)">⌥</div>
+        <div style="flex:1"><div style="font-weight:700;color:var(--white);font-size:0.9rem">GitHub</div><div style="font-size:0.75rem;color:var(--gray-4)">8 repos · 42 commits</div></div>
+        <span class="connect-badge connected">Connected</span>
+      </div>
+    </div>
+    <div class="platform-card" onclick="showPlatform('linkedin')">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div class="platform-icon" style="background:#0a66c2">in</div>
+        <div style="flex:1"><div style="font-weight:700;color:var(--white);font-size:0.9rem">LinkedIn</div><div style="font-size:0.75rem;color:var(--gray-4)">Score: 62/100</div></div>
+        <span class="connect-badge connected">Connected</span>
+      </div>
+    </div>
+    <div class="platform-card" onclick="showPlatform('instagram')">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div class="platform-icon" style="background:linear-gradient(45deg,#833ab4,#fd1d1d,#fcb045)">ig</div>
+        <div style="flex:1"><div style="font-weight:700;color:var(--white);font-size:0.9rem">Instagram</div><div style="font-size:0.75rem;color:var(--gray-4)">Not connected</div></div>
+        <span class="connect-badge not-connected">Connect</span>
+      </div>
+    </div>
+    <div class="platform-card" onclick="showPlatform('resume')">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div class="platform-icon" style="background:var(--black-5)">📄</div>
+        <div style="flex:1"><div style="font-weight:700;color:var(--white);font-size:0.9rem">Resume</div><div style="font-size:0.75rem;color:var(--gray-4)">ATS Score: 71%</div></div>
+        <span class="connect-badge" style="background:rgba(245,158,11,0.1);color:#f59e0b;border:1px solid rgba(245,158,11,0.3)">Needs Work</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="profile-main">
+
+    <!-- GITHUB PANEL -->
+    <div id="panel-github">
+      <div class="flex-between" style="margin-bottom:20px">
+        <div><span class="section-tag">GitHub Profile</span><h2 style="font-size:1.6rem;color:var(--white)">Strengthen your code presence</h2></div>
+        <button onclick="fetchGitHub()" class="btn btn-ghost btn-sm">🔄 Sync GitHub</button>
+      </div>
+      <div class="grid-3" style="margin-bottom:24px">
+        <div class="stat-card"><div class="stat-label">Repositories</div><div class="stat-value" id="ghRepos">8</div><div class="stat-change up">↑ 2 this month</div></div>
+        <div class="stat-card"><div class="stat-label">Total Commits</div><div class="stat-value" id="ghCommits">42</div><div class="stat-change up">↑ 14 this week</div></div>
+        <div class="stat-card"><div class="stat-label">Profile Score</div><div class="stat-value" style="color:var(--red-light)">58<span style="font-size:1rem">/100</span></div><div class="stat-change up">↑ +12 pts</div></div>
+      </div>
+      <div class="card" style="margin-bottom:20px">
+        <h4 style="font-size:0.95rem;color:var(--white);margin-bottom:14px">Contribution Activity</h4>
+        <div class="github-contrib" id="ghContrib"></div>
+      </div>
+      <div>
+        <h4 style="font-size:1rem;color:var(--white);margin-bottom:14px">🤖 AI Suggestions for GitHub</h4>
+        <div class="suggestion-card">
+          <div style="display:flex;gap:12px">
+            <div class="suggestion-priority priority-high"></div>
+            <div><div style="font-weight:700;color:var(--white);margin-bottom:4px">Add README to 5 repos that are missing it</div><div style="font-size:0.85rem;color:var(--gray-5)">Repos without README files appear incomplete to recruiters. I'll generate a README template for each project based on the code.</div>
+            <button onclick="generateReadme()" class="btn btn-ghost btn-sm" style="margin-top:10px">✨ Auto-Generate READMEs</button></div>
+          </div>
+        </div>
+        <div class="suggestion-card">
+          <div style="display:flex;gap:12px">
+            <div class="suggestion-priority priority-high"></div>
+            <div><div style="font-weight:700;color:var(--white);margin-bottom:4px">Pin your 6 best repositories</div><div style="font-size:0.85rem;color:var(--gray-5)">Your profile currently shows no pinned repos. Pin projects that demonstrate your target skills (React, Node.js).</div></div>
+          </div>
+        </div>
+        <div class="suggestion-card">
+          <div style="display:flex;gap:12px">
+            <div class="suggestion-priority priority-med"></div>
+            <div><div style="font-weight:700;color:var(--white);margin-bottom:4px">Contribute to 2 open-source projects</div><div style="font-size:0.85rem;color:var(--gray-5)">Open-source contributions signal to employers that you can work on real codebases. I'll find beginner-friendly issues for you.</div>
+            <button onclick="findIssues()" class="btn btn-ghost btn-sm" style="margin-top:10px">🔍 Find Issues for Me</button></div>
+          </div>
+        </div>
+        <div class="suggestion-card">
+          <div style="display:flex;gap:12px">
+            <div class="suggestion-priority priority-low"></div>
+            <div><div style="font-weight:700;color:var(--white);margin-bottom:4px">Fill in contribution gaps this week</div><div style="font-size:0.85rem;color:var(--gray-5)">You have 4 consecutive days without commits. Even small commits (fixes, docs) keep your graph active and green.</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LINKEDIN PANEL -->
+    <div id="panel-linkedin" style="display:none">
+      <div class="flex-between" style="margin-bottom:20px">
+        <div><span class="section-tag">LinkedIn Profile</span><h2 style="font-size:1.6rem;color:var(--white)">Make recruiters find you</h2></div>
+        <button onclick="fetchLinkedIn()" class="btn btn-ghost btn-sm">🔄 Sync LinkedIn</button>
+      </div>
+      <div class="grid-4" style="margin-bottom:24px">
+        <div class="stat-card"><div class="stat-label">Profile Score</div><div class="stat-value" style="color:#f59e0b">62<span style="font-size:1rem">/100</span></div></div>
+        <div class="stat-card"><div class="stat-label">Connections</div><div class="stat-value">143</div></div>
+        <div class="stat-card"><div class="stat-label">Profile Views</div><div class="stat-value">28</div><div class="stat-sub">This week</div></div>
+        <div class="stat-card"><div class="stat-label">Completeness</div><div class="stat-value">71%</div></div>
+      </div>
+      <div class="ai-gen-box" style="margin-bottom:24px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+          <span style="font-size:1.3rem">✨</span>
+          <div style="font-family:var(--font-cond);font-weight:700;color:var(--white)">AI-Generated LinkedIn Headline</div>
+        </div>
+        <div id="liHeadline" style="font-size:1rem;color:var(--white);font-weight:700;padding:14px;background:var(--black-4);border-radius:var(--radius);margin-bottom:10px;line-height:1.5">
+          Aspiring Full-Stack Developer | JavaScript · React · Building web apps | Open to opportunities in product companies
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button onclick="generateHeadline()" class="btn btn-ghost btn-sm">🔄 Regenerate</button>
+          <button onclick="copyToClipboard('liHeadline')" class="btn btn-ghost btn-sm">📋 Copy</button>
+        </div>
+      </div>
+      <div class="ai-gen-box" style="margin-bottom:24px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+          <span style="font-size:1.3rem">✨</span>
+          <div style="font-family:var(--font-cond);font-weight:700;color:var(--white)">AI-Generated About Section</div>
+        </div>
+        <div id="liAbout" style="font-size:0.9rem;color:var(--gray-5);padding:14px;background:var(--black-4);border-radius:var(--radius);margin-bottom:10px;line-height:1.8">
+          I'm a self-taught developer transitioning from a background in sales to full-stack web development. Over the past 6 months I've been building projects with HTML, CSS, JavaScript, and React through structured learning on LearnPro. I'm passionate about building clean, user-friendly interfaces and am actively looking for my first developer role in a product company. Currently learning Node.js and MongoDB to complete my full-stack skill set.
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button onclick="generateAbout()" class="btn btn-ghost btn-sm">🔄 Regenerate</button>
+          <button onclick="copyToClipboard('liAbout')" class="btn btn-ghost btn-sm">📋 Copy</button>
+        </div>
+      </div>
+      <h4 style="font-size:1rem;color:var(--white);margin-bottom:14px">📋 LinkedIn Action Checklist</h4>
+      <div id="liChecklist"></div>
+    </div>
+
+    <!-- RESUME PANEL -->
+    <div id="panel-resume" style="display:none">
+      <div class="flex-between" style="margin-bottom:20px">
+        <div><span class="section-tag">Resume Builder</span><h2 style="font-size:1.6rem;color:var(--white)">ATS-Optimised in minutes</h2></div>
+        <div style="display:flex;gap:8px">
+          <button onclick="generateResume()" class="btn btn-primary btn-sm">✨ AI Generate</button>
+          <button onclick="downloadResume()" class="btn btn-ghost btn-sm">📥 Download PDF</button>
+        </div>
+      </div>
+      <div class="grid-2" style="margin-bottom:24px">
+        <div class="stat-card"><div class="stat-label">ATS Score</div><div class="stat-value" style="color:#f59e0b">71<span style="font-size:1rem">/100</span></div><div class="stat-sub">Aim for 85+</div></div>
+        <div class="stat-card"><div class="stat-label">Keyword Match</div><div class="stat-value">68%</div><div style="font-size:0.78rem;color:var(--gray-4);margin-top:4px">vs Frontend Dev JD</div></div>
+      </div>
+      <div style="background:var(--black-3);border:1px solid var(--white-10);border-radius:var(--radius-xl);padding:28px;font-family:var(--font-body)">
+        <div style="border-bottom:2px solid var(--red);padding-bottom:14px;margin-bottom:14px">
+          <div style="font-family:var(--font-display);font-size:1.8rem;color:var(--white)" id="resumeName">YOUR NAME</div>
+          <div style="font-size:0.9rem;color:var(--gray-4)" id="resumeContact">email@example.com · github.com/yourname · linkedin.com/in/yourname · Mumbai, India</div>
+        </div>
+        <div style="margin-bottom:14px">
+          <div style="font-family:var(--font-cond);font-size:0.8rem;font-weight:700;letter-spacing:0.12em;color:var(--red-light);text-transform:uppercase;margin-bottom:6px">OBJECTIVE</div>
+          <p style="font-size:0.85rem;color:var(--gray-5);line-height:1.7" id="resumeObj">Aspiring full-stack developer with 6 months of self-directed learning in HTML, CSS, JavaScript and React. Seeking a junior developer role to contribute to meaningful products while growing as an engineer.</p>
+        </div>
+        <div style="margin-bottom:14px">
+          <div style="font-family:var(--font-cond);font-size:0.8rem;font-weight:700;letter-spacing:0.12em;color:var(--red-light);text-transform:uppercase;margin-bottom:8px">SKILLS</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px" id="resumeSkills">
+            <span class="badge badge-gray">HTML/CSS</span><span class="badge badge-gray">JavaScript (ES6+)</span><span class="badge badge-gray">React.js</span><span class="badge badge-gray">Git & GitHub</span><span class="badge badge-gray">Responsive Design</span><span class="badge badge-gray">REST APIs</span>
+          </div>
+        </div>
+        <div style="margin-bottom:14px">
+          <div style="font-family:var(--font-cond);font-size:0.8rem;font-weight:700;letter-spacing:0.12em;color:var(--red-light);text-transform:uppercase;margin-bottom:8px">PROJECTS</div>
+          <div style="margin-bottom:10px">
+            <div style="font-weight:700;color:var(--white);font-size:0.9rem">Weather Dashboard App</div>
+            <div style="font-size:0.8rem;color:var(--gray-5);line-height:1.6">Built a responsive weather app using OpenWeather API and vanilla JavaScript. Features include city search, 5-day forecast, and geolocation detection.</div>
+          </div>
+          <div>
+            <div style="font-weight:700;color:var(--white);font-size:0.9rem">E-Commerce UI (React)</div>
+            <div style="font-size:0.8rem;color:var(--gray-5);line-height:1.6">Developed a fully responsive product listing page with cart functionality using React hooks and Context API.</div>
+          </div>
+        </div>
+        <div>
+          <div style="font-family:var(--font-cond);font-size:0.8rem;font-weight:700;letter-spacing:0.12em;color:var(--red-light);text-transform:uppercase;margin-bottom:8px">CERTIFICATIONS</div>
+          <div style="font-size:0.85rem;color:var(--gray-5)">• LearnPro – JavaScript Advanced Patterns (2026)<br>• LearnPro – HTML & CSS Foundations (2025)</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- INSTAGRAM PANEL -->
+    <div id="panel-instagram" style="display:none">
+      <span class="section-tag">Instagram Profile</span>
+      <h2 style="font-size:1.6rem;color:var(--white);margin-bottom:20px">Build your tech brand</h2>
+      <div style="background:var(--black-3);border:1px solid var(--white-10);border-radius:var(--radius-xl);padding:28px;text-align:center">
+        <div style="font-size:3rem;margin-bottom:12px">📸</div>
+        <h3 style="color:var(--white);margin-bottom:8px">Connect Instagram to get AI suggestions</h3>
+        <p style="color:var(--gray-4);margin-bottom:20px;max-width:380px;margin-left:auto;margin-right:auto">Connect your Instagram account and we'll analyse your current presence and suggest a content strategy to build a professional tech brand.</p>
+        <!-- Instagram OAuth: replace YOUR_INSTAGRAM_APP_ID -->
+        <button onclick="connectInstagram()" class="btn btn-primary">Connect Instagram →</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<!-- CHATBOT -->
+<button class="chatbot-fab">🤖</button>
+<div class="chatbot-panel">
+  <div class="chatbot-header">
+    <div style="display:flex;align-items:center;gap:10px"><span style="font-size:1.3rem">🤖</span><div><div style="font-weight:700;font-size:0.95rem">LearnBot</div></div></div>
+    <button onclick="document.querySelector('.chatbot-panel').classList.remove('open')" style="background:none;border:none;color:white;font-size:1.2rem;cursor:pointer">✕</button>
+  </div>
+  <div class="chatbot-messages"><div class="msg msg-bot">I can write your LinkedIn bio, GitHub README, or resume bullet points. Just ask! ✨</div></div>
+  <div class="chatbot-input-area"><input class="chatbot-input" placeholder="Write my LinkedIn headline…" type="text"><button class="chatbot-send">→</button></div>
+</div>
+
+<script src="../js/global.js"></script>
+<script>
+const user = LP.user();
+if (user) {
+  document.getElementById('navAvatar').textContent = user.avatar || 'LP';
+  document.getElementById('profileAvatar').textContent = user.avatar || 'LP';
+  document.getElementById('profileName').textContent = user.name || 'Your Name';
+  document.getElementById('resumeName').textContent = (user.name || 'YOUR NAME').toUpperCase();
+  document.getElementById('resumeContact').textContent = `${user.email || 'email@example.com'} · github.com/yourname · linkedin.com/in/yourname · ${user.city || 'India'}`;
+}
+
+// Animate overall score
+setTimeout(() => {
+  const circle = document.getElementById('overallScoreFill');
+  const r = 42; const c = 2 * Math.PI * r;
+  const score = 68;
+  circle.style.strokeDashoffset = c - (c * score / 100);
+  animateCounter(document.getElementById('overallScore'), score, '', 1200);
+}, 400);
+
+// GitHub contribution heatmap
+const contrib = document.getElementById('ghContrib');
+const vals = [0,1,0,2,3,3,2,1,0,1,2,3,0,0,1,2,3,3,2,0,1,2,3,3,2,1,0,0,2,3,3,2,1,0,1,2,3,0,0,1,2,3,3,2,1,0,0,2,3,3,2,1,0,1,2,3,0,0,1,2,3,3,2,1,0,0,2,3,3,2,1,0];
+vals.forEach(v => {
+  const c2 = document.createElement('div');
+  c2.className = `gc-cell gc-${v}`;
+  c2.title = ['No activity','1–3 commits','4–8 commits','9+ commits'][v];
+  contrib.appendChild(c2);
+});
+
+// LinkedIn checklist
+const liItems = [
+  { done:true, text:'Professional profile photo uploaded' },
+  { done:true, text:'Headline updated with target role keywords' },
+  { done:false, text:'About section written (use AI generator above)' },
+  { done:false, text:'Add Featured section with top GitHub project' },
+  { done:true, text:'Education section complete' },
+  { done:false, text:'Add 5+ skills relevant to target role' },
+  { done:false, text:'Request 2 recommendations from peers/mentors' },
+  { done:false, text:'Add certifications from LearnPro' },
+];
+document.getElementById('liChecklist').innerHTML = liItems.map(item => `
+<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--white-5)">
+  <div class="task-check ${item.done?'done':''}" onclick="this.classList.toggle('done')" style="flex-shrink:0"></div>
+  <span style="font-size:0.88rem;color:${item.done?'var(--gray-3)':'var(--white)'}${item.done?';text-decoration:line-through':''}">${item.text}</span>
+</div>`).join('');
+
+function showPlatform(name) {
+  document.querySelectorAll('.platform-card').forEach(c => c.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  document.querySelectorAll('[id^=panel-]').forEach(p => p.style.display = 'none');
+  document.getElementById(`panel-${name}`).style.display = 'block';
+}
+
+function copyToClipboard(id) {
+  navigator.clipboard.writeText(document.getElementById(id).textContent);
+  showToast('Copied to clipboard!', 'success');
+}
+
+// ── GITHUB API ──
+// Replace YOUR_GITHUB_TOKEN with a personal access token
+async function fetchGitHub() {
+  const username = prompt('Enter your GitHub username:');
+  if (!username) return;
+  showToast('Fetching GitHub data…', 'info');
+  try {
+    const res = await fetch(`https://api.github.com/users/${username}`, {
+      headers: { 'Authorization': 'token YOUR_GITHUB_TOKEN' }
+    });
+    const data = await res.json();
+    if (data.public_repos) {
+      document.getElementById('ghRepos').textContent = data.public_repos;
+      showToast(`GitHub synced: ${data.public_repos} repos found!`, 'success');
+    } else {
+      showToast('Add your GitHub token to enable live sync', 'error');
+    }
+  } catch { showToast('Add YOUR_GITHUB_TOKEN in profile.html', 'error'); }
+}
+
+function fetchLinkedIn() { showToast('Add LinkedIn OAuth credentials to enable sync', 'info'); }
+function connectInstagram() { showToast('Add YOUR_INSTAGRAM_APP_ID in profile.html to connect', 'info'); }
+function generateReadme() { showToast('✨ AI generating READMEs… (needs Claude API key in global.js)', 'info'); }
+function findIssues() { showToast('Finding beginner-friendly open-source issues for you…', 'info'); window.open('https://github.com/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22'); }
+function generateHeadline() { showToast('✨ Regenerating… (add Claude API key in global.js)', 'info'); }
+function generateAbout() { showToast('✨ Regenerating… (add Claude API key in global.js)', 'info'); }
+function generateResume() { showToast('✨ AI generating resume content…', 'info'); }
+function downloadResume() { window.print(); }
+</script>
+</body>
+</html>

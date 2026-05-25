@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login — LearnPro</title>
+<link rel="stylesheet" href="../css/global.css">
+<!-- Cloudflare Turnstile -->
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+<!-- Google OAuth -->
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+body { display: flex; min-height: 100vh; }
+.auth-left {
+  flex: 0 0 50%; background: var(--black-2);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 60px; position: relative; overflow: hidden;
+}
+.auth-left::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse 70% 70% at 50% 50%, rgba(180,18,27,0.15) 0%, transparent 70%);
+  pointer-events: none;
+}
+.auth-bg-text {
+  position: absolute; font-family: var(--font-display); font-size: 14rem;
+  color: rgba(255,255,255,0.02); pointer-events: none; user-select: none;
+  top: 50%; left: 50%; transform: translate(-50%,-50%);
+  white-space: nowrap; letter-spacing: 0.02em;
+}
+.auth-right {
+  flex: 0 0 50%; display: flex; align-items: center; justify-content: center;
+  padding: 40px; background: var(--black);
+}
+.auth-box { width: 100%; max-width: 440px; }
+.auth-logo {
+  font-family: var(--font-display); font-size: 2rem;
+  color: var(--white); text-decoration: none; display: block; margin-bottom: 32px;
+}
+.auth-logo span { color: var(--red); }
+.auth-title { font-size: 2rem; color: var(--white); margin-bottom: 6px; }
+.auth-sub { color: var(--gray-4); font-size: 0.9rem; margin-bottom: 32px; }
+
+.oauth-btns { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
+.oauth-btn {
+  display: flex; align-items: center; justify-content: center; gap: 12px;
+  padding: 13px; border-radius: var(--radius); border: 1.5px solid var(--gray-1);
+  background: var(--black-4); color: var(--white); font-size: 0.9rem; font-weight: 600;
+  cursor: pointer; transition: all var(--transition); text-decoration: none;
+  font-family: var(--font-body);
+}
+.oauth-btn:hover { border-color: var(--red); background: var(--red-subtle); color: var(--white); }
+.oauth-icon { width: 20px; height: 20px; object-fit: contain; }
+
+.divider-or {
+  display: flex; align-items: center; gap: 12px; margin: 20px 0;
+  color: var(--gray-3); font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.1em;
+}
+.divider-or::before, .divider-or::after {
+  content: ''; flex: 1; height: 1px; background: var(--gray-1);
+}
+
+.otp-inputs { display: flex; gap: 10px; margin-bottom: 20px; }
+.otp-input {
+  flex: 1; height: 54px; text-align: center;
+  background: var(--black-4); border: 1.5px solid var(--gray-1);
+  border-radius: var(--radius); color: var(--white); font-size: 1.4rem; font-weight: 700;
+  outline: none; transition: all var(--transition);
+}
+.otp-input:focus { border-color: var(--red); box-shadow: 0 0 0 3px var(--red-glow); }
+
+.auth-switch { text-align: center; margin-top: 24px; font-size: 0.88rem; color: var(--gray-4); }
+.auth-switch a { color: var(--red-light); font-weight: 600; }
+
+/* Tabs for login method */
+.login-tabs { display: flex; background: var(--black-4); border-radius: var(--radius); padding: 4px; margin-bottom: 24px; gap: 4px; }
+.login-tab {
+  flex: 1; padding: 9px; text-align: center; border-radius: 6px;
+  font-family: var(--font-cond); font-size: 0.88rem; font-weight: 700; letter-spacing: 0.06em;
+  cursor: pointer; border: none; background: none; color: var(--gray-4);
+  transition: all var(--transition); text-transform: uppercase;
+}
+.login-tab.active { background: var(--red); color: var(--white); }
+
+.form-hint { font-size: 0.8rem; color: var(--gray-4); margin-top: 4px; }
+
+/* Left side feature list */
+.auth-features { margin-top: 40px; display: flex; flex-direction: column; gap: 16px; width: 100%; max-width: 380px; }
+.auth-feature { display: flex; align-items: flex-start; gap: 14px; }
+.auth-feature-icon { width: 40px; height: 40px; background: var(--red-subtle); border: 1px solid var(--red); border-radius: var(--radius); display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
+.auth-feature-text strong { display: block; font-size: 0.9rem; color: var(--white); margin-bottom: 2px; }
+.auth-feature-text span { font-size: 0.82rem; color: var(--gray-4); }
+
+/* Turnstile container */
+.cf-turnstile { margin: 16px 0; }
+
+@media(max-width:768px) {
+  body { flex-direction: column; }
+  .auth-left { display: none; }
+  .auth-right { padding: 30px 20px; min-height: 100vh; }
+}
+</style>
+</head>
+<body>
+
+<!-- LEFT PANEL -->
+<div class="auth-left">
+  <div class="auth-bg-text">LP</div>
+  <a href="../index.html" style="position:absolute;top:28px;left:28px;font-family:var(--font-display);font-size:1.6rem;color:var(--white);text-decoration:none;z-index:2">LEARN<span style="color:var(--red)">PRO</span></a>
+  <div style="position:relative;z-index:2;text-align:center">
+    <h1 class="display" style="font-size:4rem;color:var(--white);margin-bottom:16px">WELCOME<br><span style="color:var(--red)">BACK</span></h1>
+    <p style="color:var(--gray-4);font-size:1rem;margin-bottom:0">Your career journey awaits you.</p>
+  </div>
+  <div class="auth-features" style="position:relative;z-index:2">
+    <div class="auth-feature">
+      <div class="auth-feature-icon">🗺️</div>
+      <div class="auth-feature-text"><strong>Your personalised roadmap</strong><span>Pick up exactly where you left off</span></div>
+    </div>
+    <div class="auth-feature">
+      <div class="auth-feature-icon">📊</div>
+      <div class="auth-feature-text"><strong>Track your progress</strong><span>Streaks, XP, and milestones updated</span></div>
+    </div>
+    <div class="auth-feature">
+      <div class="auth-feature-icon">💼</div>
+      <div class="auth-feature-text"><strong>New jobs since last visit</strong><span>Fresh listings matched to your skills</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- RIGHT PANEL -->
+<div class="auth-right">
+  <div class="auth-box">
+    <div class="auth-title">Sign in</div>
+    <p class="auth-sub">New here? <a href="signup.html" style="color:var(--red-light);font-weight:600">Create a free account →</a></p>
+
+    <!-- OAuth -->
+    <div class="oauth-btns">
+      <button class="oauth-btn" onclick="handleGoogleLogin()">
+        <svg class="oauth-icon" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+        Continue with Google
+      </button>
+      <button class="oauth-btn" onclick="handleGitHubLogin()">
+        <svg class="oauth-icon" viewBox="0 0 24 24" fill="white"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+        Continue with GitHub
+      </button>
+      <button class="oauth-btn" onclick="handleLinkedInLogin()">
+        <svg class="oauth-icon" viewBox="0 0 24 24"><path fill="#0A66C2" d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+        Continue with LinkedIn
+      </button>
+    </div>
+
+    <div class="divider-or"><span>or</span></div>
+
+    <!-- Login Method Tabs -->
+    <div class="login-tabs">
+      <button class="login-tab active" onclick="switchTab('email',this)">Email</button>
+      <button class="login-tab" onclick="switchTab('otp',this)">OTP</button>
+    </div>
+
+    <!-- EMAIL FORM -->
+    <form id="email-form" onsubmit="handleEmailLogin(event)">
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <input type="email" class="form-input" id="loginEmail" placeholder="you@example.com" required autocomplete="email">
+      </div>
+      <div class="form-group">
+        <label class="form-label" style="display:flex;justify-content:space-between">
+          <span>Password</span>
+          <a href="#" onclick="showForgot()" style="font-weight:600;font-size:0.8rem;color:var(--red-light)">Forgot password?</a>
+        </label>
+        <div style="position:relative">
+          <input type="password" class="form-input" id="loginPass" placeholder="••••••••" required autocomplete="current-password" style="padding-right:48px">
+          <button type="button" onclick="togglePass('loginPass',this)" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--gray-4);cursor:pointer;font-size:1rem">👁</button>
+        </div>
+      </div>
+      <!-- Cloudflare Turnstile CAPTCHA -->
+      <!-- REPLACE data-sitekey with your Cloudflare Turnstile site key -->
+      <div class="cf-turnstile" data-sitekey="YOUR_TURNSTILE_SITE_KEY" data-theme="dark"></div>
+      <button type="submit" class="btn btn-primary w-full" style="justify-content:center;padding:14px">Sign In →</button>
+    </form>
+
+    <!-- OTP FORM -->
+    <form id="otp-form" onsubmit="handleOTPLogin(event)" style="display:none">
+      <div id="otp-step1">
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input type="email" class="form-input" id="otpEmail" placeholder="you@example.com" required autocomplete="email">
+        </div>
+        <button type="button" onclick="sendOTP()" class="btn btn-primary w-full" style="justify-content:center;padding:14px">Send OTP →</button>
+      </div>
+      <div id="otp-step2" style="display:none">
+        <p style="color:var(--gray-4);font-size:0.88rem;margin-bottom:16px">We sent a 6-digit code to <strong id="otpEmailDisplay" style="color:var(--white)"></strong></p>
+        <div class="otp-inputs" id="otpInputs">
+          <input class="otp-input" maxlength="1" type="text" inputmode="numeric">
+          <input class="otp-input" maxlength="1" type="text" inputmode="numeric">
+          <input class="otp-input" maxlength="1" type="text" inputmode="numeric">
+          <input class="otp-input" maxlength="1" type="text" inputmode="numeric">
+          <input class="otp-input" maxlength="1" type="text" inputmode="numeric">
+          <input class="otp-input" maxlength="1" type="text" inputmode="numeric">
+        </div>
+        <div class="form-hint" style="margin-bottom:16px">Code expires in <span id="otpTimer" style="color:var(--red-light);font-weight:700">10:00</span> · <a href="#" onclick="sendOTP()" style="color:var(--red-light)">Resend</a></div>
+        <button type="submit" class="btn btn-primary w-full" style="justify-content:center;padding:14px">Verify & Sign In →</button>
+      </div>
+    </form>
+
+    <div class="auth-switch">Don't have an account? <a href="signup.html">Sign up free →</a></div>
+  </div>
+</div>
+
+<!-- FORGOT PASSWORD MODAL -->
+<div class="modal-overlay" id="forgotModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="modal-title">Reset Password</h3>
+      <button class="modal-close" onclick="closeModal('forgotModal')">✕</button>
+    </div>
+    <p style="color:var(--gray-4);margin-bottom:20px;font-size:0.9rem">Enter your email and we'll send you a reset link.</p>
+    <div class="form-group">
+      <label class="form-label">Email Address</label>
+      <input type="email" class="form-input" id="forgotEmail" placeholder="you@example.com">
+    </div>
+    <button onclick="sendResetLink()" class="btn btn-primary w-full" style="justify-content:center">Send Reset Link →</button>
+  </div>
+</div>
+
+<script src="../js/global.js"></script>
+<script>
+// ── TAB SWITCH ──
+function switchTab(tab, btn) {
+  document.querySelectorAll('.login-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('email-form').style.display = tab === 'email' ? 'block' : 'none';
+  document.getElementById('otp-form').style.display  = tab === 'otp'   ? 'block' : 'none';
+}
+
+// ── SHOW/HIDE PASSWORD ──
+function togglePass(id, btn) {
+  const el = document.getElementById(id);
+  el.type = el.type === 'password' ? 'text' : 'password';
+  btn.textContent = el.type === 'password' ? '👁' : '🙈';
+}
+
+// ── EMAIL LOGIN ──
+// Replace with your backend /api/auth/login endpoint
+async function handleEmailLogin(e) {
+  e.preventDefault();
+  const email = document.getElementById('loginEmail').value;
+  const pass  = document.getElementById('loginPass').value;
+  // Simulate: replace with real API call
+  // const res = await fetch('/api/auth/login', { method:'POST', body: JSON.stringify({email,pass}), headers:{'Content-Type':'application/json'} });
+  LP.set('user', { name: 'Shravani', email, avatar: 'SV' });
+  showToast('Welcome back! Redirecting…', 'success');
+  setTimeout(() => window.location.href = 'dashboard.html', 1200);
+}
+
+// ── GOOGLE LOGIN ──
+// Replace YOUR_GOOGLE_CLIENT_ID with your actual Google OAuth Client ID
+function handleGoogleLogin() {
+  // google.accounts.id.initialize({ client_id: 'YOUR_GOOGLE_CLIENT_ID', callback: handleGoogleCredential });
+  // google.accounts.id.prompt();
+  showToast('Google OAuth: add YOUR_GOOGLE_CLIENT_ID in login.html', 'info');
+}
+function handleGoogleCredential(response) {
+  // response.credential is the JWT — send to your backend to verify
+  // fetch('/api/auth/google', { method:'POST', body: JSON.stringify({token:response.credential}) })
+  LP.set('user', { name: 'Google User', email: '', avatar: 'GU' });
+  window.location.href = 'dashboard.html';
+}
+
+// ── GITHUB LOGIN ──
+function handleGitHubLogin() {
+  // window.location.href = 'https://github.com/login/oauth/authorize?client_id=YOUR_GITHUB_CLIENT_ID&scope=user:email';
+  showToast('GitHub OAuth: add YOUR_GITHUB_CLIENT_ID in login.html', 'info');
+}
+
+// ── LINKEDIN LOGIN ──
+function handleLinkedInLogin() {
+  showToast('LinkedIn OAuth: configure your LinkedIn App credentials', 'info');
+}
+
+// ── OTP FLOW ──
+// Replace with your Twilio / Firebase OTP API
+async function sendOTP() {
+  const email = document.getElementById('otpEmail').value;
+  if (!email) { showToast('Please enter your email', 'error'); return; }
+  // await fetch('/api/auth/send-otp', { method:'POST', body: JSON.stringify({email}), headers:{'Content-Type':'application/json'} });
+  document.getElementById('otpEmailDisplay').textContent = email;
+  document.getElementById('otp-step1').style.display = 'none';
+  document.getElementById('otp-step2').style.display = 'block';
+  showToast('OTP sent! (demo: use 123456)', 'success');
+  startOTPTimer(600);
+  setupOTPInputs();
+}
+
+function setupOTPInputs() {
+  const inputs = document.querySelectorAll('.otp-input');
+  inputs.forEach((inp, i) => {
+    inp.addEventListener('input', () => { if (inp.value && i < inputs.length - 1) inputs[i+1].focus(); });
+    inp.addEventListener('keydown', e => { if (e.key === 'Backspace' && !inp.value && i > 0) inputs[i-1].focus(); });
+  });
+}
+
+function startOTPTimer(seconds) {
+  const el = document.getElementById('otpTimer');
+  const interval = setInterval(() => {
+    const m = String(Math.floor(seconds / 60)).padStart(2, '0');
+    const s = String(seconds % 60).padStart(2, '0');
+    el.textContent = `${m}:${s}`;
+    if (--seconds < 0) { clearInterval(interval); el.textContent = 'Expired'; }
+  }, 1000);
+}
+
+async function handleOTPLogin(e) {
+  e.preventDefault();
+  const otp = [...document.querySelectorAll('.otp-input')].map(i => i.value).join('');
+  // Replace with real OTP verification
+  // const res = await fetch('/api/auth/verify-otp', { method:'POST', body:JSON.stringify({email, otp}) })
+  if (otp === '123456' || otp.length === 6) {
+    LP.set('user', { name: 'Shravani', email: document.getElementById('otpEmail').value, avatar: 'SV' });
+    showToast('Verified! Redirecting…', 'success');
+    setTimeout(() => window.location.href = 'dashboard.html', 1200);
+  } else {
+    showToast('Invalid OTP. Please try again.', 'error');
+  }
+}
+
+// ── FORGOT PASSWORD ──
+function showForgot() { openModal('forgotModal'); }
+function sendResetLink() {
+  const email = document.getElementById('forgotEmail').value;
+  if (!email) return;
+  // fetch('/api/auth/forgot-password', { method:'POST', body:JSON.stringify({email}) })
+  showToast('Reset link sent to ' + email, 'success');
+  closeModal('forgotModal');
+}
+</script>
+</body>
+</html>

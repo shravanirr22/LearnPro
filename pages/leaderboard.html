@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Leaderboard — LearnPro</title>
+<link rel="stylesheet" href="../css/global.css">
+<style>
+.lb-layout { padding:32px; max-width:1100px; margin:0 auto; }
+.podium { display:flex; align-items:flex-end; justify-content:center; gap:16px; margin-bottom:40px; }
+.podium-block { display:flex; flex-direction:column; align-items:center; gap:8px; }
+.podium-stand { border-radius:var(--radius) var(--radius) 0 0; display:flex; align-items:center; justify-content:center; font-family:var(--font-display); font-size:1.8rem; color:var(--white); }
+.podium-stand.first { width:120px; height:90px; background:linear-gradient(180deg,#f59e0b,#92400e); }
+.podium-stand.second { width:100px; height:65px; background:linear-gradient(180deg,#94a3b8,#475569); }
+.podium-stand.third { width:100px; height:50px; background:linear-gradient(180deg,#b45309,#78350f); }
+.podium-avatar { width:56px; height:56px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:var(--font-display); font-size:1.2rem; color:var(--white); }
+.podium-name { font-family:var(--font-cond); font-weight:700; font-size:0.9rem; color:var(--white); }
+.podium-xp { font-size:0.75rem; color:var(--gray-4); }
+.podium-crown { font-size:1.4rem; }
+
+.lb-table { background:var(--black-3); border:1px solid var(--white-10); border-radius:var(--radius-xl); overflow:hidden; }
+.lb-table-header { display:grid; grid-template-columns:60px 1fr 120px 120px 100px; padding:12px 20px; background:var(--black-4); border-bottom:1px solid var(--white-10); }
+.lb-table-header span { font-family:var(--font-cond); font-size:0.72rem; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:var(--gray-3); }
+.lb-row { display:grid; grid-template-columns:60px 1fr 120px 120px 100px; padding:14px 20px; border-bottom:1px solid var(--white-5); align-items:center; transition:background var(--transition); }
+.lb-row:hover { background:var(--white-5); }
+.lb-row.you { background:var(--red-subtle); border-left:3px solid var(--red); }
+.lb-rank-num { font-family:var(--font-display); font-size:1.1rem; }
+.lb-xp { font-family:var(--font-display); color:#f59e0b; font-size:1rem; }
+.lb-streak { font-size:0.85rem; color:var(--red-light); }
+.lb-change { font-size:0.8rem; font-weight:700; }
+.lb-change.up { color:#10b981; }
+.lb-change.down { color:var(--red-light); }
+.lb-change.same { color:var(--gray-4); }
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="../index.html" class="nav-logo">LEARN<span>PRO</span></a>
+  <div class="nav-links">
+    <a href="dashboard.html" class="nav-link">Dashboard</a>
+    <a href="resources.html" class="nav-link">Resources</a>
+    <a href="jobs.html" class="nav-link">Jobs</a>
+    <a href="mentors.html" class="nav-link">Mentors</a>
+    <a href="courses.html" class="nav-link">Courses</a>
+    <a href="community.html" class="nav-link">Community</a>
+  </div>
+  <div class="nav-actions"><div class="avatar" id="navAvatar">LP</div></div>
+</nav>
+
+<div style="padding-top:var(--nav-h)">
+<div class="lb-layout">
+  <div style="text-align:center;margin-bottom:36px">
+    <span class="section-tag">Weekly Leaderboard</span>
+    <h1 style="font-size:2.2rem;color:var(--white)">Who's on <span style="color:var(--red)">top this week?</span></h1>
+    <p style="color:var(--gray-4)">Earn XP by completing lessons, quizzes, and challenges. Resets every Monday.</p>
+  </div>
+
+  <!-- Track Filter -->
+  <div style="display:flex;gap:8px;justify-content:center;margin-bottom:32px;flex-wrap:wrap">
+    <button class="btn btn-primary btn-sm" onclick="setTrack(this,'all')">All Tracks</button>
+    <button class="btn btn-ghost btn-sm" onclick="setTrack(this,'webdev')">Web Dev</button>
+    <button class="btn btn-ghost btn-sm" onclick="setTrack(this,'data')">Data Science</button>
+    <button class="btn btn-ghost btn-sm" onclick="setTrack(this,'design')">Design</button>
+    <button class="btn btn-ghost btn-sm" onclick="setTrack(this,'friends')">My Friends</button>
+  </div>
+
+  <!-- PODIUM -->
+  <div class="podium scroll-reveal">
+    <div class="podium-block">
+      <div class="podium-avatar" style="background:#94a3b8;border:3px solid #94a3b8">SK</div>
+      <div class="podium-name">Sneha K.</div>
+      <div class="podium-xp">3,940 XP</div>
+      <div class="podium-stand second">🥈</div>
+    </div>
+    <div class="podium-block">
+      <div class="podium-crown">👑</div>
+      <div class="podium-avatar" style="background:var(--red);border:3px solid #f59e0b">RM</div>
+      <div class="podium-name">Rahul M.</div>
+      <div class="podium-xp">4,280 XP</div>
+      <div class="podium-stand first">🥇</div>
+    </div>
+    <div class="podium-block">
+      <div class="podium-avatar" style="background:#b45309;border:3px solid #b45309">AK</div>
+      <div class="podium-name">Arjun K.</div>
+      <div class="podium-xp">3,710 XP</div>
+      <div class="podium-stand third">🥉</div>
+    </div>
+  </div>
+
+  <!-- TABLE -->
+  <div class="lb-table scroll-reveal">
+    <div class="lb-table-header">
+      <span>Rank</span><span>Learner</span><span>XP</span><span>Streak</span><span>Change</span>
+    </div>
+    <div id="lbBody"></div>
+  </div>
+
+  <!-- Your Position -->
+  <div style="text-align:center;margin-top:24px;padding:16px;background:var(--red-subtle);border:1px solid var(--red);border-radius:var(--radius-lg)">
+    <div style="font-family:var(--font-cond);font-weight:700;color:var(--red-light);margin-bottom:4px">YOUR POSITION</div>
+    <div style="font-size:0.9rem;color:var(--white)">You are <strong style="color:var(--red-light)">#24</strong> globally and <strong style="color:var(--red-light)">#8</strong> in Web Dev track this week.</div>
+    <div style="font-size:0.85rem;color:var(--gray-4);margin-top:4px">Earn <strong style="color:var(--white)">280 more XP</strong> to enter the Top 20!</div>
+    <a href="practice.html" class="btn btn-primary btn-sm" style="margin-top:12px;display:inline-flex">Practice Now →</a>
+  </div>
+</div>
+</div>
+
+<script src="../js/global.js"></script>
+<script>
+const user = LP.user();
+if (user) document.getElementById('navAvatar').textContent = user.avatar || 'LP';
+
+const entries = [
+  { rank:1, name:'Rahul Mehta', initials:'RM', xp:4280, streak:21, track:'Web Dev', change:'same' },
+  { rank:2, name:'Sneha Kulkarni', initials:'SK', xp:3940, streak:18, track:'Web Dev', change:'up' },
+  { rank:3, name:'Arjun Kapoor', initials:'AK', xp:3710, streak:14, track:'Data Science', change:'up' },
+  { rank:4, name:'Kavya Nair', initials:'KN', xp:3320, streak:11, track:'DevOps', change:'down' },
+  { rank:5, name:'Priya Sharma', initials:'PS', xp:3100, streak:9, track:'Web Dev', change:'up' },
+  { rank:6, name:'Dev Singh', initials:'DS', xp:2980, streak:16, track:'Mobile', change:'same' },
+  { rank:7, name:'Pooja Joshi', initials:'PJ', xp:2800, streak:8, track:'Data Science', change:'up' },
+  { rank:8, name:'Vikram R.', initials:'VR', xp:2640, streak:12, track:'Web Dev', change:'down' },
+  { rank:9, name:'Meena K.', initials:'MK', xp:2510, streak:7, track:'Design', change:'up' },
+  { rank:10, name:'Rohan T.', initials:'RT', xp:2380, streak:5, track:'Web Dev', change:'up' },
+];
+
+function renderLeaderboard(data) {
+  const changeIcon = { up:'↑ Gained', down:'↓ Lost', same:'→ Same' };
+  const changeClass = { up:'up', down:'down', same:'same' };
+  document.getElementById('lbBody').innerHTML = data.map(e => `
+    <div class="lb-row ${e.isYou?'you':''}">
+      <div class="lb-rank-num" style="color:${e.rank<=3?['#f59e0b','#94a3b8','#b45309'][e.rank-1]:'var(--gray-4)'}">#${e.rank}</div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="avatar avatar-sm" style="${e.isYou?'border-color:var(--red)':''}">${e.initials}</div>
+        <div><div style="font-weight:700;color:var(--white);font-size:0.9rem">${e.name}${e.isYou?' (You)':''}</div><div style="font-size:0.72rem;color:var(--gray-4)">${e.track}</div></div>
+      </div>
+      <div class="lb-xp">${e.xp.toLocaleString()}</div>
+      <div class="lb-streak">🔥 ${e.streak} days</div>
+      <div class="lb-change ${changeClass[e.change]}">${changeIcon[e.change]}</div>
+    </div>`).join('');
+}
+
+function setTrack(btn, track) {
+  document.querySelectorAll('.lb-layout .btn').forEach(b => { b.classList.remove('btn-primary'); b.classList.add('btn-ghost'); });
+  btn.classList.add('btn-primary'); btn.classList.remove('btn-ghost');
+  const filtered = track === 'all' ? entries : track === 'friends' ? entries.slice(0,3) : entries.filter(e => e.track.toLowerCase().includes(track) || track === 'webdev' && e.track === 'Web Dev');
+  renderLeaderboard(filtered);
+}
+
+renderLeaderboard(entries);
+</script>
+</body>
+</html>
