@@ -406,13 +406,23 @@ levels.forEach(l => {
   hm.appendChild(cell);
 });
 
-// AI Nudge (fetch from Claude API or use static)
-const nudges = [
+// AI Nudge via Gemini
+const staticNudges = [
   "You're 3 lessons away from completing the React.js module! Finishing it will unlock 5 new senior frontend job matches at ₹12–18 LPA. Set aside 45 minutes today.",
   "Your JavaScript score jumped from 71% to 78% this week — that's in the top 15% of learners at your stage! Keep this momentum and tackle async/await next.",
   "You've logged in 14 days straight 🔥 That's remarkable consistency. Learners who maintain 14-day streaks have 3× higher completion rates. You're on the right track."
 ];
-document.getElementById('aiNudge').textContent = nudges[new Date().getDay() % nudges.length];
+document.getElementById('aiNudge').textContent = staticNudges[new Date().getDay() % staticNudges.length];
+
+// Try to get personalised nudge from Gemini
+(async () => {
+  try {
+    const u = LP.user();
+    const prompt = `You are LearnBot on LearnPro. Give a short, 2-sentence motivational nudge for a learner named ${u?.name || 'the learner'} who is learning ${u?.targetRole || 'web development'} and has a 14-day streak. Be specific, encouraging, and action-oriented.`;
+    const nudge = await askGemini(prompt);
+    if (nudge) document.getElementById('aiNudge').textContent = nudge;
+  } catch {}
+})();
 
 function askBot(msg) {
   const panel = document.querySelector('.chatbot-panel');

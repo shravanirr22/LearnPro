@@ -285,7 +285,7 @@ async function submitAnswer() {
   try {
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method:'POST',
-      headers:{ 'Content-Type':'application/json','x-api-key':'YOUR_CLAUDE_API_KEY','anthropic-version':'2023-06-01' },
+      headers:{ 'Content-Type':'application/json','x-api-key':'AIzaSyDh-EZnypHxLNHIIA0jXn3xLxzymrBp0bA','anthropic-version':'2023-06-01' },
       body: JSON.stringify({ model:'claude-opus-4-5', max_tokens:300,
         system:`You are an expert ${document.getElementById('interviewRole').value} interviewer. Give concise, constructive feedback (2-3 sentences) on interview answers. Focus on technical accuracy, communication style, and what to improve.`,
         messages:[{ role:'user', content:`Question: ${document.getElementById('ivQuestion').textContent}\n\nCandidate Answer: ${answer}\n\nGive feedback:` }] })

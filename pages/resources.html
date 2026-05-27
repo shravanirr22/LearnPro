@@ -299,35 +299,31 @@ function loadMore() { showToast('Loading more resources…', 'info'); }
 async function fetchYouTube() {
   const q = document.getElementById('searchInput').value || 'web development tutorial';
   showToast('Searching YouTube…', 'info');
-  try {
-    const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(q)}&type=video&maxResults=6&key=YOUR_YOUTUBE_API_KEY`);
-    const data = await res.json();
-    if (data.items) {
-      const ytResults = data.items.map((item, i) => ({
-        id: 100 + i,
-        title: item.snippet.title,
-        source: 'youtube',
-        topic: 'search',
-        diff: 'all',
-        duration: 'YouTube',
-        cost: 'free',
-        thumb: '▶️',
-        ytId: item.id.videoId,
-        url: `https://youtube.com/watch?v=${item.id.videoId}`,
-        author: item.snippet.channelTitle,
-        views: '',
-        saved: false
+  const instances = [
+    'https://inv.nadeko.net',
+    'https://invidious.io.lol',
+    'https://yt.artemislena.eu'
+  ];
+  for (const base of instances) {
+    try {
+      const res = await fetch(`${base}/api/v1/search?q=${encodeURIComponent(q)}&type=video&fields=title,videoId,author,lengthSeconds`);
+      if (!res.ok) continue;
+      const items = await res.json();
+      if (!Array.isArray(items) || !items.length) continue;
+      const ytResults = items.slice(0, 6).map((v, i) => ({
+        id: 100 + i, title: v.title, source: 'youtube', topic: 'search',
+        diff: 'all', duration: Math.floor((v.lengthSeconds || 0) / 60) + ' min',
+        cost: 'free', thumb: '▶️', ytId: v.videoId,
+        url: `https://youtube.com/watch?v=${v.videoId}`,
+        author: v.author || 'YouTube', views: '', saved: false
       }));
       renderResources(ytResults);
       showToast(`Found ${ytResults.length} YouTube videos`, 'success');
-    } else {
-      showToast('Add your YouTube API key to enable live search', 'error');
-      filterResources();
-    }
-  } catch {
-    showToast('Add YOUR_YOUTUBE_API_KEY to enable live YouTube search', 'error');
-    filterResources();
+      return;
+    } catch { continue; }
   }
+  showToast('YouTube search unavailable right now. Showing default resources.', 'warn');
+  filterResources();
 }
 
 // Init

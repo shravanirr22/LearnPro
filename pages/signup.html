@@ -4,8 +4,9 @@
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sign Up — LearnPro</title>
 <link rel="stylesheet" href="../css/global.css">
-<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
-<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://js.hcaptcha.com/1/api.js" async defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+
 <style>
 body { display:flex; min-height:100vh; align-items:center; justify-content:center;
   background: radial-gradient(ellipse 60% 60% at 80% 20%, rgba(180,18,27,0.1), transparent); padding:40px 20px; }
@@ -130,7 +131,7 @@ body { display:flex; min-height:100vh; align-items:center; justify-content:cente
           </div>
         </div>
         <!-- Cloudflare Turnstile — Replace with your site key -->
-        <div class="cf-turnstile" data-sitekey="YOUR_TURNSTILE_SITE_KEY" data-theme="dark" style="margin-bottom:16px"></div>
+        <div class="h-captcha" data-sitekey="d6ccb116-ff5e-435a-ba56-34ca25b2a6c2" style="margin-bottom:16px"></div>
         <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:20px">
           <input type="checkbox" id="terms" required style="margin-top:3px;accent-color:var(--red)">
           <label for="terms" style="font-size:0.82rem;color:var(--gray-4)">I agree to the <a href="#" style="color:var(--red-light)">Terms of Service</a> and <a href="#" style="color:var(--red-light)">Privacy Policy</a></label>
@@ -379,7 +380,11 @@ function completeSignup() {
     city: document.getElementById('city').value,
     skills: [...document.querySelectorAll('.skill-chip.selected')].map(c => c.textContent)
   };
-  LP.set('user', user);
+  const { createClient } = supabase;
+  const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const { data, error } = await sb.auth.signUp({ email: user.email, password: document.getElementById("regPass").value });
+  if (error && !error.message.includes("already")) { showToast(error.message, "error"); return; }
+  LP.set("user", user);
   // POST to your backend: fetch('/api/users/onboard', { method:'POST', body: JSON.stringify(user) })
   showToast('🚀 Roadmap ready! Taking you to your dashboard…', 'success');
   setTimeout(() => window.location.href = 'dashboard.html', 1500);

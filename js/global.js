@@ -2,6 +2,17 @@
    LEARNPRO — GLOBAL JS UTILITIES
    ============================================================ */
 
+// ── SUPABASE CONFIG ──────────────────────────────────────────
+const SUPABASE_URL = 'https://gmoykjzzdderealljape.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdtb3lranp6ZGRlcmVhbGxqYXBlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3OTE4ODUsImV4cCI6MjA5NTM2Nzg4NX0.EO-Z1ACX9KWJnM6X2i41M4E15aHDTeJEJiQGy7Wz8KU';
+
+// ── GEMINI CONFIG ────────────────────────────────────────────
+const GEMINI_API_KEY = 'AIzaSyDh-EZnypHxLNHIIA0jXn3xLxzymrBp0bA';
+const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+
+// ── INVIDIOUS CONFIG (YouTube - No Key Needed) ───────────────
+const INVIDIOUS_BASE = 'https://inv.nadeko.net';
+
 // ── NAV SCROLL ──────────────────────────────────────────────
 window.addEventListener('scroll', () => {
   document.querySelector('.navbar')?.classList.toggle('scrolled', window.scrollY > 20);
@@ -52,6 +63,21 @@ document.addEventListener('click', (e) => {
   }
 });
 
+// ── GEMINI AI CALL ───────────────────────────────────────────
+window.askGemini = async (prompt, systemContext = '') => {
+  const fullPrompt = systemContext ? `${systemContext}\n\nUser: ${prompt}` : prompt;
+  const res = await fetch(GEMINI_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents: [{ parts: [{ text: fullPrompt }] }],
+      generationConfig: { maxOutputTokens: 512, temperature: 0.7 }
+    })
+  });
+  const data = await res.json();
+  return data?.candidates?.[0]?.content?.parts?.[0]?.text || 'Sorry, I could not respond right now.';
+};
+
 // ── CHATBOT ──────────────────────────────────────────────────
 window.initChatbot = () => {
   const fab = document.querySelector('.chatbot-fab');
@@ -76,39 +102,105 @@ window.initChatbot = () => {
     if (!text) return;
     addMsg(text, true);
     input.value = '';
-    // typing indicator
     const typing = document.createElement('div');
     typing.className = 'msg msg-bot'; typing.textContent = '…'; typing.id = 'typing';
     messages.appendChild(typing); messages.scrollTop = messages.scrollHeight;
 
-    // ── REPLACE WITH YOUR CLAUDE API KEY ──
-    // Anthropic API key: replace 'YOUR_CLAUDE_API_KEY' below
     try {
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': 'YOUR_CLAUDE_API_KEY',
-          'anthropic-version': '2023-06-01'
-        },
-        body: JSON.stringify({
-          model: 'claude-opus-4-5',
-          max_tokens: 512,
-          system: 'You are LearnBot, a friendly AI assistant on LearnPro — a career guidance and ed-tech platform. Help learners with doubts, career advice, skill roadmaps, and motivation. Keep responses concise and encouraging.',
-          messages: [{ role: 'user', content: text }]
-        })
-      });
-      const data = await res.json();
+      const reply = await askGemini(text,
+        'You are LearnBot, a friendly AI assistant on LearnPro — a career guidance and ed-tech platform. Help learners with doubts, career advice, skill roadmaps, and motivation. Keep responses concise and encouraging.'
+      );
       typing.remove();
-      addMsg(data?.content?.[0]?.text || 'Sorry, I could not respond right now.');
+      addMsg(reply);
     } catch {
       typing.remove();
-      addMsg('Please add your API key in js/global.js to enable AI chat.');
+      addMsg('Something went wrong. Please try again!');
     }
   };
 
   sendBtn?.addEventListener('click', sendMessage);
   input?.addEventListener('keydown', e => { if (e.key === 'Enter') sendMessage(); });
+};
+
+// ── SUPABASE AUTH HELPERS ────────────────────────────────────
+window.supabaseAuth = {
+  signInWithGoogle: async () => {
+    const res = await fetch(`${SUPABASE_URL}/auth/v1/authorize?provider=google&redirect_to=${window.location.origin}/pages/dashboard.html`, {
+      headers: { 'apikey': SUPABASE_ANON_KEY }
+    });
+    window.location.href = `${SUPABASE_URL}/auth/v1/authorize?provider=google&redirect_to=${window.location.origin}/pages/dashboard.html`;
+  },
+  signInWithGitHub: async () => {
+    window.location.href = `${SUPABASE_URL}/auth/v1/authorize?provider=github&redirect_to=${window.location.origin}/pages/dashboard.html`;
+  },
+  signUp: async (email, password) => {
+    const res = await fetch(`${SUPABASE_URL}/auth/v1/signup`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY },
+      body: JSON.stringify({ email, password })
+    });
+    return res.json();
+  },
+  signIn: async (email, password) => {
+    const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY },
+      body: JSON.stringify({ email, password })
+    });
+    return res.json();
+  },
+  getUser: async (accessToken) => {
+    const res = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+      headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${accessToken}` }
+    });
+    return res.json();
+  },
+  sendOTP: async (email) => {
+    const res = await fetch(`${SUPABASE_URL}/auth/v1/otp`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY },
+      body: JSON.stringify({ email })
+    });
+    return res.json();
+  },
+  verifyOTP: async (email, token) => {
+    const res = await fetch(`${SUPABASE_URL}/auth/v1/verify`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY },
+      body: JSON.stringify({ email, token, type: 'email' })
+    });
+    return res.json();
+  }
+};
+
+// ── YOUTUBE VIA INVIDIOUS (No API Key) ───────────────────────
+window.searchYouTube = async (query) => {
+  const instances = [
+    'https://inv.nadeko.net',
+    'https://invidious.io.lol',
+    'https://yt.artemislena.eu'
+  ];
+  for (const base of instances) {
+    try {
+      const res = await fetch(`${base}/api/v1/search?q=${encodeURIComponent(query)}&type=video&fields=title,videoId,author,lengthSeconds`);
+      if (res.ok) {
+        const data = await res.json();
+        return data.slice(0, 6).map(v => ({
+          title: v.title,
+          ytId: v.videoId,
+          author: v.author,
+          duration: Math.floor(v.lengthSeconds / 60) + ' min',
+          url: `https://youtube.com/watch?v=${v.videoId}`,
+          source: 'youtube',
+          cost: 'free',
+          diff: 'beginner',
+          topic: 'search',
+          thumb: '▶️'
+        }));
+      }
+    } catch { continue; }
+  }
+  return [];
 };
 
 // ── INTERSECTION OBSERVER (animate on scroll) ────────────────

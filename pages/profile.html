@@ -333,7 +333,7 @@ async function fetchGitHub() {
   showToast('Fetching GitHub data…', 'info');
   try {
     const res = await fetch(`https://api.github.com/users/${username}`, {
-      headers: { 'Authorization': 'token YOUR_GITHUB_TOKEN' }
+      // No token needed for public profiles (60 req/hr free limit)
     });
     const data = await res.json();
     if (data.public_repos) {
@@ -347,10 +347,32 @@ async function fetchGitHub() {
 
 function fetchLinkedIn() { showToast('Add LinkedIn OAuth credentials to enable sync', 'info'); }
 function connectInstagram() { showToast('Add YOUR_INSTAGRAM_APP_ID in profile.html to connect', 'info'); }
-function generateReadme() { showToast('✨ AI generating READMEs… (needs Claude API key in global.js)', 'info'); }
+async function generateReadme() {
+  showToast('✨ Generating README with Gemini…', 'info');
+  const prompt = `Write a professional GitHub README.md for a portfolio project by someone learning ${LP.user()?.targetRole || 'web development'}. Include: Project title, description, tech stack, features, how to run locally, and screenshots section. Use markdown formatting.`;
+  const result = await askGemini(prompt);
+  if (result) {
+    const blob = new Blob([result], {type:'text/plain'});
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+    a.download = 'README.md'; a.click();
+    showToast('README.md downloaded!', 'success');
+  }
+}
 function findIssues() { showToast('Finding beginner-friendly open-source issues for you…', 'info'); window.open('https://github.com/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22'); }
-function generateHeadline() { showToast('✨ Regenerating… (add Claude API key in global.js)', 'info'); }
-function generateAbout() { showToast('✨ Regenerating… (add Claude API key in global.js)', 'info'); }
+async function generateHeadline() {
+  showToast('✨ Generating headline with Gemini…', 'info');
+  const u = LP.user();
+  const prompt = `Write a professional LinkedIn headline (max 15 words) for someone targeting the role: ${u?.targetRole || 'Full-Stack Developer'}. Current skills: ${(u?.skills||[]).join(', ')}. Make it keyword-rich and compelling.`;
+  const result = await askGemini(prompt);
+  if (result) { document.getElementById('liHeadline').textContent = result; showToast('Headline generated!', 'success'); }
+}
+async function generateAbout() {
+  showToast('✨ Generating bio with Gemini…', 'info');
+  const u = LP.user();
+  const prompt = `Write a professional LinkedIn About section (3-4 sentences) for someone named ${u?.name||'a learner'} who is transitioning to ${u?.targetRole||'web development'}. Current skills: ${(u?.skills||[]).join(', ')}. City: ${u?.city||'India'}. Make it personal, keyword-rich, and end with a call to connect.`;
+  const result = await askGemini(prompt);
+  if (result) { document.getElementById('liAbout').textContent = result; showToast('Bio generated!', 'success'); }
+}
 function generateResume() { showToast('✨ AI generating resume content…', 'info'); }
 function downloadResume() { window.print(); }
 </script>

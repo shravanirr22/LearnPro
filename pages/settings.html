@@ -332,17 +332,18 @@ document.getElementById('pushNotifs').innerHTML = emailItems.slice(0,4).map(item
 
 // API Keys section
 const apiKeys = [
-  { id:'claude', label:'Claude / Anthropic API Key', placeholder:'sk-ant-api03-…', hint:'Used for AI chatbot, roadmap generation, mock interview feedback', link:'https://console.anthropic.com' },
-  { id:'youtube', label:'YouTube Data API v3 Key', placeholder:'AIzaSy…', hint:'Used for live video search in Resources Hub', link:'https://console.cloud.google.com' },
-  { id:'google', label:'Google OAuth Client ID', placeholder:'xxxxxxx.apps.googleusercontent.com', hint:'Used for Sign in with Google', link:'https://console.cloud.google.com' },
-  { id:'github', label:'GitHub OAuth Client ID', placeholder:'Ov23li…', hint:'Used for Sign in with GitHub and repo sync', link:'https://github.com/settings/developers' },
-  { id:'turnstile', label:'Cloudflare Turnstile Site Key', placeholder:'0x4AAAAAAAAAAx…', hint:'Used for bot protection on login/signup forms', link:'https://dash.cloudflare.com' },
-  { id:'stripe', label:'Stripe Publishable Key', placeholder:'pk_live_…', hint:'Used for mentor session payments and Pro subscriptions', link:'https://dashboard.stripe.com' },
-  { id:'twilio', label:'Twilio Account SID', placeholder:'ACxxxx…', hint:'Used for SMS OTP backup', link:'https://console.twilio.com' },
-  { id:'maps', label:'Google Maps API Key', placeholder:'AIzaSy…', hint:'Used for locating nearby bootcamps and events', link:'https://console.cloud.google.com' },
+  { id:'gemini', label:'Gemini API Key (AI Chatbot)', placeholder:'AIzaSy…', hint:'✅ Active — Powers AI chatbot, nudges, interview feedback, profile generator', link:'https://aistudio.google.com', prefill:'AIzaSyDh-EZnypHxLNHIIA0jXn3xLxzymrBp0bA' },
+  { id:'hcaptcha', label:'hCaptcha Site Key (CAPTCHA)', placeholder:'xxxxxxxx-xxxx-…', hint:'✅ Active — Bot protection on login and signup forms', link:'https://hcaptcha.com', prefill:'d6ccb116-ff5e-435a-ba56-34ca25b2a6c2' },
+  { id:'supabase_url', label:'Supabase Project URL', placeholder:'https://xxx.supabase.co', hint:'✅ Active — Authentication (Email, Google, GitHub OAuth, OTP)', link:'https://supabase.com', prefill:'https://gmoykjzzdderealljape.supabase.co' },
+  { id:'supabase_key', label:'Supabase Anon Key', placeholder:'eyJhbGc…', hint:'✅ Active — Supabase public API key', link:'https://supabase.com', prefill:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' },
+  { id:'razorpay', label:'Razorpay Key ID (Payments)', placeholder:'rzp_test_…', hint:'⏳ Pending — Mentor session payments and Pro subscriptions', link:'https://razorpay.com' },
+  { id:'firebase_key', label:'Firebase API Key (Phone OTP)', placeholder:'AIzaSy…', hint:'⏳ Pending — SMS OTP for phone verification', link:'https://console.firebase.google.com' },
+  { id:'firebase_project', label:'Firebase Project ID', placeholder:'learnpro-xxx', hint:'⏳ Pending — Firebase project identifier', link:'https://console.firebase.google.com' },
+  { id:'maps', label:'Google Maps API Key', placeholder:'AIzaSy…', hint:'⏳ Pending — Locate nearby bootcamps and events', link:'https://console.cloud.google.com' },
+  { id:'rss2json', label:'RSS2JSON API Key (News Feed)', placeholder:'xxxxxxxx…', hint:'⏳ Pending — Daily tech news digest on dashboard', link:'https://rss2json.com' },
 ];
 document.getElementById('apiKeysList').innerHTML = apiKeys.map(k => {
-  const saved = LP.get('apikey_' + k.id) || '';
+  const saved = LP.get('apikey_' + k.id) || k.prefill || '';
   return `<div class="api-key-row">
     <div class="api-key-label">${k.label} · <a href="${k.link}" target="_blank" style="color:var(--red-light);text-transform:none;letter-spacing:0">Get key →</a></div>
     <div class="api-key-input-row">
@@ -363,7 +364,7 @@ function saveAPIKeys() {
     const val = document.getElementById('key_' + k.id)?.value;
     if (val) LP.set('apikey_' + k.id, val);
   });
-  showToast('API keys saved to localStorage! 🔑', 'success');
+  showToast('API keys saved! 🔑 Reload pages to apply.', 'success');
 }
 
 // Plan comparison
