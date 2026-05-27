@@ -13,6 +13,15 @@ const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemi
 // ── INVIDIOUS CONFIG (YouTube - No Key Needed) ───────────────
 const INVIDIOUS_BASE = 'https://inv.nadeko.net';
 
+
+// ── FIREBASE CONFIG ──────────────────────────────────────────
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyA5aVDaKHlPmssghJp7b9s1QxzeDWvnaeE",
+  authDomain: "learnpro-89b93.firebaseapp.com",
+  projectId: "learnpro-89b93",
+  appId: "1:246874100868:web:b8073a1a1bc8faf1f8ded1"
+};
+
 // ── NAV SCROLL ──────────────────────────────────────────────
 window.addEventListener('scroll', () => {
   document.querySelector('.navbar')?.classList.toggle('scrolled', window.scrollY > 20);

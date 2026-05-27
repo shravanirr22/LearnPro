@@ -60,6 +60,18 @@
 .course-mini-title { font-size:0.9rem; font-weight:700; color:var(--white); margin-bottom:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .course-mini-pct { font-size:0.78rem; color:var(--gray-4); }
 </style>
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js"></script>
+  <script>
+    firebase.initializeApp({
+      apiKey: "AIzaSyA5aVDaKHlPmssghJp7b9s1QxzeDWvnaeE",
+      authDomain: "learnpro-89b93.firebaseapp.com",
+      projectId: "learnpro-89b93",
+      appId: "1:246874100868:web:b8073a1a1bc8faf1f8ded1"
+    });
+  </script>
 </head>
 <body>
 
@@ -431,6 +443,21 @@ function askBot(msg) {
   input.value = msg;
   document.querySelector('.chatbot-send').click();
 }
+
+// ── FIREBASE PUSH NOTIFICATION INIT ──
+(async () => {
+  try {
+    if ('serviceWorker' in navigator && typeof firebase !== 'undefined') {
+      const reg = await navigator.serviceWorker.register('../firebase-messaging-sw.js');
+      const messaging = firebase.messaging();
+      const permission = await Notification.requestPermission();
+      if (permission === 'granted') {
+        console.log('LearnPro push notifications enabled ✅');
+      }
+    }
+  } catch(e) { /* push notifications optional */ }
+})();
+
 </script>
 </body>
 </html>

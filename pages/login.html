@@ -8,6 +8,17 @@
 <script src="https://js.hcaptcha.com/1/api.js" async defer></script>
 <!-- Supabase SDK -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script>
+  firebase.initializeApp({
+    apiKey: "AIzaSyA5aVDaKHlPmssghJp7b9s1QxzeDWvnaeE",
+    authDomain: "learnpro-89b93.firebaseapp.com",
+    projectId: "learnpro-89b93",
+    appId: "1:246874100868:web:b8073a1a1bc8faf1f8ded1"
+  });
+</script>
 <style>
 body { display:flex; min-height:100vh; }
 .auth-left {
@@ -68,6 +79,17 @@ body { display:flex; min-height:100vh; }
 .auth-feature-text span { font-size:0.82rem; color:var(--gray-4); }
 @media(max-width:768px) { body{flex-direction:column;} .auth-left{display:none;} .auth-right{padding:30px 20px;min-height:100vh;} }
 </style>
+  <!-- Firebase SDK for Phone OTP -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script>
+    firebase.initializeApp({
+      apiKey: "AIzaSyA5aVDaKHlPmssghJp7b9s1QxzeDWvnaeE",
+      authDomain: "learnpro-89b93.firebaseapp.com",
+      projectId: "learnpro-89b93",
+      appId: "1:246874100868:web:b8073a1a1bc8faf1f8ded1"
+    });
+  </script>
 </head>
 <body>
 
@@ -118,7 +140,8 @@ body { display:flex; min-height:100vh; }
     <!-- Login Method Tabs -->
     <div class="login-tabs">
       <button class="login-tab active" onclick="switchTab('email',this)">Email</button>
-      <button class="login-tab" onclick="switchTab('otp',this)">OTP</button>
+      <button class="login-tab" onclick="switchTab('otp',this)">Email OTP</button>
+      <button class="login-tab" onclick="switchTab('phone',this)">Phone OTP</button>
     </div>
 
     <!-- EMAIL FORM -->
@@ -169,6 +192,41 @@ body { display:flex; min-height:100vh; }
       </div>
     </form>
 
+    <!-- PHONE OTP FORM -->
+    <form id="phone-form" style="display:none">
+      <div id="phone-step1">
+        <div class="form-group">
+          <label class="form-label">Mobile Number</label>
+          <div style="display:flex;gap:8px">
+            <select class="form-select" id="phoneCountry" style="width:110px;flex-shrink:0">
+              <option value="+91">🇮🇳 +91</option>
+              <option value="+1">🇺🇸 +1</option>
+              <option value="+44">🇬🇧 +44</option>
+              <option value="+971">🇦🇪 +971</option>
+            </select>
+            <input type="tel" class="form-input" id="phoneNumber" placeholder="9876543210" maxlength="10">
+          </div>
+        </div>
+        <div id="recaptcha-container" style="margin-bottom:16px"></div>
+        <button type="button" onclick="sendPhoneOTP()" class="btn btn-primary w-full" style="justify-content:center;padding:14px">Send OTP →</button>
+      </div>
+      <div id="phone-step2" style="display:none">
+        <p style="color:var(--gray-4);font-size:0.88rem;margin-bottom:16px">OTP sent to <strong id="phoneDisplay" style="color:var(--white)"></strong></p>
+        <div class="otp-inputs" id="phoneOTPInputs">
+          <input class="otp-input" maxlength="1" type="text" inputmode="numeric">
+          <input class="otp-input" maxlength="1" type="text" inputmode="numeric">
+          <input class="otp-input" maxlength="1" type="text" inputmode="numeric">
+          <input class="otp-input" maxlength="1" type="text" inputmode="numeric">
+          <input class="otp-input" maxlength="1" type="text" inputmode="numeric">
+          <input class="otp-input" maxlength="1" type="text" inputmode="numeric">
+        </div>
+        <div style="font-size:0.8rem;color:var(--gray-4);margin-bottom:16px">
+          Expires in <span id="phoneTimer" style="color:var(--red-light);font-weight:700">10:00</span> ·
+          <a href="#" onclick="sendPhoneOTP()" style="color:var(--red-light)">Resend</a>
+        </div>
+        <button type="button" onclick="verifyPhoneOTP()" class="btn btn-primary w-full" style="justify-content:center;padding:14px">Verify & Sign In →</button>
+      </div>
+    </form>
     <div style="text-align:center;margin-top:24px;font-size:0.88rem;color:var(--gray-4)">
       Don't have an account? <a href="signup.html" style="color:var(--red-light);font-weight:600">Sign up free →</a>
     </div>
@@ -197,13 +255,7 @@ body { display:flex; min-height:100vh; }
 const { createClient } = supabase;
 const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// Tab switch
-function switchTab(tab, btn) {
-  document.querySelectorAll('.login-tab').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  document.getElementById('email-form').style.display = tab === 'email' ? 'block' : 'none';
-  document.getElementById('otp-form').style.display  = tab === 'otp'   ? 'block' : 'none';
-}
+// switchTab defined below with phone support
 
 function togglePass(id, btn) {
   const el = document.getElementById(id);
@@ -247,12 +299,15 @@ async function handleGitHubLogin() {
 async function sendOTP() {
   const email = document.getElementById('otpEmail').value;
   if (!email) { showToast('Please enter your email', 'error'); return; }
-  const { error } = await sb.auth.signInWithOtp({ email });
+
+  // Use Supabase email OTP
+  const { error } = await sb.auth.signInWithOtp({ email, options: { shouldCreateUser: true } });
   if (error) { showToast(error.message, 'error'); return; }
+
   document.getElementById('otpEmailDisplay').textContent = email;
   document.getElementById('otp-step1').style.display = 'none';
   document.getElementById('otp-step2').style.display = 'block';
-  showToast('OTP sent to your email!', 'success');
+  showToast('✅ OTP sent to ' + email + '! Check your inbox.', 'success');
   startOTPTimer(600);
   setupOTPInputs();
 }
@@ -294,6 +349,88 @@ async function sendResetLink() {
   await sb.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + '/pages/settings.html' });
   showToast('Reset link sent to ' + email, 'success');
   closeModal('forgotModal');
+}
+
+
+// ── switchTab: handle 3 tabs now ──
+function switchTab(tab, btn) {
+  document.querySelectorAll('.login-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('email-form').style.display  = tab === 'email' ? 'block' : 'none';
+  document.getElementById('otp-form').style.display    = tab === 'otp'   ? 'block' : 'none';
+  document.getElementById('phone-form').style.display  = tab === 'phone' ? 'block' : 'none';
+  if (tab === 'phone') setupRecaptcha();
+}
+
+// ── Firebase Phone OTP ──
+let recaptchaVerifier = null;
+let confirmationResult = null;
+
+function setupRecaptcha() {
+  if (recaptchaVerifier) return;
+  recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
+    size: 'normal',
+    callback: () => { /* reCAPTCHA solved */ },
+    'expired-callback': () => { recaptchaVerifier = null; setupRecaptcha(); }
+  });
+  recaptchaVerifier.render();
+}
+
+async function sendPhoneOTP() {
+  const country = document.getElementById('phoneCountry').value;
+  const number  = document.getElementById('phoneNumber').value.trim();
+  if (!number || number.length < 10) { showToast('Enter a valid phone number', 'error'); return; }
+  const fullPhone = country + number;
+  try {
+    confirmationResult = await firebase.auth().signInWithPhoneNumber(fullPhone, recaptchaVerifier);
+    document.getElementById('phoneDisplay').textContent = fullPhone;
+    document.getElementById('phone-step1').style.display = 'none';
+    document.getElementById('phone-step2').style.display = 'block';
+    showToast('OTP sent to ' + fullPhone, 'success');
+    startPhoneTimer(600);
+    setupPhoneOTPInputs();
+  } catch (err) {
+    showToast(err.message || 'Failed to send OTP. Try again.', 'error');
+    recaptchaVerifier = null;
+  }
+}
+
+function setupPhoneOTPInputs() {
+  const inputs = document.querySelectorAll('#phoneOTPInputs .otp-input');
+  inputs.forEach((inp, i) => {
+    inp.addEventListener('input', () => { if (inp.value && i < inputs.length - 1) inputs[i+1].focus(); });
+    inp.addEventListener('keydown', e => { if (e.key === 'Backspace' && !inp.value && i > 0) inputs[i-1].focus(); });
+  });
+}
+
+function startPhoneTimer(seconds) {
+  const el = document.getElementById('phoneTimer');
+  const iv = setInterval(() => {
+    const m = String(Math.floor(seconds/60)).padStart(2,'0');
+    const s = String(seconds%60).padStart(2,'0');
+    el.textContent = m + ':' + s;
+    if (--seconds < 0) { clearInterval(iv); el.textContent = 'Expired'; }
+  }, 1000);
+}
+
+async function verifyPhoneOTP() {
+  const otp = [...document.querySelectorAll('#phoneOTPInputs .otp-input')].map(i => i.value).join('');
+  if (otp.length < 6) { showToast('Enter all 6 digits', 'error'); return; }
+  try {
+    const result = await confirmationResult.confirm(otp);
+    const firebaseUser = result.user;
+    LP.set('user', {
+      name: firebaseUser.phoneNumber,
+      email: '',
+      avatar: '📱',
+      phone: firebaseUser.phoneNumber,
+      token: await firebaseUser.getIdToken()
+    });
+    showToast('Phone verified! Redirecting…', 'success');
+    setTimeout(() => window.location.href = 'dashboard.html', 1200);
+  } catch (err) {
+    showToast('Invalid OTP. Please try again.', 'error');
+  }
 }
 
 // Check if already logged in
