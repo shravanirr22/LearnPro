@@ -2,440 +2,575 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Login — LearnPro</title>
+<title>Sign In — LearnPro</title>
 <link rel="stylesheet" href="../css/global.css">
-<!-- hCaptcha (free, replaces Cloudflare Turnstile) -->
-<script src="https://js.hcaptcha.com/1/api.js" async defer></script>
-<!-- Supabase SDK -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script>
   firebase.initializeApp({
-    apiKey: "AIzaSyA5aVDaKHlPmssghJp7b9s1QxzeDWvnaeE",
-    authDomain: "learnpro-89b93.firebaseapp.com",
-    projectId: "learnpro-89b93",
-    appId: "1:246874100868:web:b8073a1a1bc8faf1f8ded1"
+    apiKey:"AIzaSyA5aVDaKHlPmssghJp7b9s1QxzeDWvnaeE",
+    authDomain:"learnpro-89b93.firebaseapp.com",
+    projectId:"learnpro-89b93",
+    appId:"1:246874100868:web:b8073a1a1bc8faf1f8ded1"
   });
 </script>
 <style>
-body { display:flex; min-height:100vh; }
-.auth-left {
-  flex:0 0 50%; background:var(--black-2);
-  display:flex; flex-direction:column; align-items:center; justify-content:center;
-  padding:60px; position:relative; overflow:hidden;
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:'Barlow',sans-serif;
+  background:#0a0a0a;
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:24px;
 }
-.auth-left::before {
-  content:''; position:absolute; inset:0;
-  background:radial-gradient(ellipse 70% 70% at 50% 50%,rgba(180,18,27,0.15) 0%,transparent 70%);
+.card{
+  background:#111;
+  border:1px solid #222;
+  border-radius:16px;
+  padding:40px 36px;
+  width:100%;
+  max-width:420px;
 }
-.auth-bg-text {
-  position:absolute; font-family:var(--font-display); font-size:14rem;
-  color:rgba(255,255,255,0.02); pointer-events:none; user-select:none;
-  top:50%; left:50%; transform:translate(-50%,-50%);
-  white-space:nowrap;
+.logo{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:1.8rem;
+  color:#fff;
+  text-decoration:none;
+  display:block;
+  text-align:center;
+  margin-bottom:32px;
+  letter-spacing:0.02em;
 }
-.auth-right {
-  flex:0 0 50%; display:flex; align-items:center; justify-content:center;
-  padding:40px; background:var(--black);
+.logo span{color:#B4121B}
+h1{font-size:1.4rem;color:#fff;font-weight:700;margin-bottom:4px;text-align:center}
+.sub{font-size:0.85rem;color:#666;text-align:center;margin-bottom:28px}
+.sub a{color:#B4121B;text-decoration:none;font-weight:600}
+
+/* Tabs */
+.tabs{display:flex;background:#0d0d0d;border:1px solid #222;border-radius:10px;padding:3px;gap:3px;margin-bottom:24px}
+.tab{flex:1;padding:9px 6px;text-align:center;border-radius:8px;font-size:0.8rem;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;cursor:pointer;border:none;background:none;color:#555;transition:all 0.2s;font-family:'Barlow Condensed',sans-serif}
+.tab.active{background:#B4121B;color:#fff}
+
+/* OAuth */
+.oauth-btn{
+  width:100%;display:flex;align-items:center;justify-content:center;gap:10px;
+  padding:12px;border:1px solid #252525;border-radius:10px;
+  background:#161616;color:#ddd;font-size:0.88rem;font-weight:600;
+  cursor:pointer;transition:all 0.2s;margin-bottom:8px;font-family:'Barlow',sans-serif;
 }
-.auth-box { width:100%; max-width:440px; }
-.auth-title { font-size:2rem; color:var(--white); margin-bottom:6px; }
-.auth-sub { color:var(--gray-4); font-size:0.9rem; margin-bottom:32px; }
-.oauth-btns { display:flex; flex-direction:column; gap:10px; margin-bottom:24px; }
-.oauth-btn {
-  display:flex; align-items:center; justify-content:center; gap:12px;
-  padding:13px; border-radius:var(--radius); border:1.5px solid var(--gray-1);
-  background:var(--black-4); color:var(--white); font-size:0.9rem; font-weight:600;
-  cursor:pointer; transition:all var(--transition); font-family:var(--font-body);
+.oauth-btn:hover{border-color:#B4121B;background:#1a0f10;color:#fff}
+.oauth-btn:last-child{margin-bottom:0}
+.divider{display:flex;align-items:center;gap:10px;margin:18px 0;color:#333;font-size:0.75rem;text-transform:uppercase;letter-spacing:0.1em}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:#1e1e1e}
+
+/* Form */
+.label{font-size:0.75rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#555;display:block;margin-bottom:6px;font-family:'Barlow Condensed',sans-serif}
+.input{
+  width:100%;padding:12px 14px;background:#0d0d0d;
+  border:1px solid #222;border-radius:10px;
+  color:#fff;font-size:0.9rem;outline:none;
+  transition:border-color 0.2s;font-family:'Barlow',sans-serif;
+  margin-bottom:14px;
 }
-.oauth-btn:hover { border-color:var(--red); background:var(--red-subtle); color:var(--white); }
-.divider-or {
-  display:flex; align-items:center; gap:12px; margin:20px 0;
-  color:var(--gray-3); font-size:0.82rem; text-transform:uppercase; letter-spacing:0.1em;
+.input:focus{border-color:#B4121B}
+.input::placeholder{color:#333}
+.input-wrap{position:relative;margin-bottom:14px}
+.input-wrap .input{margin-bottom:0;padding-right:44px}
+.eye{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:#444;cursor:pointer;font-size:1rem;padding:4px}
+.between{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.forgot{font-size:0.78rem;color:#B4121B;text-decoration:none;font-weight:600}
+.btn{
+  width:100%;padding:13px;background:#B4121B;
+  border:none;border-radius:10px;color:#fff;
+  font-size:0.95rem;font-weight:700;cursor:pointer;
+  transition:all 0.2s;font-family:'Barlow Condensed',sans-serif;
+  letter-spacing:0.06em;text-transform:uppercase;
+  margin-top:4px;
 }
-.divider-or::before,.divider-or::after { content:''; flex:1; height:1px; background:var(--gray-1); }
-.login-tabs { display:flex; background:var(--black-4); border-radius:var(--radius); padding:4px; margin-bottom:24px; gap:4px; }
-.login-tab {
-  flex:1; padding:9px; text-align:center; border-radius:6px;
-  font-family:var(--font-cond); font-size:0.88rem; font-weight:700; letter-spacing:0.06em;
-  cursor:pointer; border:none; background:none; color:var(--gray-4);
-  transition:all var(--transition); text-transform:uppercase;
+.btn:hover{background:#d4161f}
+.btn:disabled{opacity:0.4;cursor:not-allowed}
+.btn-ghost{background:#161616;border:1px solid #252525;color:#aaa}
+.btn-ghost:hover{border-color:#B4121B;color:#fff;background:#1a0f10}
+
+/* OTP boxes */
+.otp-row{display:flex;gap:8px;margin-bottom:14px}
+.otp-box{
+  flex:1;height:50px;text-align:center;
+  background:#0d0d0d;border:1px solid #222;border-radius:10px;
+  color:#fff;font-size:1.3rem;font-weight:700;outline:none;
+  transition:border-color 0.2s;
 }
-.login-tab.active { background:var(--red); color:var(--white); }
-.otp-inputs { display:flex; gap:10px; margin-bottom:20px; }
-.otp-input {
-  flex:1; height:54px; text-align:center;
-  background:var(--black-4); border:1.5px solid var(--gray-1);
-  border-radius:var(--radius); color:var(--white); font-size:1.4rem; font-weight:700;
-  outline:none; transition:all var(--transition);
+.otp-box:focus{border-color:#B4121B}
+
+/* Phone flag select */
+.phone-row{display:flex;gap:8px;margin-bottom:14px}
+.flag-select{
+  background:#0d0d0d;border:1px solid #222;border-radius:10px;
+  color:#ddd;padding:0 10px;font-size:0.88rem;outline:none;
+  cursor:pointer;min-width:90px;font-family:'Barlow',sans-serif;
 }
-.otp-input:focus { border-color:var(--red); box-shadow:0 0 0 3px var(--red-glow); }
-.auth-features { margin-top:40px; display:flex; flex-direction:column; gap:16px; width:100%; max-width:380px; }
-.auth-feature { display:flex; align-items:flex-start; gap:14px; }
-.auth-feature-icon { width:40px; height:40px; background:var(--red-subtle); border:1px solid var(--red); border-radius:var(--radius); display:flex; align-items:center; justify-content:center; font-size:1rem; flex-shrink:0; }
-.auth-feature-text strong { display:block; font-size:0.9rem; color:var(--white); margin-bottom:2px; }
-.auth-feature-text span { font-size:0.82rem; color:var(--gray-4); }
-@media(max-width:768px) { body{flex-direction:column;} .auth-left{display:none;} .auth-right{padding:30px 20px;min-height:100vh;} }
+.flag-select:focus{border-color:#B4121B}
+.phone-row .input{margin-bottom:0;flex:1}
+
+/* Error / info */
+.err{background:rgba(180,18,27,0.1);border:1px solid rgba(180,18,27,0.3);border-radius:8px;padding:10px 12px;font-size:0.82rem;color:#f87171;margin-bottom:14px;display:none;line-height:1.5}
+.info{background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);border-radius:8px;padding:10px 12px;font-size:0.82rem;color:#93c5fd;margin-bottom:14px;line-height:1.5}
+.timer{font-size:0.78rem;color:#555;margin-bottom:12px}
+.timer span{color:#B4121B;font-weight:700}
+
+/* reCAPTCHA note */
+.captcha-note{font-size:0.75rem;color:#444;text-align:center;margin-top:8px}
+
+/* Recaptcha container */
+#recaptcha-container{margin-bottom:14px}
+#recaptcha-container iframe{border-radius:8px!important}
+
+@media(max-width:480px){.card{padding:28px 20px}}
 </style>
-  <!-- Firebase SDK for Phone OTP -->
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
-  <script>
-    firebase.initializeApp({
-      apiKey: "AIzaSyA5aVDaKHlPmssghJp7b9s1QxzeDWvnaeE",
-      authDomain: "learnpro-89b93.firebaseapp.com",
-      projectId: "learnpro-89b93",
-      appId: "1:246874100868:web:b8073a1a1bc8faf1f8ded1"
-    });
-  </script>
 </head>
 <body>
 
-<!-- LEFT PANEL -->
-<div class="auth-left">
-  <div class="auth-bg-text">LP</div>
-  <a href="../index.html" style="position:absolute;top:28px;left:28px;font-family:var(--font-display);font-size:1.6rem;color:var(--white);text-decoration:none;z-index:2">LEARN<span style="color:var(--red)">PRO</span></a>
-  <div style="position:relative;z-index:2;text-align:center">
-    <h1 class="display" style="font-size:4rem;color:var(--white);margin-bottom:16px">WELCOME<br><span style="color:var(--red)">BACK</span></h1>
-    <p style="color:var(--gray-4);font-size:1rem">Your career journey awaits you.</p>
+<div class="card">
+  <a href="../index.html" class="logo">LEARN<span>PRO</span></a>
+  <h1>Welcome back</h1>
+  <p class="sub">No account? <a href="signup.html">Sign up free →</a></p>
+
+  <!-- ERROR BOX -->
+  <div class="err" id="errBox"></div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab active" onclick="setTab('password',this)">Password</button>
+    <button class="tab" onclick="setTab('otp',this)">Email OTP</button>
+    <button class="tab" onclick="setTab('phone',this)">Phone</button>
   </div>
-  <div class="auth-features" style="position:relative;z-index:2">
-    <div class="auth-feature">
-      <div class="auth-feature-icon">🗺️</div>
-      <div class="auth-feature-text"><strong>Your personalised roadmap</strong><span>Pick up exactly where you left off</span></div>
+
+  <!-- ══ PASSWORD TAB ══════════════════════════════════════ -->
+  <div id="tab-password">
+    <!-- OAuth -->
+    <button class="oauth-btn" onclick="oauthLogin('google')">
+      <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+      Continue with Google
+    </button>
+    <button class="oauth-btn" onclick="oauthLogin('github')">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="#ccc"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+      Continue with GitHub
+    </button>
+    <div class="divider">or</div>
+    <label class="label">Email</label>
+    <input class="input" type="email" id="pwEmail" placeholder="you@example.com" autocomplete="email">
+    <div class="between">
+      <label class="label" style="margin-bottom:0">Password</label>
+      <a href="#" class="forgot" onclick="showForgot();return false">Forgot?</a>
     </div>
-    <div class="auth-feature">
-      <div class="auth-feature-icon">📊</div>
-      <div class="auth-feature-text"><strong>Track your progress</strong><span>Streaks, XP, and milestones updated</span></div>
+    <div class="input-wrap">
+      <input class="input" type="password" id="pwPass" placeholder="••••••••" autocomplete="current-password">
+      <button class="eye" onclick="toggleEye('pwPass',this)">👁</button>
     </div>
-    <div class="auth-feature">
-      <div class="auth-feature-icon">💼</div>
-      <div class="auth-feature-text"><strong>New jobs since last visit</strong><span>Fresh listings matched to your skills</span></div>
-    </div>
+    <!-- Firebase reCAPTCHA v3 (invisible) -->
+    <div id="recaptcha-container"></div>
+    <button class="btn" id="pwBtn" onclick="loginPassword()">Sign In</button>
+    <p class="captcha-note">Protected by reCAPTCHA. <a href="#" style="color:#555;text-decoration:none">Privacy</a> · <a href="#" style="color:#555;text-decoration:none">Terms</a></p>
   </div>
-</div>
 
-<!-- RIGHT PANEL -->
-<div class="auth-right">
-  <div class="auth-box">
-    <div class="auth-title">Sign in</div>
-    <p class="auth-sub">New here? <a href="signup.html" style="color:var(--red-light);font-weight:600">Create a free account →</a></p>
-
-    <!-- OAuth Buttons -->
-    <div class="oauth-btns">
-      <button class="oauth-btn" onclick="handleGoogleLogin()">
-        <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-        Continue with Google
-      </button>
-      <button class="oauth-btn" onclick="handleGitHubLogin()">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
-        Continue with GitHub
-      </button>
+  <!-- ══ EMAIL OTP TAB ══════════════════════════════════════ -->
+  <div id="tab-otp" style="display:none">
+    <div class="info">A 6-digit code will be sent to your registered email.</div>
+    <!-- Step 1 -->
+    <div id="otp-s1">
+      <label class="label">Registered Email</label>
+      <input class="input" type="email" id="otpEmail" placeholder="you@example.com">
+      <button class="btn" onclick="sendEmailOTP()">Send OTP</button>
     </div>
-
-    <div class="divider-or"><span>or</span></div>
-
-    <!-- Login Method Tabs -->
-    <div class="login-tabs">
-      <button class="login-tab active" onclick="switchTab('email',this)">Email</button>
-      <button class="login-tab" onclick="switchTab('otp',this)">Email OTP</button>
-      <button class="login-tab" onclick="switchTab('phone',this)">Phone OTP</button>
-    </div>
-
-    <!-- EMAIL FORM -->
-    <form id="email-form" onsubmit="handleEmailLogin(event)">
-      <div class="form-group">
-        <label class="form-label">Email Address</label>
-        <input type="email" class="form-input" id="loginEmail" placeholder="you@example.com" required autocomplete="email">
+    <!-- Step 2 -->
+    <div id="otp-s2" style="display:none">
+      <p style="color:#777;font-size:0.83rem;margin-bottom:14px">Code sent to <strong id="otpEmailShow" style="color:#ddd"></strong></p>
+      <div class="otp-row" id="emailOTPBoxes">
+        <input class="otp-box" maxlength="1" type="text" inputmode="numeric">
+        <input class="otp-box" maxlength="1" type="text" inputmode="numeric">
+        <input class="otp-box" maxlength="1" type="text" inputmode="numeric">
+        <input class="otp-box" maxlength="1" type="text" inputmode="numeric">
+        <input class="otp-box" maxlength="1" type="text" inputmode="numeric">
+        <input class="otp-box" maxlength="1" type="text" inputmode="numeric">
       </div>
-      <div class="form-group">
-        <label class="form-label" style="display:flex;justify-content:space-between">
-          <span>Password</span>
-          <a href="#" onclick="showForgot()" style="font-weight:600;font-size:0.8rem;color:var(--red-light)">Forgot password?</a>
-        </label>
-        <div style="position:relative">
-          <input type="password" class="form-input" id="loginPass" placeholder="••••••••" required style="padding-right:48px">
-          <button type="button" onclick="togglePass('loginPass',this)" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--gray-4);cursor:pointer;font-size:1rem">👁</button>
-        </div>
-      </div>
-      <!-- hCaptcha -->
-      <div class="h-captcha" data-sitekey="d6ccb116-ff5e-435a-ba56-34ca25b2a6c2" style="margin-bottom:16px"></div>
-      <button type="submit" class="btn btn-primary w-full" style="justify-content:center;padding:14px">Sign In →</button>
-    </form>
-
-    <!-- OTP FORM -->
-    <form id="otp-form" style="display:none" onsubmit="handleOTPLogin(event)">
-      <div id="otp-step1">
-        <div class="form-group">
-          <label class="form-label">Email Address</label>
-          <input type="email" class="form-input" id="otpEmail" placeholder="you@example.com" required>
-        </div>
-        <button type="button" onclick="sendOTP()" class="btn btn-primary w-full" style="justify-content:center;padding:14px">Send OTP →</button>
-      </div>
-      <div id="otp-step2" style="display:none">
-        <p style="color:var(--gray-4);font-size:0.88rem;margin-bottom:16px">We sent a 6-digit code to <strong id="otpEmailDisplay" style="color:var(--white)"></strong></p>
-        <div class="otp-inputs" id="otpInputs">
-          <input class="otp-input" maxlength="1" type="text" inputmode="numeric">
-          <input class="otp-input" maxlength="1" type="text" inputmode="numeric">
-          <input class="otp-input" maxlength="1" type="text" inputmode="numeric">
-          <input class="otp-input" maxlength="1" type="text" inputmode="numeric">
-          <input class="otp-input" maxlength="1" type="text" inputmode="numeric">
-          <input class="otp-input" maxlength="1" type="text" inputmode="numeric">
-        </div>
-        <div style="font-size:0.8rem;color:var(--gray-4);margin-bottom:16px">
-          Expires in <span id="otpTimer" style="color:var(--red-light);font-weight:700">10:00</span> ·
-          <a href="#" onclick="sendOTP()" style="color:var(--red-light)">Resend</a>
-        </div>
-        <button type="submit" class="btn btn-primary w-full" style="justify-content:center;padding:14px">Verify & Sign In →</button>
-      </div>
-    </form>
-
-    <!-- PHONE OTP FORM -->
-    <form id="phone-form" style="display:none">
-      <div id="phone-step1">
-        <div class="form-group">
-          <label class="form-label">Mobile Number</label>
-          <div style="display:flex;gap:8px">
-            <select class="form-select" id="phoneCountry" style="width:110px;flex-shrink:0">
-              <option value="+91">🇮🇳 +91</option>
-              <option value="+1">🇺🇸 +1</option>
-              <option value="+44">🇬🇧 +44</option>
-              <option value="+971">🇦🇪 +971</option>
-            </select>
-            <input type="tel" class="form-input" id="phoneNumber" placeholder="9876543210" maxlength="10">
-          </div>
-        </div>
-        <div id="recaptcha-container" style="margin-bottom:16px"></div>
-        <button type="button" onclick="sendPhoneOTP()" class="btn btn-primary w-full" style="justify-content:center;padding:14px">Send OTP →</button>
-      </div>
-      <div id="phone-step2" style="display:none">
-        <p style="color:var(--gray-4);font-size:0.88rem;margin-bottom:16px">OTP sent to <strong id="phoneDisplay" style="color:var(--white)"></strong></p>
-        <div class="otp-inputs" id="phoneOTPInputs">
-          <input class="otp-input" maxlength="1" type="text" inputmode="numeric">
-          <input class="otp-input" maxlength="1" type="text" inputmode="numeric">
-          <input class="otp-input" maxlength="1" type="text" inputmode="numeric">
-          <input class="otp-input" maxlength="1" type="text" inputmode="numeric">
-          <input class="otp-input" maxlength="1" type="text" inputmode="numeric">
-          <input class="otp-input" maxlength="1" type="text" inputmode="numeric">
-        </div>
-        <div style="font-size:0.8rem;color:var(--gray-4);margin-bottom:16px">
-          Expires in <span id="phoneTimer" style="color:var(--red-light);font-weight:700">10:00</span> ·
-          <a href="#" onclick="sendPhoneOTP()" style="color:var(--red-light)">Resend</a>
-        </div>
-        <button type="button" onclick="verifyPhoneOTP()" class="btn btn-primary w-full" style="justify-content:center;padding:14px">Verify & Sign In →</button>
-      </div>
-    </form>
-    <div style="text-align:center;margin-top:24px;font-size:0.88rem;color:var(--gray-4)">
-      Don't have an account? <a href="signup.html" style="color:var(--red-light);font-weight:600">Sign up free →</a>
+      <div class="timer">Expires in <span id="otpClock">10:00</span> · <a href="#" style="color:#B4121B;font-size:0.78rem" onclick="sendEmailOTP();return false">Resend</a></div>
+      <button class="btn" onclick="verifyEmailOTP()">Verify & Sign In</button>
+      <button class="btn btn-ghost" style="margin-top:8px" onclick="resetOTPStep()">← Back</button>
     </div>
   </div>
-</div>
+
+  <!-- ══ PHONE TAB ══════════════════════════════════════════ -->
+  <div id="tab-phone" style="display:none">
+    <div class="info">OTP sent via SMS. Only works for accounts already registered.</div>
+    <!-- Step 1 -->
+    <div id="phone-s1">
+      <label class="label">Mobile Number</label>
+      <div class="phone-row">
+        <select class="flag-select" id="dialCode">
+          <option value="+91">🇮🇳 +91</option>
+          <option value="+1">🇺🇸 +1</option>
+          <option value="+44">🇬🇧 +44</option>
+          <option value="+61">🇦🇺 +61</option>
+          <option value="+971">🇦🇪 +971</option>
+          <option value="+65">🇸🇬 +65</option>
+        </select>
+        <input class="input" type="tel" id="phoneNum" placeholder="9876543210" maxlength="12">
+      </div>
+      <!-- Firebase reCAPTCHA for phone auth -->
+      <div id="recaptcha-phone"></div>
+      <button class="btn" onclick="sendPhoneOTP()">Send OTP</button>
+    </div>
+    <!-- Step 2 -->
+    <div id="phone-s2" style="display:none">
+      <p style="color:#777;font-size:0.83rem;margin-bottom:14px">Code sent to <strong id="phoneNumShow" style="color:#ddd"></strong></p>
+      <div class="otp-row" id="phoneOTPBoxes">
+        <input class="otp-box" maxlength="1" type="text" inputmode="numeric">
+        <input class="otp-box" maxlength="1" type="text" inputmode="numeric">
+        <input class="otp-box" maxlength="1" type="text" inputmode="numeric">
+        <input class="otp-box" maxlength="1" type="text" inputmode="numeric">
+        <input class="otp-box" maxlength="1" type="text" inputmode="numeric">
+        <input class="otp-box" maxlength="1" type="text" inputmode="numeric">
+      </div>
+      <div class="timer">Expires in <span id="phoneClock">10:00</span></div>
+      <button class="btn" onclick="verifyPhoneOTP()">Verify & Sign In</button>
+      <button class="btn btn-ghost" style="margin-top:8px" onclick="resetPhoneStep()">← Back</button>
+    </div>
+  </div>
+
+</div><!-- end card -->
 
 <!-- FORGOT PASSWORD MODAL -->
-<div class="modal-overlay" id="forgotModal">
-  <div class="modal">
-    <div class="modal-header">
-      <h3 class="modal-title">Reset Password</h3>
-      <button class="modal-close" onclick="closeModal('forgotModal')">✕</button>
+<div id="forgotOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:999;display:none;align-items:center;justify-content:center;padding:20px">
+  <div style="background:#111;border:1px solid #222;border-radius:16px;padding:32px;max-width:380px;width:100%">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <span style="font-size:1rem;font-weight:700;color:#fff">Reset Password</span>
+      <button onclick="closeForgot()" style="background:none;border:none;color:#555;font-size:1.2rem;cursor:pointer">✕</button>
     </div>
-    <p style="color:var(--gray-4);margin-bottom:20px;font-size:0.9rem">Enter your email and we'll send you a reset link.</p>
-    <div class="form-group">
-      <label class="form-label">Email Address</label>
-      <input type="email" class="form-input" id="forgotEmail" placeholder="you@example.com">
-    </div>
-    <button onclick="sendResetLink()" class="btn btn-primary w-full" style="justify-content:center">Send Reset Link →</button>
+    <p style="color:#555;font-size:0.85rem;margin-bottom:16px">Enter your email — we'll send a reset link.</p>
+    <label class="label">Email</label>
+    <input class="input" type="email" id="forgotEmail" placeholder="you@example.com">
+    <button class="btn" style="margin-top:4px" onclick="sendResetLink()">Send Reset Link</button>
   </div>
 </div>
 
 <script src="../js/global.js"></script>
+<script src="https://www.recaptcha.net/recaptcha/enterprise.js"></script>
 <script>
-// Init Supabase
 const { createClient } = supabase;
+const REDIRECT_URL = 'https://shravanirr22.github.io/LearnPro/pages/dashboard.html';
 const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// switchTab defined below with phone support
+// Firebase reCAPTCHA Enterprise
+const RECAPTCHA_SITE_KEY = '6Lew9wAtAAAAAPCMVi32_YS8h1FCcu_olUiSSBxm';
+const RECAPTCHA_PROJECT_ID = 'learnpro-89b93';
 
-function togglePass(id, btn) {
+// Initialize reCAPTCHA Enterprise
+async function initRecaptchaPassword() {
+  try {
+    grecaptcha.enterprise.ready(async () => {
+      window.recaptchaPasswordToken = await grecaptcha.enterprise.execute(RECAPTCHA_SITE_KEY, {
+        action: 'LOGIN'
+      });
+      console.log('reCAPTCHA v3 password token ready');
+    });
+  } catch(e) { console.warn('reCAPTCHA init:', e.message); }
+}
+
+// Verify reCAPTCHA token with backend
+async function verifyRecaptchaToken(token, action = 'LOGIN') {
+  try {
+    const response = await fetch(
+      `https://recaptchaenterprise.googleapis.com/v1/projects/${RECAPTCHA_PROJECT_ID}/assessments?key=${GEMINI_API_KEY}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          event: {
+            token: token,
+            siteKey: RECAPTCHA_SITE_KEY,
+            expectedAction: action
+          }
+        })
+      }
+    );
+    const data = await response.json();
+    // Risk score: 0.0 = likely bot, 1.0 = likely human
+    const riskScore = data.riskAnalysis?.score || 0.5;
+    console.log(`reCAPTCHA risk score: ${riskScore}`);
+    return riskScore > 0.5; // Accept if >0.5 (more likely human)
+  } catch(e) {
+    console.warn('reCAPTCHA verification error:', e.message);
+    return true; // Allow if verification fails (graceful fallback)
+  }
+}
+
+// ── CHECK EXISTING SESSION ───────────────────────────────────
+(async () => {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) {
+    saveUserFromSession(session);
+    window.location.href = 'dashboard.html';
+  }
+})();
+
+// Handle OAuth callback
+sb.auth.onAuthStateChange((event, session) => {
+  if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && session) {
+    saveUserFromSession(session);
+    if (window.location.pathname.includes('login')) {
+      window.location.href = 'dashboard.html';
+    }
+  }
+});
+
+function saveUserFromSession(session) {
+  const u = session.user;
+  const name = u.user_metadata?.full_name || u.user_metadata?.name || u.email?.split('@')[0] || 'User';
+  LP.set('user', {
+    name,
+    email: u.email || '',
+    avatar: name[0].toUpperCase(),
+    token: session.access_token,
+    uid: u.id
+  });
+}
+
+// ── TABS ─────────────────────────────────────────────────────
+function setTab(tab, btn) {
+  document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  ['password','otp','phone'].forEach(t => {
+    document.getElementById('tab-' + t).style.display = t === tab ? 'block' : 'none';
+  });
+  hideErr();
+  if (tab === 'password') initRecaptchaPassword();
+  if (tab === 'phone') initRecaptchaPhone();
+}
+
+// ── OAUTH ────────────────────────────────────────────────────
+async function oauthLogin(provider) {
+  showErr('');
+  const { data, error } = await sb.auth.signInWithOAuth({
+    provider,
+    options: {
+      redirectTo: REDIRECT_URL,
+      queryParams: provider === 'google' ? { access_type: 'offline', prompt: 'consent' } : {}
+    }
+  });
+  if (error) showErr(error.message);
+}
+
+// ── PASSWORD LOGIN ───────────────────────────────────────────
+async function loginPassword() {
+  const email = document.getElementById('pwEmail').value.trim();
+  const pass  = document.getElementById('pwPass').value;
+  if (!email || !pass) { showErr('Please enter your email and password.'); return; }
+
+  // Verify reCAPTCHA first
+  if (!window.recaptchaPasswordToken) {
+    showErr('reCAPTCHA verification in progress... Please try again.');
+    return;
+  }
+
+  const isHuman = await verifyRecaptchaToken(window.recaptchaPasswordToken, 'LOGIN');
+  if (!isHuman) {
+    showErr('Failed bot verification. Please try again.');
+    return;
+  }
+
+  const btn = document.getElementById('pwBtn');
+  btn.textContent = 'Signing in…'; btn.disabled = true;
+
+  const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
+  btn.textContent = 'Sign In'; btn.disabled = false;
+
+  if (error) {
+    if (error.message.toLowerCase().includes('invalid login')) {
+      showErr('Wrong email or password. Don\'t have an account? <a href="signup.html" style="color:#f87171">Sign up →</a>');
+    } else if (error.message.toLowerCase().includes('email not confirmed')) {
+      showErr('Please confirm your email first. Check your inbox for a verification link.');
+    } else {
+      showErr(error.message);
+    }
+    // Reset reCAPTCHA
+    initRecaptchaPassword();
+    return;
+  }
+  saveUserFromSession(data.session);
+  window.location.href = 'dashboard.html';
+}
+
+// ── EMAIL OTP ────────────────────────────────────────────────
+let otpEmail = '';
+async function sendEmailOTP() {
+  const email = document.getElementById('otpEmail').value.trim();
+  if (!email) { showErr('Enter your email address.'); return; }
+
+  const { error } = await sb.auth.signInWithOtp({
+    email,
+    options: { shouldCreateUser: false }
+  });
+
+  if (error) {
+    if (error.message.includes('Signups not allowed') || error.message.includes('not found') || error.message.includes('signup_disabled')) {
+      showErr('No account found with this email. <a href="signup.html" style="color:#f87171">Create one →</a>');
+    } else {
+      showErr(error.message);
+    }
+    return;
+  }
+
+  otpEmail = email;
+  document.getElementById('otpEmailShow').textContent = email;
+  document.getElementById('otp-s1').style.display = 'none';
+  document.getElementById('otp-s2').style.display = 'block';
+  wireOTPBoxes('emailOTPBoxes');
+  startClock('otpClock', 600);
+  hideErr();
+}
+
+async function verifyEmailOTP() {
+  const token = getOTPValue('emailOTPBoxes');
+  if (token.length < 6) { showErr('Enter all 6 digits.'); return; }
+
+  const { data, error } = await sb.auth.verifyOtp({ email: otpEmail, token, type: 'email' });
+  if (error) { showErr('Invalid or expired code. Try again.'); return; }
+  saveUserFromSession(data.session);
+  window.location.href = 'dashboard.html';
+}
+
+function resetOTPStep() {
+  document.getElementById('otp-s1').style.display = 'block';
+  document.getElementById('otp-s2').style.display = 'none';
+  hideErr();
+}
+
+// ── PHONE OTP via Firebase ───────────────────────────────────
+let recaptchaVerifier = null;
+let phoneConfirmResult = null;
+
+function initRecaptchaPhone() {
+  if (recaptchaVerifier) return;
+  try {
+    recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-phone', {
+      size: 'normal',
+      callback: () => {},
+      'expired-callback': () => { recaptchaVerifier = null; }
+    });
+    recaptchaVerifier.render();
+  } catch(e) { console.warn('reCAPTCHA phone:', e.message); }
+}
+
+async function sendPhoneOTP() {
+  if (!recaptchaVerifier) { showErr('Wait for reCAPTCHA to load, then try again.'); return; }
+  const dial = document.getElementById('dialCode').value;
+  const num  = document.getElementById('phoneNum').value.trim().replace(/\D/g,'');
+  if (!num || num.length < 7) { showErr('Enter a valid phone number.'); return; }
+
+  const full = dial + num;
+  try {
+    phoneConfirmResult = await firebase.auth().signInWithPhoneNumber(full, recaptchaVerifier);
+    document.getElementById('phoneNumShow').textContent = full;
+    document.getElementById('phone-s1').style.display = 'none';
+    document.getElementById('phone-s2').style.display = 'block';
+    wireOTPBoxes('phoneOTPBoxes');
+    startClock('phoneClock', 600);
+    hideErr();
+  } catch(err) {
+    recaptchaVerifier = null;
+    showErr(err.code === 'auth/invalid-phone-number' ? 'Invalid phone number format.' :
+            err.code === 'auth/too-many-requests' ? 'Too many attempts. Try again later.' :
+            err.message);
+  }
+}
+
+async function verifyPhoneOTP() {
+  if (!phoneConfirmResult) { showErr('Please request an OTP first.'); return; }
+  const code = getOTPValue('phoneOTPBoxes');
+  if (code.length < 6) { showErr('Enter all 6 digits.'); return; }
+  try {
+    const result = await phoneConfirmResult.confirm(code);
+    LP.set('user', { name: result.user.phoneNumber, email: '', avatar: '📱', phone: result.user.phoneNumber, token: await result.user.getIdToken() });
+    window.location.href = 'dashboard.html';
+  } catch(err) {
+    showErr(err.code === 'auth/invalid-verification-code' ? 'Incorrect OTP. Try again.' : err.message);
+  }
+}
+
+function resetPhoneStep() {
+  document.getElementById('phone-s1').style.display = 'block';
+  document.getElementById('phone-s2').style.display = 'none';
+  recaptchaVerifier = null;
+  document.getElementById('recaptcha-phone').innerHTML = '';
+  hideErr();
+  setTimeout(initRecaptchaPhone, 100);
+}
+
+// ── FORGOT PASSWORD ──────────────────────────────────────────
+function showForgot() { document.getElementById('forgotOverlay').style.display = 'flex'; }
+function closeForgot() { document.getElementById('forgotOverlay').style.display = 'none'; }
+async function sendResetLink() {
+  const email = document.getElementById('forgotEmail').value.trim();
+  if (!email) return;
+  const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: REDIRECT_URL });
+  if (error) { showErr(error.message); closeForgot(); return; }
+  closeForgot();
+  showToast('Reset link sent! Check your inbox.', 'success');
+}
+
+// ── HELPERS ──────────────────────────────────────────────────
+function showErr(msg) {
+  const el = document.getElementById('errBox');
+  el.innerHTML = msg;
+  el.style.display = msg ? 'block' : 'none';
+}
+function hideErr() { showErr(''); }
+function toggleEye(id, btn) {
   const el = document.getElementById(id);
   el.type = el.type === 'password' ? 'text' : 'password';
   btn.textContent = el.type === 'password' ? '👁' : '🙈';
 }
-
-// Email + Password login via Supabase
-async function handleEmailLogin(e) {
-  e.preventDefault();
-  const email = document.getElementById('loginEmail').value;
-  const password = document.getElementById('loginPass').value;
-  try {
-    const { data, error } = await sb.auth.signInWithPassword({ email, password });
-    if (error) { showToast(error.message, 'error'); return; }
-    LP.set('user', { name: data.user.email.split('@')[0], email: data.user.email, avatar: data.user.email[0].toUpperCase(), token: data.session.access_token });
-    showToast('Welcome back! Redirecting…', 'success');
-    setTimeout(() => window.location.href = 'dashboard.html', 1200);
-  } catch(err) { showToast('Login failed. Please try again.', 'error'); }
-}
-
-// Google OAuth via Supabase
-async function handleGoogleLogin() {
-  const { error } = await sb.auth.signInWithOAuth({
-    provider: 'google',
-    options: { redirectTo: window.location.origin + '/pages/dashboard.html' }
+function wireOTPBoxes(id) {
+  const boxes = document.querySelectorAll('#' + id + ' .otp-box');
+  boxes.forEach((b, i) => {
+    b.value = '';
+    b.oninput = () => { b.value = b.value.replace(/\D/,''); if (b.value && i < boxes.length-1) boxes[i+1].focus(); };
+    b.onkeydown = e => { if (e.key === 'Backspace' && !b.value && i > 0) boxes[i-1].focus(); };
+    b.onpaste = e => {
+      e.preventDefault();
+      const digits = e.clipboardData.getData('text').replace(/\D/g,'').slice(0,6);
+      [...digits].forEach((d,j) => { if (boxes[i+j]) boxes[i+j].value = d; });
+    };
   });
-  if (error) showToast(error.message, 'error');
+  boxes[0]?.focus();
 }
-
-// GitHub OAuth via Supabase
-async function handleGitHubLogin() {
-  const { error } = await sb.auth.signInWithOAuth({
-    provider: 'github',
-    options: { redirectTo: window.location.origin + '/pages/dashboard.html' }
-  });
-  if (error) showToast(error.message, 'error');
+function getOTPValue(id) {
+  return [...document.querySelectorAll('#' + id + ' .otp-box')].map(b => b.value).join('');
 }
-
-// OTP via Supabase (email magic link / OTP)
-async function sendOTP() {
-  const email = document.getElementById('otpEmail').value;
-  if (!email) { showToast('Please enter your email', 'error'); return; }
-
-  // Use Supabase email OTP
-  const { error } = await sb.auth.signInWithOtp({ email, options: { shouldCreateUser: true } });
-  if (error) { showToast(error.message, 'error'); return; }
-
-  document.getElementById('otpEmailDisplay').textContent = email;
-  document.getElementById('otp-step1').style.display = 'none';
-  document.getElementById('otp-step2').style.display = 'block';
-  showToast('✅ OTP sent to ' + email + '! Check your inbox.', 'success');
-  startOTPTimer(600);
-  setupOTPInputs();
-}
-
-function setupOTPInputs() {
-  const inputs = document.querySelectorAll('.otp-input');
-  inputs.forEach((inp, i) => {
-    inp.addEventListener('input', () => { if (inp.value && i < inputs.length - 1) inputs[i+1].focus(); });
-    inp.addEventListener('keydown', e => { if (e.key === 'Backspace' && !inp.value && i > 0) inputs[i-1].focus(); });
-  });
-}
-
-function startOTPTimer(seconds) {
-  const el = document.getElementById('otpTimer');
-  const iv = setInterval(() => {
-    const m = String(Math.floor(seconds/60)).padStart(2,'0');
-    const s = String(seconds%60).padStart(2,'0');
-    el.textContent = `${m}:${s}`;
-    if (--seconds < 0) { clearInterval(iv); el.textContent = 'Expired'; }
+function startClock(elId, secs) {
+  const el = document.getElementById(elId);
+  if (el._iv) clearInterval(el._iv);
+  el._iv = setInterval(() => {
+    el.textContent = String(Math.floor(secs/60)).padStart(2,'0') + ':' + String(secs%60).padStart(2,'0');
+    if (--secs < 0) { clearInterval(el._iv); el.textContent = 'Expired'; }
   }, 1000);
 }
 
-async function handleOTPLogin(e) {
-  e.preventDefault();
-  const email = document.getElementById('otpEmail').value;
-  const token = [...document.querySelectorAll('.otp-input')].map(i => i.value).join('');
-  const { data, error } = await sb.auth.verifyOtp({ email, token, type: 'email' });
-  if (error) { showToast('Invalid OTP. Please try again.', 'error'); return; }
-  LP.set('user', { name: email.split('@')[0], email, avatar: email[0].toUpperCase(), token: data.session?.access_token });
-  showToast('Verified! Redirecting…', 'success');
-  setTimeout(() => window.location.href = 'dashboard.html', 1200);
-}
+// Init reCAPTCHA on page load
+window.addEventListener('load', () => {
+  initRecaptchaPassword();
+});
 
-// Forgot password via Supabase
-function showForgot() { openModal('forgotModal'); }
-async function sendResetLink() {
-  const email = document.getElementById('forgotEmail').value;
-  if (!email) return;
-  await sb.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + '/pages/settings.html' });
-  showToast('Reset link sent to ' + email, 'success');
-  closeModal('forgotModal');
-}
-
-
-// ── switchTab: handle 3 tabs now ──
-function switchTab(tab, btn) {
-  document.querySelectorAll('.login-tab').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  document.getElementById('email-form').style.display  = tab === 'email' ? 'block' : 'none';
-  document.getElementById('otp-form').style.display    = tab === 'otp'   ? 'block' : 'none';
-  document.getElementById('phone-form').style.display  = tab === 'phone' ? 'block' : 'none';
-  if (tab === 'phone') setupRecaptcha();
-}
-
-// ── Firebase Phone OTP ──
-let recaptchaVerifier = null;
-let confirmationResult = null;
-
-function setupRecaptcha() {
-  if (recaptchaVerifier) return;
-  recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
-    size: 'normal',
-    callback: () => { /* reCAPTCHA solved */ },
-    'expired-callback': () => { recaptchaVerifier = null; setupRecaptcha(); }
-  });
-  recaptchaVerifier.render();
-}
-
-async function sendPhoneOTP() {
-  const country = document.getElementById('phoneCountry').value;
-  const number  = document.getElementById('phoneNumber').value.trim();
-  if (!number || number.length < 10) { showToast('Enter a valid phone number', 'error'); return; }
-  const fullPhone = country + number;
-  try {
-    confirmationResult = await firebase.auth().signInWithPhoneNumber(fullPhone, recaptchaVerifier);
-    document.getElementById('phoneDisplay').textContent = fullPhone;
-    document.getElementById('phone-step1').style.display = 'none';
-    document.getElementById('phone-step2').style.display = 'block';
-    showToast('OTP sent to ' + fullPhone, 'success');
-    startPhoneTimer(600);
-    setupPhoneOTPInputs();
-  } catch (err) {
-    showToast(err.message || 'Failed to send OTP. Try again.', 'error');
-    recaptchaVerifier = null;
+// Enter key support
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    const tab = document.querySelector('.tab.active')?.textContent;
+    if (tab?.includes('Password')) loginPassword();
   }
-}
-
-function setupPhoneOTPInputs() {
-  const inputs = document.querySelectorAll('#phoneOTPInputs .otp-input');
-  inputs.forEach((inp, i) => {
-    inp.addEventListener('input', () => { if (inp.value && i < inputs.length - 1) inputs[i+1].focus(); });
-    inp.addEventListener('keydown', e => { if (e.key === 'Backspace' && !inp.value && i > 0) inputs[i-1].focus(); });
-  });
-}
-
-function startPhoneTimer(seconds) {
-  const el = document.getElementById('phoneTimer');
-  const iv = setInterval(() => {
-    const m = String(Math.floor(seconds/60)).padStart(2,'0');
-    const s = String(seconds%60).padStart(2,'0');
-    el.textContent = m + ':' + s;
-    if (--seconds < 0) { clearInterval(iv); el.textContent = 'Expired'; }
-  }, 1000);
-}
-
-async function verifyPhoneOTP() {
-  const otp = [...document.querySelectorAll('#phoneOTPInputs .otp-input')].map(i => i.value).join('');
-  if (otp.length < 6) { showToast('Enter all 6 digits', 'error'); return; }
-  try {
-    const result = await confirmationResult.confirm(otp);
-    const firebaseUser = result.user;
-    LP.set('user', {
-      name: firebaseUser.phoneNumber,
-      email: '',
-      avatar: '📱',
-      phone: firebaseUser.phoneNumber,
-      token: await firebaseUser.getIdToken()
-    });
-    showToast('Phone verified! Redirecting…', 'success');
-    setTimeout(() => window.location.href = 'dashboard.html', 1200);
-  } catch (err) {
-    showToast('Invalid OTP. Please try again.', 'error');
-  }
-}
-
-// Check if already logged in
-const existingUser = LP.user();
-if (existingUser) window.location.href = 'dashboard.html';
+});
 </script>
 </body>
 </html>
