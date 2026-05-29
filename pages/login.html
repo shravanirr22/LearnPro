@@ -4,8 +4,7 @@
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Login — LearnPro</title>
 <link rel="stylesheet" href="../css/global.css">
-<!-- hCaptcha (free, replaces Cloudflare Turnstile) -->
-<script src="https://js.hcaptcha.com/1/api.js?render=explicit" async defer></script>
+
 <!-- Supabase SDK -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <!-- Firebase SDK -->
@@ -160,8 +159,7 @@ body { display:flex; min-height:100vh; }
           <button type="button" onclick="togglePass('loginPass',this)" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--gray-4);cursor:pointer;font-size:1rem">👁</button>
         </div>
       </div>
-      <!-- hCaptcha Container -->
-      <div id="login-hcaptcha-container"></div>
+
       <button type="submit" class="btn btn-primary w-full" style="justify-content:center;padding:14px">Sign In →</button>
     </form>
 
@@ -266,10 +264,6 @@ function togglePass(id, btn) {
 // Email + Password login via Supabase
 async function handleEmailLogin(e) {
   e.preventDefault();
-  if (!captchaVerifiedToken) {
-    showToast('Please solve the CAPTCHA first', 'error');
-    return;
-  }
   const email = document.getElementById('loginEmail').value;
   const password = document.getElementById('loginPass').value;
   try {
@@ -551,13 +545,7 @@ async function verifyPhoneOTP() {
   }
 }
 
-// Init Captcha explicitly
-let captchaVerifiedToken = null;
-document.addEventListener('DOMContentLoaded', () => {
-  initLPCheckCaptcha('login-hcaptcha-container', (token) => {
-    captchaVerifiedToken = token;
-  });
-});
+
 
 // Check if already logged in
 const existingUser = LP.user();
