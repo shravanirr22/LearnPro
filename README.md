@@ -1,6 +1,6 @@
 # LearnPro Platform — India's #1 Career Launch Platform 🚀
 
-LearnPro is a comprehensive, production-ready career guidance and ed-tech platform built to take learners from zero to job-ready status in their target domains. The platform features personalized AI-driven roadmaps, curated high-quality resources, an interactive code practice sandbox, automated portfolio enhancement for GitHub and LinkedIn, and a simulated voice-powered mock interview module. 
+LearnPro is a under development website for career guidance and ed-tech platform built to take learners from zero to job-ready status in their target domains. The platform features personalized AI-driven roadmaps, curated high-quality resources, an interactive code practice sandbox, automated portfolio enhancement for GitHub and LinkedIn, and a simulated voice-powered mock interview module. 
 
 Engineered entirely with pure vanilla web technologies, LearnPro operates flawlessly without requiring any external frontend frameworks, libraries, heavy node dependencies, or complex build tools. This architecture ensures high-performance rendering, near-instant load times, and an easily maintainable code structure that can be previewed directly inside any modern web browser.
 
@@ -18,11 +18,18 @@ Engineered entirely with pure vanilla web technologies, LearnPro operates flawle
 ---
 
 ## 🛠️ Tech Stack
+## 🛠️ Operational Tech Stack
 
-* **Frontend User Interface:** Native HTML5 semantics, custom responsive CSS3 design specifications, variables, and flexible layouts.
-* **Application & Control Middleware:** Pure Vanilla JavaScript (ES6+) utilizing browser Web APIs, Intersection Observers for animation, and Speech Synthesis for native audio reading.
-* **Authentication & Database Services:** Built-in hooks designed for Supabase Client SDK wrappers to handle secure state tokens, OAuth validation handshakes, and account updates.
-* **Mobile Authentication & Background Tasks:** Firebase Core SDK integration mapping text-based OTP verifications and service worker background notification engines.
+| Operational Layer | Technology Implemented | Selection Rationale |
+| :--- | :--- | :--- |
+| **Frontend Architecture** | Next.js 14 (App Router) | Handles SSR/SSG compilation loops, optimizes Core Web Vitals (LCP), and delivers robust structural SEO tracking. |
+| **Interface Styling** | Tailwind CSS + shadcn/ui | Promotes utility-first rapid component interface layout mapping with accessible WCAG-compliant design patterns. |
+| **Client State Management** | Zustand + React Query | Delivers a lightweight atomic global layout store coupled with automatic server state tracking and micro-caching. |
+| **Backend API Engine** | Node.js + Express.js | Standardized scalable server environment exposing structured, versioned RESTful routes (`/api/v1/`). |
+| **Primary Data Layer** | MongoDB Atlas | Distributed cloud document store providing high schema flexibility for changing user metrics and historical performance maps. |
+| **Realtime Middleware / Auth** | Firebase (Firestore + Auth + FCM) | Manages instant mobile phone OTP validations, active learner presence, and push notification distribution. |
+| **Cloud Asset Repository** | Cloudflare R2 / AWS S3 | Slices media latency and controls network bandwidth load for course lecture videos, profile graphics, and PDF assets. |
+| **Telemetry & Monitoring** | Sentry + Vercel Analytics | Monolith error collection engine mapping syntax breakages alongside ongoing production Core Web Vitals checks. |
 
 ---
 
