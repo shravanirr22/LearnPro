@@ -332,25 +332,29 @@ document.getElementById('pushNotifs').innerHTML = emailItems.slice(0,4).map(item
 
 // API Keys section
 const apiKeys = [
-  { id:'gemini', label:'Gemini API Key (AI Chatbot)', placeholder:'AIzaSy…', hint:'✅ Active — Powers AI chatbot, nudges, interview feedback, profile generator', link:'https://aistudio.google.com', prefill:'AIzaSyDh-EZnypHxLNHIIA0jXn3xLxzymrBp0bA' },
-  { id:'hcaptcha', label:'hCaptcha Site Key (CAPTCHA)', placeholder:'xxxxxxxx-xxxx-…', hint:'✅ Active — Bot protection on login and signup forms', link:'https://hcaptcha.com', prefill:'d6ccb116-ff5e-435a-ba56-34ca25b2a6c2' },
-  { id:'supabase_url', label:'Supabase Project URL', placeholder:'https://xxx.supabase.co', hint:'✅ Active — Authentication (Email, Google, GitHub OAuth, OTP)', link:'https://supabase.com', prefill:'https://gmoykjzzdderealljape.supabase.co' },
-  { id:'supabase_key', label:'Supabase Anon Key', placeholder:'eyJhbGc…', hint:'✅ Active — Supabase public API key', link:'https://supabase.com', prefill:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' },
-  { id:'razorpay', label:'Razorpay Key ID (Payments)', placeholder:'rzp_test_…', hint:'⏳ Pending — Mentor session payments and Pro subscriptions', link:'https://razorpay.com' },
-  { id:'firebase_key', label:'Firebase API Key (Phone OTP + Push)', placeholder:'AIzaSy…', hint:'✅ Active — Phone OTP and push notifications', link:'https://console.firebase.google.com', prefill:'AIzaSyA5aVDaKHlPmssghJp7b9s1QxzeDWvnaeE' },
-  { id:'firebase_project', label:'Firebase Project ID', placeholder:'learnpro-xxx', hint:'✅ Active — Firebase project identifier', link:'https://console.firebase.google.com', prefill:'learnpro-89b93' },
-  { id:'maps', label:'Google Maps API Key', placeholder:'AIzaSy…', hint:'⏳ Pending — Locate nearby bootcamps and events', link:'https://console.cloud.google.com' },
-  { id:'rss2json', label:'RSS2JSON API Key (News Feed)', placeholder:'xxxxxxxx…', hint:'⏳ Pending — Daily tech news digest on dashboard', link:'https://rss2json.com' },
+  { id:'gemini', label:'Gemini API Key (AI Chatbot)', placeholder:'AIzaSy…', desc:'Powers AI chatbot, nudges, interview feedback, profile generator', link:'https://aistudio.google.com', prefill:'AIzaSyDh-EZnypHxLNHIIA0jXn3xLxzymrBp0bA' },
+  { id:'groq', label:'Groq API Key (AI Interviewer)', placeholder:'gsk_…', desc:'Powers fast Llama-powered mock interview evaluation', link:'https://console.groq.com' },
+  { id:'hcaptcha', label:'hCaptcha Site Key (CAPTCHA)', placeholder:'xxxxxxxx-xxxx-…', desc:'Bot protection on login and signup forms', link:'https://hcaptcha.com', prefill:'d6ccb116-ff5e-435a-ba56-34ca25b2a6c2' },
+  { id:'supabase_url', label:'Supabase Project URL', placeholder:'https://xxx.supabase.co', desc:'Authentication (Email, Google, GitHub OAuth, OTP)', link:'https://supabase.com', prefill:'https://gmoykjzzdderealljape.supabase.co' },
+  { id:'supabase_key', label:'Supabase Anon Key', placeholder:'eyJhbGc…', desc:'Supabase public API key', link:'https://supabase.com', prefill:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdtb3lranp6ZGRlcmVhbGxqYXBlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3OTE4ODUsImV4cCI6MjA5NTM2Nzg4NX0.EO-Z1ACX9KWJnM6X2i41M4E15aHDTeJEJiQGy7Wz8KU' },
+  { id:'razorpay', label:'Razorpay Key ID (Payments)', placeholder:'rzp_test_…', desc:'Mentor session payments and Pro subscriptions', link:'https://razorpay.com' },
+  { id:'firebase_key', label:'Firebase API Key (Phone OTP + Push)', placeholder:'AIzaSy…', desc:'Phone OTP and push notifications', link:'https://console.firebase.google.com', prefill:'AIzaSyA5aVDaKHlPmssghJp7b9s1QxzeDWvnaeE' },
+  { id:'firebase_project', label:'Firebase Project ID', placeholder:'learnpro-xxx', desc:'Firebase project identifier', link:'https://console.firebase.google.com', prefill:'learnpro-89b93' },
+  { id:'maps', label:'Google Maps API Key', placeholder:'AIzaSy…', desc:'Locate nearby bootcamps and events', link:'https://console.cloud.google.com' },
+  { id:'rss2json', label:'RSS2JSON API Key (News Feed)', placeholder:'xxxxxxxx…', desc:'Daily tech news digest on dashboard', link:'https://rss2json.com' },
 ];
 document.getElementById('apiKeysList').innerHTML = apiKeys.map(k => {
   const saved = LP.get('apikey_' + k.id) || k.prefill || '';
+  const isActive = !!saved;
+  const statusIcon = isActive ? '✅' : '⏳';
+  const statusText = isActive ? 'Active' : 'Pending';
   return `<div class="api-key-row">
     <div class="api-key-label">${k.label} · <a href="${k.link}" target="_blank" style="color:var(--red-light);text-transform:none;letter-spacing:0">Get key →</a></div>
     <div class="api-key-input-row">
       <input type="password" class="form-input" id="key_${k.id}" value="${saved}" placeholder="${k.placeholder}" style="font-family:monospace;font-size:0.82rem">
       <button onclick="toggleKeyVis('key_${k.id}',this)" style="background:none;border:none;color:var(--gray-4);cursor:pointer;padding:0 8px;font-size:1rem">👁</button>
     </div>
-    <div style="font-size:0.75rem;color:var(--gray-4);margin-top:6px">${k.hint}</div>
+    <div style="font-size:0.75rem;color:${isActive ? '#10b981' : 'var(--gray-4)'};margin-top:6px">${statusIcon} ${statusText} — ${k.desc}</div>
   </div>`;
 }).join('');
 

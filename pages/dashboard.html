@@ -453,9 +453,19 @@ function askBot(msg) {
       const permission = await Notification.requestPermission();
       if (permission === 'granted') {
         console.log('LearnPro push notifications enabled ✅');
+        const token = await messaging.getToken({
+          serviceWorkerRegistration: reg,
+          vapidKey: 'BOOw4bup5Ok68s3htIch0cKtvDtAI8Kmvdg5ytD8ouOu18JIKQFX_PdwdofYByQX-A2IA1C-gpegbrB7DrHwUjs'
+        });
+        if (token) {
+          console.log('FCM Registration Token:', token);
+          LP.set('fcm_token', token);
+        } else {
+          console.log('No FCM registration token available. Request permission to generate one.');
+        }
       }
     }
-  } catch(e) { /* push notifications optional */ }
+  } catch(e) { console.error('Push notification init error:', e); }
 })();
 
 </script>

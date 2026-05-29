@@ -10,6 +10,9 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const GEMINI_API_KEY = 'AIzaSyDh-EZnypHxLNHIIA0jXn3xLxzymrBp0bA';
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
 
+// ── GROQ CONFIG ──────────────────────────────────────────────
+const GROQ_API_KEY = '';
+
 // ── INVIDIOUS CONFIG (YouTube - No Key Needed) ───────────────
 const INVIDIOUS_BASE = 'https://inv.nadeko.net';
 
@@ -86,6 +89,142 @@ window.askGemini = async (prompt, systemContext = '') => {
   const data = await res.json();
   return data?.candidates?.[0]?.content?.parts?.[0]?.text || 'Sorry, I could not respond right now.';
 };
+
+// ── GROQ AI CALL ─────────────────────────────────────────────
+window.askGroq = async (prompt, systemContext = '') => {
+  const apiKey = LP.get('apikey_groq') || GROQ_API_KEY;
+  const url = 'https://api.groq.com/openai/v1/chat/completions';
+  const messages = [];
+  if (systemContext) {
+    messages.push({ role: 'system', content: systemContext });
+  }
+  messages.push({ role: 'user', content: prompt });
+
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`
+    },
+    body: JSON.stringify({
+      model: 'llama-3.3-70b-versatile',
+      messages: messages,
+      max_tokens: 256,
+      temperature: 0.7
+    })
+  });
+  const data = await res.json();
+  return data?.choices?.[0]?.message?.content || 'Sorry, I could not evaluate your response at the moment.';
+};
+
+// ── HCAPTCHA DYNAMIC LOADER & TOGGLER ────────────────────────
+window.initLPCheckCaptcha = (containerId, callback) => {
+  if (typeof hcaptcha === 'undefined') {
+    setTimeout(() => initLPCheckCaptcha(containerId, callback), 100);
+    return;
+  }
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  const isLocal = window.location.hostname === 'localhost' || 
+                  window.location.hostname === '127.0.0.1' || 
+                  window.location.hostname.includes('localhost.com');
+                  
+  const prodKey = LP.get('apikey_hcaptcha') || 'd6ccb116-ff5e-435a-ba56-34ca25b2a6c2';
+  const testKey = '10000000-ffff-ffff-ffff-000000000001';
+  
+  container.style.display = 'flex';
+  container.style.flexDirection = 'column';
+  container.style.gap = '8px';
+  container.style.marginBottom = '16px';
+  
+  const widgetDiv = document.createElement('div');
+  widgetDiv.id = `${containerId}-widget`;
+  container.appendChild(widgetDiv);
+  
+  const controlBar = document.createElement('div');
+  controlBar.style.display = 'flex';
+  controlBar.style.justifyContent = 'space-between';
+  controlBar.style.alignItems = 'center';
+  controlBar.style.fontSize = '0.78rem';
+  controlBar.style.color = 'var(--gray-4)';
+  
+  const statusSpan = document.createElement('span');
+  statusSpan.innerHTML = `Mode: <strong class="captcha-mode" style="color:var(--white)">${isLocal ? 'Localhost (Dev)' : 'Production'}</strong>`;
+  controlBar.appendChild(statusSpan);
+  
+  const toggleBtn = document.createElement('button');
+  toggleBtn.type = 'button';
+  toggleBtn.textContent = isLocal ? 'Switch to Production Key' : 'Switch to Localhost Key';
+  toggleBtn.style.background = 'none';
+  toggleBtn.style.border = 'none';
+  toggleBtn.style.color = 'var(--red-light)';
+  toggleBtn.style.fontWeight = '700';
+  toggleBtn.style.cursor = 'pointer';
+  toggleBtn.style.fontFamily = 'var(--font-cond)';
+  toggleBtn.style.letterSpacing = '0.04em';
+  controlBar.appendChild(toggleBtn);
+  
+  container.appendChild(controlBar);
+  
+  let currentKey = isLocal ? testKey : prodKey;
+  
+  const renderWidget = () => {
+    widgetDiv.innerHTML = '';
+    hcaptcha.render(widgetDiv.id, {
+      sitekey: currentKey,
+      theme: 'dark',
+      callback: callback
+    });
+  };
+  
+  toggleBtn.addEventListener('click', () => {
+    if (currentKey === prodKey) {
+      currentKey = testKey;
+      statusSpan.querySelector('.captcha-mode').textContent = 'Localhost (Dev)';
+      toggleBtn.textContent = 'Switch to Production Key';
+    } else {
+      currentKey = prodKey;
+      statusSpan.querySelector('.captcha-mode').textContent = 'Production';
+      toggleBtn.textContent = 'Switch to Localhost Key';
+    }
+    renderWidget();
+  });
+  
+  renderWidget();
+};
+
+// ── RECAPTCHA ENTERPRISE ASSESSMENT CALL ─────────────────────
+window.createRecaptchaAssessment = async (token) => {
+  const apiKey = LP.get('apikey_firebase_key') || 'AIzaSyA5aVDaKHlPmssghJp7b9s1QxzeDWvnaeE';
+  const siteKey = '6Lew9wAtAAAAAPCMVi32_YS8h1FCcu_olUiSSBxm';
+  const url = `https://recaptchaenterprise.googleapis.com/v1/projects/learnpro-89b93/assessments?key=${apiKey}`;
+  
+  const payload = {
+    event: {
+      token: token,
+      siteKey: siteKey,
+      expectedAction: 'login'
+    }
+  };
+  
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8'
+      },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    console.log('reCAPTCHA Enterprise Assessment Response:', data);
+    return data;
+  } catch (error) {
+    console.error('Failed to create assessment:', error);
+    return null;
+  }
+};
+
 
 // ── CHATBOT ──────────────────────────────────────────────────
 window.initChatbot = () => {

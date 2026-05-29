@@ -4,7 +4,7 @@
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sign Up — LearnPro</title>
 <link rel="stylesheet" href="../css/global.css">
-<script src="https://js.hcaptcha.com/1/api.js" async defer></script>
+<script src="https://js.hcaptcha.com/1/api.js?render=explicit" async defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 
 <style>
@@ -142,8 +142,8 @@ body { display:flex; min-height:100vh; align-items:center; justify-content:cente
             <div class="strength-text" id="strengthText"></div>
           </div>
         </div>
-        <!-- Cloudflare Turnstile — Replace with your site key -->
-        <div class="h-captcha" data-sitekey="d6ccb116-ff5e-435a-ba56-34ca25b2a6c2" style="margin-bottom:16px"></div>
+        <!-- hCaptcha Container -->
+        <div id="signup-hcaptcha-container"></div>
         <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:20px">
           <input type="checkbox" id="terms" required style="margin-top:3px;accent-color:var(--red)">
           <label for="terms" style="font-size:0.82rem;color:var(--gray-4)">I agree to the <a href="#" style="color:var(--red-light)">Terms of Service</a> and <a href="#" style="color:var(--red-light)">Privacy Policy</a></label>
@@ -301,6 +301,10 @@ let selectedTimeline = '';
 
 function goStep(n) {
   if (n === 2) {
+    if (!captchaVerifiedToken) {
+      showToast('Please solve the CAPTCHA first', 'error');
+      return false;
+    }
     // Trigger email verification
     document.getElementById('verifyEmail').textContent = document.getElementById('regEmail').value;
     // await fetch('/api/auth/register', { method:'POST', body: JSON.stringify({...}) }) → send OTP
@@ -401,6 +405,14 @@ async function completeSignup() {
   showToast('🚀 Roadmap ready! Taking you to your dashboard…', 'success');
   setTimeout(() => window.location.href = 'dashboard.html', 1500);
 }
+
+// Init Captcha explicitly
+let captchaVerifiedToken = null;
+document.addEventListener('DOMContentLoaded', () => {
+  initLPCheckCaptcha('signup-hcaptcha-container', (token) => {
+    captchaVerifiedToken = token;
+  });
+});
 </script>
 </body>
 </html>

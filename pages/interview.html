@@ -96,7 +96,7 @@
         </select>
       </div>
       <div style="background:var(--black-4);border-radius:var(--radius);padding:14px;margin-bottom:20px;font-size:0.85rem;color:var(--gray-5)">
-        <strong style="color:var(--white)">⚠️ Powered by Claude API.</strong> Add your API key in <code style="color:var(--red-light)">js/global.js</code> for full AI responses. Demo mode works without a key.
+        <strong style="color:var(--white)">⚠️ Powered by Groq (Llama 3).</strong> Add your API key in <a href="settings.html" style="color:var(--red-light);text-decoration:underline">Settings</a> for full AI responses. Demo mode works with placeholder feedback without a key.
       </div>
       <button onclick="startInterview()" class="btn btn-primary w-full" style="justify-content:center;padding:16px;font-size:1rem">🎤 Start Interview →</button>
     </div>
@@ -280,19 +280,20 @@ async function submitAnswer() {
   const answer = document.getElementById('ivAnswer').value.trim();
   if (!answer) { showToast('Please type or speak your answer first.', 'error'); return; }
   answers.push(answer);
-  // Try Claude API for real feedback
+  
+  showToast('Evaluating answer with Llama 3 (Groq)...', 'info');
   let feedback = feedbackPool[Math.floor(Math.random() * feedbackPool.length)];
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method:'POST',
-      headers:{ 'Content-Type':'application/json','x-api-key':'AIzaSyDh-EZnypHxLNHIIA0jXn3xLxzymrBp0bA','anthropic-version':'2023-06-01' },
-      body: JSON.stringify({ model:'claude-opus-4-5', max_tokens:300,
-        system:`You are an expert ${document.getElementById('interviewRole').value} interviewer. Give concise, constructive feedback (2-3 sentences) on interview answers. Focus on technical accuracy, communication style, and what to improve.`,
-        messages:[{ role:'user', content:`Question: ${document.getElementById('ivQuestion').textContent}\n\nCandidate Answer: ${answer}\n\nGive feedback:` }] })
-    });
-    const data = await res.json();
-    if (data?.content?.[0]?.text) feedback = data.content[0].text;
-  } catch { /* use default feedback */ }
+    const role = document.getElementById('interviewRole').value;
+    const systemContext = `You are an expert ${role} interviewer. Give concise, constructive feedback (2-3 sentences) on interview answers. Focus on technical accuracy, communication style, and what to improve.`;
+    const prompt = `Question: ${document.getElementById('ivQuestion').textContent}\n\nCandidate Answer: ${answer}\n\nGive feedback:`;
+    
+    const reply = await askGroq(prompt, systemContext);
+    if (reply) feedback = reply;
+  } catch(err) {
+    console.error('Groq feedback error:', err);
+    /* use default feedback */
+  }
 
   document.getElementById('ivFeedbackText').textContent = feedback;
   document.getElementById('ivFeedback').style.display = 'block';

@@ -5,7 +5,7 @@
 <title>Login — LearnPro</title>
 <link rel="stylesheet" href="../css/global.css">
 <!-- hCaptcha (free, replaces Cloudflare Turnstile) -->
-<script src="https://js.hcaptcha.com/1/api.js" async defer></script>
+<script src="https://js.hcaptcha.com/1/api.js?render=explicit" async defer></script>
 <!-- Supabase SDK -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <!-- Firebase SDK -->
@@ -160,8 +160,8 @@ body { display:flex; min-height:100vh; }
           <button type="button" onclick="togglePass('loginPass',this)" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--gray-4);cursor:pointer;font-size:1rem">👁</button>
         </div>
       </div>
-      <!-- hCaptcha -->
-      <div class="h-captcha" data-sitekey="d6ccb116-ff5e-435a-ba56-34ca25b2a6c2" style="margin-bottom:16px"></div>
+      <!-- hCaptcha Container -->
+      <div id="login-hcaptcha-container"></div>
       <button type="submit" class="btn btn-primary w-full" style="justify-content:center;padding:14px">Sign In →</button>
     </form>
 
@@ -266,6 +266,10 @@ function togglePass(id, btn) {
 // Email + Password login via Supabase
 async function handleEmailLogin(e) {
   e.preventDefault();
+  if (!captchaVerifiedToken) {
+    showToast('Please solve the CAPTCHA first', 'error');
+    return;
+  }
   const email = document.getElementById('loginEmail').value;
   const password = document.getElementById('loginPass').value;
   try {
@@ -370,7 +374,12 @@ function setupRecaptcha() {
   if (recaptchaVerifier) return;
   recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
     size: 'normal',
-    callback: () => { /* reCAPTCHA solved */ },
+    sitekey: '6Lew9wAtAAAAAPCMVi32_YS8h1FCcu_olUiSSBxm',
+    callback: async (token) => {
+      /* reCAPTCHA solved */
+      console.log('Firebase reCAPTCHA solved. Token:', token);
+      await createRecaptchaAssessment(token);
+    },
     'expired-callback': () => { recaptchaVerifier = null; setupRecaptcha(); }
   });
   recaptchaVerifier.render();
@@ -432,6 +441,14 @@ async function verifyPhoneOTP() {
     showToast('Invalid OTP. Please try again.', 'error');
   }
 }
+
+// Init Captcha explicitly
+let captchaVerifiedToken = null;
+document.addEventListener('DOMContentLoaded', () => {
+  initLPCheckCaptcha('login-hcaptcha-container', (token) => {
+    captchaVerifiedToken = token;
+  });
+});
 
 // Check if already logged in
 const existingUser = LP.user();
