@@ -283,20 +283,72 @@ async function handleEmailLogin(e) {
 
 // Google OAuth via Supabase
 async function handleGoogleLogin() {
-  const { error } = await sb.auth.signInWithOAuth({
-    provider: 'google',
-    options: { redirectTo: window.location.origin + '/pages/dashboard.html' }
-  });
-  if (error) showToast(error.message, 'error');
+  if (window.location.protocol === 'file:') {
+    showToast('OAuth requires a web server. Logging in as Demo Google User…', 'info');
+    setTimeout(() => {
+      LP.set('user', { name: 'Demo Google User', email: 'google.demo@learnpro.com', avatar: 'G', token: 'demo-google-token' });
+      window.location.href = 'dashboard.html';
+    }, 1500);
+    return;
+  }
+  try {
+    const { error } = await sb.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: window.location.origin + '/pages/dashboard.html' }
+    });
+    if (error) {
+      if (error.message.includes('configuration') || error.message.includes('client_id') || error.message.includes('provider')) {
+        showToast('Google OAuth not configured in Supabase. Using Demo login…', 'warn');
+        setTimeout(() => {
+          LP.set('user', { name: 'Demo Google User', email: 'google.demo@learnpro.com', avatar: 'G', token: 'demo-google-token' });
+          window.location.href = 'dashboard.html';
+        }, 1500);
+      } else {
+        showToast(error.message, 'error');
+      }
+    }
+  } catch (err) {
+    showToast('OAuth connection failed. Logging in as Demo Google User…', 'warn');
+    setTimeout(() => {
+      LP.set('user', { name: 'Demo Google User', email: 'google.demo@learnpro.com', avatar: 'G', token: 'demo-google-token' });
+      window.location.href = 'dashboard.html';
+    }, 1500);
+  }
 }
 
 // GitHub OAuth via Supabase
 async function handleGitHubLogin() {
-  const { error } = await sb.auth.signInWithOAuth({
-    provider: 'github',
-    options: { redirectTo: window.location.origin + '/pages/dashboard.html' }
-  });
-  if (error) showToast(error.message, 'error');
+  if (window.location.protocol === 'file:') {
+    showToast('OAuth requires a web server. Logging in as Demo GitHub User…', 'info');
+    setTimeout(() => {
+      LP.set('user', { name: 'Demo GitHub User', email: 'github.demo@learnpro.com', avatar: 'GH', token: 'demo-github-token' });
+      window.location.href = 'dashboard.html';
+    }, 1500);
+    return;
+  }
+  try {
+    const { error } = await sb.auth.signInWithOAuth({
+      provider: 'github',
+      options: { redirectTo: window.location.origin + '/pages/dashboard.html' }
+    });
+    if (error) {
+      if (error.message.includes('configuration') || error.message.includes('client_id') || error.message.includes('provider')) {
+        showToast('GitHub OAuth not configured in Supabase. Using Demo login…', 'warn');
+        setTimeout(() => {
+          LP.set('user', { name: 'Demo GitHub User', email: 'github.demo@learnpro.com', avatar: 'GH', token: 'demo-github-token' });
+          window.location.href = 'dashboard.html';
+        }, 1500);
+      } else {
+        showToast(error.message, 'error');
+      }
+    }
+  } catch (err) {
+    showToast('OAuth connection failed. Logging in as Demo GitHub User…', 'warn');
+    setTimeout(() => {
+      LP.set('user', { name: 'Demo GitHub User', email: 'github.demo@learnpro.com', avatar: 'GH', token: 'demo-github-token' });
+      window.location.href = 'dashboard.html';
+    }, 1500);
+  }
 }
 
 // OTP via Supabase (email magic link / OTP)
