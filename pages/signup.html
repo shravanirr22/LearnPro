@@ -470,10 +470,15 @@ async function completeSignup() {
     city: document.getElementById('city').value,
     skills: [...document.querySelectorAll('.skill-chip.selected')].map(c => c.textContent)
   };
-  const { data, error } = await sb.auth.signUp({ email: user.email, password: document.getElementById("regPass").value });
-  if (error && !error.message.includes("already")) { showToast(error.message, "error"); return; }
+  try {
+    const { data, error } = await sb.auth.signUp({ email: user.email, password: document.getElementById("regPass").value });
+    if (error && !error.message.includes("already")) {
+      showToast(`${error.message}. Continuing with Demo onboarding…`, 'warn');
+    }
+  } catch(err) {
+    showToast('Supabase connection failed. Continuing with Demo onboarding…', 'warn');
+  }
   LP.set("user", user);
-  // POST to your backend: fetch('/api/users/onboard', { method:'POST', body: JSON.stringify(user) })
   showToast('🚀 Roadmap ready! Taking you to your dashboard…', 'success');
   setTimeout(() => window.location.href = 'dashboard.html', 1500);
 }

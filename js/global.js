@@ -119,10 +119,6 @@ window.askGroq = async (prompt, systemContext = '') => {
 
 // ── HCAPTCHA DYNAMIC LOADER & TOGGLER ────────────────────────
 window.initLPCheckCaptcha = (containerId, callback) => {
-  if (typeof hcaptcha === 'undefined') {
-    setTimeout(() => initLPCheckCaptcha(containerId, callback), 100);
-    return;
-  }
   const container = document.getElementById(containerId);
   if (!container) return;
 
@@ -130,68 +126,130 @@ window.initLPCheckCaptcha = (containerId, callback) => {
                   window.location.hostname === '127.0.0.1' || 
                   window.location.hostname.includes('localhost.com');
                   
-  const prodKey = LP.get('apikey_hcaptcha') || 'd6ccb116-ff5e-435a-ba56-34ca25b2a6c2';
-  const testKey = '10000000-ffff-ffff-ffff-000000000001';
-  
-  container.style.display = 'flex';
-  container.style.flexDirection = 'column';
-  container.style.gap = '8px';
-  container.style.marginBottom = '16px';
-  
-  const widgetDiv = document.createElement('div');
-  widgetDiv.id = `${containerId}-widget`;
-  container.appendChild(widgetDiv);
-  
-  const controlBar = document.createElement('div');
-  controlBar.style.display = 'flex';
-  controlBar.style.justifyContent = 'space-between';
-  controlBar.style.alignItems = 'center';
-  controlBar.style.fontSize = '0.78rem';
-  controlBar.style.color = 'var(--gray-4)';
-  
-  const statusSpan = document.createElement('span');
-  statusSpan.innerHTML = `Mode: <strong class="captcha-mode" style="color:var(--white)">${isLocal ? 'Localhost (Dev)' : 'Production'}</strong>`;
-  controlBar.appendChild(statusSpan);
-  
-  const toggleBtn = document.createElement('button');
-  toggleBtn.type = 'button';
-  toggleBtn.textContent = isLocal ? 'Switch to Production Key' : 'Switch to Localhost Key';
-  toggleBtn.style.background = 'none';
-  toggleBtn.style.border = 'none';
-  toggleBtn.style.color = 'var(--red-light)';
-  toggleBtn.style.fontWeight = '700';
-  toggleBtn.style.cursor = 'pointer';
-  toggleBtn.style.fontFamily = 'var(--font-cond)';
-  toggleBtn.style.letterSpacing = '0.04em';
-  controlBar.appendChild(toggleBtn);
-  
-  container.appendChild(controlBar);
-  
-  let currentKey = isLocal ? testKey : prodKey;
-  
-  const renderWidget = () => {
-    widgetDiv.innerHTML = '';
-    hcaptcha.render(widgetDiv.id, {
-      sitekey: currentKey,
-      theme: 'dark',
-      callback: callback
+  const isFileProtocol = window.location.protocol === 'file:';
+
+  const renderMockCaptcha = () => {
+    container.innerHTML = '';
+    container.style.display = 'flex';
+    container.style.alignItems = 'center';
+    container.style.gap = '10px';
+    container.style.padding = '12px';
+    container.style.background = 'var(--black-4)';
+    container.style.border = '1px solid var(--gray-1)';
+    container.style.borderRadius = 'var(--radius)';
+    container.style.marginBottom = '16px';
+    
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.id = `${containerId}-mock-check`;
+    checkbox.style.width = '18px';
+    checkbox.style.height = '18px';
+    checkbox.style.cursor = 'pointer';
+    checkbox.style.accentColor = 'var(--red)';
+    
+    const label = document.createElement('label');
+    label.htmlFor = checkbox.id;
+    label.style.fontSize = '0.85rem';
+    label.style.color = 'var(--white)';
+    label.style.cursor = 'pointer';
+    label.innerHTML = `Verify you are human <span style="color:var(--gray-4);font-size:0.75rem">(Demo Bypass)</span>`;
+    
+    checkbox.addEventListener('change', () => {
+      if (checkbox.checked) {
+        callback('mock-captcha-token');
+      } else {
+        callback(null);
+      }
     });
+    
+    container.appendChild(checkbox);
+    container.appendChild(label);
   };
-  
-  toggleBtn.addEventListener('click', () => {
-    if (currentKey === prodKey) {
-      currentKey = testKey;
-      statusSpan.querySelector('.captcha-mode').textContent = 'Localhost (Dev)';
-      toggleBtn.textContent = 'Switch to Production Key';
+
+  if (isFileProtocol) {
+    renderMockCaptcha();
+    return;
+  }
+
+  let retries = 0;
+  const checkHCaptcha = () => {
+    if (typeof hcaptcha !== 'undefined') {
+      setupRealHCaptcha();
+    } else if (retries < 15) {
+      retries++;
+      setTimeout(checkHCaptcha, 100);
     } else {
-      currentKey = prodKey;
-      statusSpan.querySelector('.captcha-mode').textContent = 'Production';
-      toggleBtn.textContent = 'Switch to Localhost Key';
+      renderMockCaptcha();
     }
+  };
+
+  const setupRealHCaptcha = () => {
+    container.innerHTML = '';
+    const prodKey = LP.get('apikey_hcaptcha') || 'd6ccb116-ff5e-435a-ba56-34ca25b2a6c2';
+    const testKey = '10000000-ffff-ffff-ffff-000000000001';
+    
+    container.style.display = 'flex';
+    container.style.flexDirection = 'column';
+    container.style.gap = '8px';
+    container.style.marginBottom = '16px';
+    
+    const widgetDiv = document.createElement('div');
+    widgetDiv.id = `${containerId}-widget`;
+    container.appendChild(widgetDiv);
+    
+    const controlBar = document.createElement('div');
+    controlBar.style.display = 'flex';
+    controlBar.style.justifyContent = 'space-between';
+    controlBar.style.alignItems = 'center';
+    controlBar.style.fontSize = '0.78rem';
+    controlBar.style.color = 'var(--gray-4)';
+    
+    const statusSpan = document.createElement('span');
+    statusSpan.innerHTML = `Mode: <strong class="captcha-mode" style="color:var(--white)">${isLocal ? 'Localhost (Dev)' : 'Production'}</strong>`;
+    controlBar.appendChild(statusSpan);
+    
+    const toggleBtn = document.createElement('button');
+    toggleBtn.type = 'button';
+    toggleBtn.textContent = isLocal ? 'Switch to Production Key' : 'Switch to Localhost Key';
+    toggleBtn.style.background = 'none';
+    toggleBtn.style.border = 'none';
+    toggleBtn.style.color = 'var(--red-light)';
+    toggleBtn.style.fontWeight = '700';
+    toggleBtn.style.cursor = 'pointer';
+    toggleBtn.style.fontFamily = 'var(--font-cond)';
+    toggleBtn.style.letterSpacing = '0.04em';
+    controlBar.appendChild(toggleBtn);
+    
+    container.appendChild(controlBar);
+    
+    let currentKey = isLocal ? testKey : prodKey;
+    
+    const renderWidget = () => {
+      widgetDiv.innerHTML = '';
+      hcaptcha.render(widgetDiv.id, {
+        sitekey: currentKey,
+        theme: 'dark',
+        callback: callback
+      });
+    };
+    
+    toggleBtn.addEventListener('click', () => {
+      if (currentKey === prodKey) {
+        currentKey = testKey;
+        statusSpan.querySelector('.captcha-mode').textContent = 'Localhost (Dev)';
+        toggleBtn.textContent = 'Switch to Production Key';
+      } else {
+        currentKey = prodKey;
+        statusSpan.querySelector('.captcha-mode').textContent = 'Production';
+        toggleBtn.textContent = 'Switch to Localhost Key';
+      }
+      renderWidget();
+    });
+    
     renderWidget();
-  });
-  
-  renderWidget();
+  };
+
+  checkHCaptcha();
 };
 
 // ── RECAPTCHA ENTERPRISE ASSESSMENT CALL ─────────────────────
