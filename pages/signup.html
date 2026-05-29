@@ -94,8 +94,6 @@ body { display:flex; min-height:100vh; align-items:center; justify-content:cente
       <div class="step-dot" id="sd2">2</div>
       <div class="step-line" id="sl2"></div>
       <div class="step-dot" id="sd3">3</div>
-      <div class="step-line" id="sl3"></div>
-      <div class="step-dot" id="sd4">4</div>
     </div>
 
     <!-- STEP 1: Account Creation -->
@@ -150,24 +148,10 @@ body { display:flex; min-height:100vh; align-items:center; justify-content:cente
       </form>
     </div>
 
-    <!-- STEP 2: Email Verification -->
-    <div class="step-page" id="step2">
-      <h2 class="signup-title">Verify your email</h2>
-      <p class="signup-sub">We sent a 6-digit code to <strong id="verifyEmail" style="color:var(--white)"></strong></p>
-      <div class="otp-inputs" id="verifyOTP">
-        <input class="otp-input" maxlength="1" type="text" inputmode="numeric">
-        <input class="otp-input" maxlength="1" type="text" inputmode="numeric">
-        <input class="otp-input" maxlength="1" type="text" inputmode="numeric">
-        <input class="otp-input" maxlength="1" type="text" inputmode="numeric">
-        <input class="otp-input" maxlength="1" type="text" inputmode="numeric">
-        <input class="otp-input" maxlength="1" type="text" inputmode="numeric">
-      </div>
-      <div style="font-size:0.8rem;color:var(--gray-4);margin-bottom:20px">Expires in <span id="verifyTimer" style="color:var(--red-light);font-weight:700">10:00</span> · <a href="#" onclick="resendOTP()" style="color:var(--red-light)">Resend</a></div>
-      <button onclick="verifyOTP()" class="btn btn-primary w-full" style="justify-content:center;padding:14px">Verify Email →</button>
-    </div>
 
-    <!-- STEP 3: Survey -->
-    <div class="step-page" id="step3">
+
+    <!-- STEP 2: Survey -->
+    <div class="step-page" id="step2">
       <h2 class="signup-title">Tell us about you</h2>
       <p class="signup-sub">This helps us build your personalised roadmap.</p>
 
@@ -244,11 +228,11 @@ body { display:flex; min-height:100vh; align-items:center; justify-content:cente
           <option value="180">3+ hours / day</option>
         </select>
       </div>
-      <button onclick="goStep(4)" class="btn btn-primary w-full" style="justify-content:center;padding:14px">Continue →</button>
+      <button onclick="goStep(3)" class="btn btn-primary w-full" style="justify-content:center;padding:14px">Continue →</button>
     </div>
 
-    <!-- STEP 4: Goal Timeline -->
-    <div class="step-page" id="step4">
+    <!-- STEP 3: Goal Timeline -->
+    <div class="step-page" id="step3">
       <h2 class="signup-title">Set your goal</h2>
       <p class="signup-sub">When do you want to be job-ready?</p>
 
@@ -372,52 +356,14 @@ async function handleGitHubLogin() {
 }
 
 function goStep(n) {
-    // Trigger email verification
-    document.getElementById('verifyEmail').textContent = document.getElementById('regEmail').value;
-    // await fetch('/api/auth/register', { method:'POST', body: JSON.stringify({...}) }) → send OTP
-    startTimer('verifyTimer', 600);
-    setupOTPAuto('verifyOTP');
-    showToast('OTP sent! (demo: any 6 digits work)', 'success');
-  }
   document.getElementById(`step${currentStep}`)?.classList.remove('active');
   document.getElementById(`sd${currentStep}`)?.classList.replace('active', 'done');
   document.getElementById(`sd${currentStep}`)?.textContent = '✓';
-  if (currentStep < 4) document.getElementById(`sl${currentStep}`)?.classList.add('done');
+  if (currentStep < 3) document.getElementById(`sl${currentStep}`)?.classList.add('done');
   currentStep = n;
   document.getElementById(`step${n}`)?.classList.add('active');
   document.getElementById(`sd${n}`)?.classList.add('active');
   return false;
-}
-
-function setupOTPAuto(containerId) {
-  const inputs = document.querySelectorAll(`#${containerId} .otp-input`);
-  inputs.forEach((inp, i) => {
-    inp.addEventListener('input', () => { if (inp.value && i < inputs.length - 1) inputs[i+1].focus(); });
-    inp.addEventListener('keydown', e => { if (e.key === 'Backspace' && !inp.value && i > 0) inputs[i-1].focus(); });
-  });
-}
-
-function startTimer(elId, seconds) {
-  const el = document.getElementById(elId);
-  const iv = setInterval(() => {
-    const m = String(Math.floor(seconds / 60)).padStart(2,'0');
-    const s = String(seconds % 60).padStart(2,'0');
-    el.textContent = `${m}:${s}`;
-    if (--seconds < 0) { clearInterval(iv); el.textContent = 'Expired'; }
-  }, 1000);
-}
-
-function verifyOTP() {
-  const otp = [...document.querySelectorAll('#verifyOTP .otp-input')].map(i => i.value).join('');
-  if (otp.length === 6) {
-    showToast('Email verified!', 'success');
-    goStep(3);
-  } else { showToast('Enter 6-digit code', 'error'); }
-}
-
-function resendOTP() {
-  showToast('New OTP sent!', 'info');
-  startTimer('verifyTimer', 600);
 }
 
 function selectRole(el, val) {

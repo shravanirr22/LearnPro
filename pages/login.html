@@ -139,7 +139,6 @@ body { display:flex; min-height:100vh; }
     <!-- Login Method Tabs -->
     <div class="login-tabs">
       <button class="login-tab active" onclick="switchTab('email',this)">Email</button>
-      <button class="login-tab" onclick="switchTab('otp',this)">Email OTP</button>
       <button class="login-tab" onclick="switchTab('phone',this)">Phone OTP</button>
     </div>
 
@@ -163,32 +162,7 @@ body { display:flex; min-height:100vh; }
       <button type="submit" class="btn btn-primary w-full" style="justify-content:center;padding:14px">Sign In →</button>
     </form>
 
-    <!-- OTP FORM -->
-    <form id="otp-form" style="display:none" onsubmit="handleOTPLogin(event)">
-      <div id="otp-step1">
-        <div class="form-group">
-          <label class="form-label">Email Address</label>
-          <input type="email" class="form-input" id="otpEmail" placeholder="you@example.com" required>
-        </div>
-        <button type="button" onclick="sendOTP()" class="btn btn-primary w-full" style="justify-content:center;padding:14px">Send OTP →</button>
-      </div>
-      <div id="otp-step2" style="display:none">
-        <p style="color:var(--gray-4);font-size:0.88rem;margin-bottom:16px">We sent a 6-digit code to <strong id="otpEmailDisplay" style="color:var(--white)"></strong></p>
-        <div class="otp-inputs" id="otpInputs">
-          <input class="otp-input" maxlength="1" type="text" inputmode="numeric">
-          <input class="otp-input" maxlength="1" type="text" inputmode="numeric">
-          <input class="otp-input" maxlength="1" type="text" inputmode="numeric">
-          <input class="otp-input" maxlength="1" type="text" inputmode="numeric">
-          <input class="otp-input" maxlength="1" type="text" inputmode="numeric">
-          <input class="otp-input" maxlength="1" type="text" inputmode="numeric">
-        </div>
-        <div style="font-size:0.8rem;color:var(--gray-4);margin-bottom:16px">
-          Expires in <span id="otpTimer" style="color:var(--red-light);font-weight:700">10:00</span> ·
-          <a href="#" onclick="sendOTP()" style="color:var(--red-light)">Resend</a>
-        </div>
-        <button type="submit" class="btn btn-primary w-full" style="justify-content:center;padding:14px">Verify & Sign In →</button>
-      </div>
-    </form>
+
 
     <!-- PHONE OTP FORM -->
     <form id="phone-form" style="display:none">
@@ -358,72 +332,7 @@ async function handleGitHubLogin() {
   }
 }
 
-// OTP via Supabase (email magic link / OTP)
-async function sendOTP() {
-  const email = document.getElementById('otpEmail').value;
-  if (!email) { showToast('Please enter your email', 'error'); return; }
 
-  // Use Supabase email OTP
-  const { error } = await sb.auth.signInWithOtp({ email, options: { shouldCreateUser: true } });
-  if (error) {
-    showToast('Supabase OTP failed. Running in Email Demo mode (any 6 digits work)…', 'warn');
-    document.getElementById('otpEmailDisplay').textContent = email;
-    document.getElementById('otp-step1').style.display = 'none';
-    document.getElementById('otp-step2').style.display = 'block';
-    startOTPTimer(600);
-    setupOTPInputs();
-    return;
-  }
-
-  document.getElementById('otpEmailDisplay').textContent = email;
-  document.getElementById('otp-step1').style.display = 'none';
-  document.getElementById('otp-step2').style.display = 'block';
-  showToast('✅ OTP sent to ' + email + '! Check your inbox.', 'success');
-  startOTPTimer(600);
-  setupOTPInputs();
-}
-
-function setupOTPInputs() {
-  const inputs = document.querySelectorAll('.otp-input');
-  inputs.forEach((inp, i) => {
-    inp.addEventListener('input', () => { if (inp.value && i < inputs.length - 1) inputs[i+1].focus(); });
-    inp.addEventListener('keydown', e => { if (e.key === 'Backspace' && !inp.value && i > 0) inputs[i-1].focus(); });
-  });
-}
-
-function startOTPTimer(seconds) {
-  const el = document.getElementById('otpTimer');
-  const iv = setInterval(() => {
-    const m = String(Math.floor(seconds/60)).padStart(2,'0');
-    const s = String(seconds%60).padStart(2,'0');
-    el.textContent = `${m}:${s}`;
-    if (--seconds < 0) { clearInterval(iv); el.textContent = 'Expired'; }
-  }, 1000);
-}
-
-async function handleOTPLogin(e) {
-  e.preventDefault();
-  const email = document.getElementById('otpEmail').value;
-  const token = [...document.querySelectorAll('.otp-input')].map(i => i.value).join('');
-  try {
-    const { data, error } = await sb.auth.verifyOtp({ email, token, type: 'email' });
-    if (error) {
-      showToast('Supabase OTP verification failed. Logging in as Demo User…', 'info');
-      setTimeout(() => {
-        LP.set('user', { name: email.split('@')[0], email, avatar: email[0].toUpperCase(), token: 'demo-token' });
-        window.location.href = 'dashboard.html';
-      }, 1200);
-      return;
-    }
-    LP.set('user', { name: email.split('@')[0], email, avatar: email[0].toUpperCase(), token: data.session?.access_token });
-    showToast('Verified! Redirecting…', 'success');
-    setTimeout(() => window.location.href = 'dashboard.html', 1200);
-  } catch(err) {
-    LP.set('user', { name: email.split('@')[0], email, avatar: email[0].toUpperCase(), token: 'demo-token' });
-    showToast('Demo Verified! Redirecting…', 'success');
-    setTimeout(() => window.location.href = 'dashboard.html', 1200);
-  }
-}
 
 // Forgot password via Supabase
 function showForgot() { openModal('forgotModal'); }
@@ -436,12 +345,11 @@ async function sendResetLink() {
 }
 
 
-// ── switchTab: handle 3 tabs now ──
+// ── switchTab: handle tabs ──
 function switchTab(tab, btn) {
   document.querySelectorAll('.login-tab').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   document.getElementById('email-form').style.display  = tab === 'email' ? 'block' : 'none';
-  document.getElementById('otp-form').style.display    = tab === 'otp'   ? 'block' : 'none';
   document.getElementById('phone-form').style.display  = tab === 'phone' ? 'block' : 'none';
   if (tab === 'phone') setupRecaptcha();
 }
